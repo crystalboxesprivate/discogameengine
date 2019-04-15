@@ -4,6 +4,7 @@ add_library(
   include/shader/uniform_buffer.h
   include/shader/cache.h
   include/shader/shader.h
+  include/shader/compiler.h
   src/uniform_buffer.cpp
   src/cache.cpp
   src/shader.cpp

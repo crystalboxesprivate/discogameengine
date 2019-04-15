@@ -1,7 +1,7 @@
 #pragma once
 
-#include <cross/cross.h>
 #include <graphicsinterface/buffer.h>
+#include <shader/compiler.h>
 
 namespace shader {
 struct UniformBufferDescription {
@@ -64,7 +64,7 @@ struct UniformBufferDescription {
     }
   }
 
-  const std::string get_uniform_name() {
+  const String get_uniform_name() {
     return "type_" + name;
   }
 
@@ -100,5 +100,5 @@ struct UniformBufferDescription {
 };
 typedef UniquePtr<UniformBufferDescription> UniformBufferDescPtr;
 bool initialize_uniform_buffer_members(UniformBufferDescription &buffer,
-                                       cross::compiler::ReflectionData::UniformBuffer &reflection_data);
+                                       compiler::ReflectionData::UniformBuffer &reflection_data);
 } // namespace shader

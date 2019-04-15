@@ -17,5 +17,17 @@ T rand_range(T min, T max) {
 }
 
 glm::quat rotation_between_vectors(glm::vec3 start, glm::vec3 dest);
+
+static glm::vec3 get_forward_from_orientation(const glm::quat &orient) {
+  using namespace glm;
+  const vec4 forward_vec4 = vec4(0.f, 0.f, 1.f, 1.f);
+  const mat4 orientation_matrix = mat4(quat(orient.x, orient.y, orient.z, orient.w));
+  vec4 forward_dir_ws = orientation_matrix * forward_vec4;
+  // optional normalize
+  forward_dir_ws = normalize(forward_dir_ws);
+  vec3 forward_vector(forward_dir_ws.x, forward_dir_ws.y, forward_dir_ws.z);
+  return forward_vector;
+}
+
 } // namespace math
 } // namespace utils

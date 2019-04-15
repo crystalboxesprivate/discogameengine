@@ -87,7 +87,7 @@ bool load_json_scene(const char *filename) {
       auto &transform = *component::get_mut<TransformComponent>(transform_handle);
 
       transform.position = get_vec<vec3>(go["Position"]);
-      transform.set_mesh_orientation_euler_angles(get_vec<vec3>(go["Rotation"]), true);
+      transform.orient = quat(radians(get_vec<vec3>(go["Rotation"])));
       transform.scale3d = get_vec<vec3>(go["Scale"]);
 
       auto material_handle = component::add<MaterialParameterComponent>(entity);

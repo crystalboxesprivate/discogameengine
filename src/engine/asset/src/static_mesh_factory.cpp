@@ -54,7 +54,7 @@ void StaticMeshFactory::load_asset_data(asset::Asset &asset) {
     const struct aiFace &face = ai_mesh.mFaces[x];
     // Support only triangles
     assert(face.mNumIndices == 3);
-    i32 face_arr[3] = {face.mIndices[0], face.mIndices[1], face.mIndices[2]};
+    u32 face_arr[3] = {face.mIndices[0], face.mIndices[1], face.mIndices[2]};
     stride = 4 * 3;
     memcpy(mesh.bulk_data.get_data() + offset, face_arr, stride);
     offset += stride;

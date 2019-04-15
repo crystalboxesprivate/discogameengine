@@ -10,14 +10,14 @@ void UniformBufferDescription::update_resource() {
 }
 
 bool initialize_uniform_buffer_members(UniformBufferDescription &buffer,
-                                       cross::compiler::ReflectionData::UniformBuffer &reflection_data) {
+                                       compiler::ReflectionData::UniformBuffer &reflection_data) {
   if (buffer.size == 0)
     return false;
 
   buffer.name = reflection_data.name;
   buffer.storage_ptr = (u8 *)malloc(buffer.size);
 
-  typedef cross::compiler::ReflectionData::UniformBuffer::Member Member;
+  typedef compiler::ReflectionData::UniformBuffer::Member Member;
   typedef std::pair<const String, Member> Pair;
   for (Pair &it : reflection_data.members) {
     Member &member = it.second;

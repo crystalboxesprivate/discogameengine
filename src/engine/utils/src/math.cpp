@@ -29,4 +29,4 @@ quat rotation_between_vectors(vec3 start, vec3 dest) {
   return quat(square_root_value * 0.5f, rotation_axis.x * invs, rotation_axis.y * invs, rotation_axis.z * invs);
 }
 } // namespace math
-} // namespace core
+} // namespace utils

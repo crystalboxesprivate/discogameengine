@@ -2,8 +2,9 @@
 
 #include <engine>
 #include <asset/asset.h>
-#include <shader/uniform_buffer.h>
 #include <graphicsinterface/shader.h>
+#include <shader/compiler.h>
+#include <shader/uniform_buffer.h>
 
 namespace shader {
 using asset::Asset;

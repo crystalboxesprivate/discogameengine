@@ -12,12 +12,7 @@ inline Archive &operator<<(Archive &archive, RigidBodyType &type) {
   archive.serialize(&type, sizeof(RigidBodyType));
   return archive;
 }
-struct RigidBodyComponent /*: public Component*/ {
-  //declare_component(RigidBodyComponent);
-  RigidBodyComponent()
-      : velocity(glm::vec3(0.0f))
-      , acceleration(glm::vec3(0.0f)) /* , rigid_body(nullptr) */ {
-  }
+struct RigidBodyComponent {
   // virtual void serialize(Archive &archive) override {
   //   Super::serialize(archive);
 
@@ -47,6 +42,8 @@ struct RigidBodyComponent /*: public Component*/ {
   glm::vec3 axis;
   glm::vec3 offset;
 
+  float position_simulation_weight = 1.f;
+
   i32 axis_id;
   float mass;
   float radius = 10.f;
@@ -55,8 +52,6 @@ struct RigidBodyComponent /*: public Component*/ {
   void *native_physics_ptr = nullptr;
 
   // run-time values
-  glm::vec3 velocity;
-  glm::vec3 acceleration;
   bool had_collision;
   float inverse_mass;
 };

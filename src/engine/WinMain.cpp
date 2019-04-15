@@ -10,11 +10,24 @@
 #include <task/transform_task.h>
 #include <behavior/first_person_controller.h>
 #include <behavior/physics.h>
+#include <component/component.h>
+#include <game/camera_component.h>
+#include <game/rigid_body_component.h>
 
 void setup() {
   app::get().add_task(new task::TransformTask);
   app::get().add_behavior(new behavior::FirstPersonCamera);
   app::get().add_behavior(new behavior::PhysicsBehavior);
+}
+
+void post_scene_setup() {
+  // find camera  attach rigid body set position weight
+  u32 entity_id = component::get_entity_id<game::CameraComponent>(0);
+  auto &rb = component::add_and_get<game::RigidBodyComponent>(entity_id);
+  rb.type = game::RigidBodyType::Sphere;
+  rb.position_simulation_weight = (0.f);
+  rb.radius = 14.f;
+  rb.mass = 40.f;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -36,6 +49,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
   auto scenes_folder = join(join(config::CONTENT_DIR, "scenes"), "physics.json");
   legacy::load_json_scene(scenes_folder.c_str());
+  post_scene_setup();
 
   app.game_state_init();
 

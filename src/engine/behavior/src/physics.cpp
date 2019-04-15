@@ -83,8 +83,7 @@ struct iShape {
   inline nPhysics::eShapeType GetShapeType() const {
     return mShapeType;
   }
-  // virtual bool GetAABB(const mat4& transform, vec3& minBoundsOut, vec3& maxBoundsOut) { return false;
-  // } /*=0*/
+
   virtual bool GetSphereRadius(float &radiusOut) {
     return false;
   }
@@ -861,32 +860,11 @@ struct PhysicsFactory {
 };
 #pragma endregion
 
-const game::TransformComponent *cached_camera_xform;
-SharedPtr<iRigidBody> sphere_rb;
-
 void PhysicsBehavior::start() {
   assert(!world);
   assert(!factory);
   factory = new PhysicsFactory;
   world = factory->CreatePhysicsWorld();
-
-  {
-    {
-      // find first found camera
-      auto &cameras = component::get_vector_of_components<game::CameraComponent>();
-      auto entity_id = cameras.slots.begin()->second.entity_id;
-      cached_camera_xform = component::find_and_get<game::TransformComponent>(entity_id);
-    }
-    // auto &cameras = component::get_components_of_type<game::CameraComponent>();
-    // cached_camera_xform = component::get<game::TransformComponent>(cameras[0]->get_owner_id());
-    iShape *new_shape = factory->CreateSphereShape(20.f);
-    sRigidBodyDef def;
-    def.Orientation = vec3(0);
-    def.Position = cached_camera_xform->position;
-    def.Mass = 40.f;
-    sphere_rb = SharedPtr<iRigidBody>(factory->CreateRigidBody(def, new_shape));
-    world->AddBody(sphere_rb.get());
-  }
 
   // create physics objects
   auto &rigid_bodies = component::get_array_of_components<game::RigidBodyComponent>();
@@ -901,7 +879,7 @@ void PhysicsBehavior::start() {
 
     assert(xfrom_ptr);
     sRigidBodyDef def;
-    def.Orientation = xfrom_ptr->get_mesh_orientation_euler_angles();
+    def.Orientation = eulerAngles(xfrom_ptr->orient);
     def.Position = xfrom_ptr->position;
     def.GameObjectName = utils::string::sprintf("object_%d", x);
 
@@ -931,24 +909,32 @@ void PhysicsBehavior::start() {
     world->AddBody(new_body);
     // data[x] = SharedPtr<iRigidBody>(new_body);
     rb.native_physics_ptr = new_body;
+    x++;
   }
   world->SetGravity(vec3(0, -9.8, 0));
 }
 
 void PhysicsBehavior::update(double delta_time) {
-  world->Update(1 / 60.f);
   // update transforms
+  world->Update(1 / 60.f);
+
   auto &rigid_bodies = component::get_array_of_components<game::RigidBodyComponent>();
 
-  sphere_rb->SetPosition(cached_camera_xform->position);
   for (auto &rb : rigid_bodies) {
     auto xfrom_ptr = component::get_mut<game::TransformComponent>(rb.transform);
     assert(xfrom_ptr);
-    auto i_rb = (iRigidBody *)rb.native_physics_ptr;
-    if (i_rb->GetShape()->GetShapeType() == nPhysics::SHAPE_TYPE_PLANE)
+    auto physics_object_ptr = (iRigidBody *)rb.native_physics_ptr;
+
+    if (physics_object_ptr->GetShape()->GetShapeType() == nPhysics::SHAPE_TYPE_PLANE)
       continue;
-    xfrom_ptr->position = i_rb->GetPosition();
-    xfrom_ptr->orient = glm::mat4(i_rb->GetMatRotation());
+
+    vec3 result_position = mix(xfrom_ptr->position, physics_object_ptr->GetPosition(), rb.position_simulation_weight);
+    if (rb.position_simulation_weight < 0.99f) {
+      physics_object_ptr->SetPosition(result_position);
+    }
+
+    xfrom_ptr->position = result_position;
+    xfrom_ptr->orient = glm::mat4(physics_object_ptr->GetMatRotation());
   }
 }
 

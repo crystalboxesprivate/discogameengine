@@ -199,6 +199,12 @@ ComponentHandle2<T> add(u32 entity_id) {
 }
 
 template <typename T>
+T &add_and_get(u32 entity_id) {
+  auto handle = add<T>(entity_id);
+  return *get_mut<T>(handle);
+}
+
+template <typename T>
 u32 get_entity_id(i32 component_linear_index) {
   auto &vector_of_components = get_vector_of_components<T>();
   return vector_of_components.slots[vector_of_components.slot_ids[component_linear_index]].entity_id;
