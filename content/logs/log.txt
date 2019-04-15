@@ -1,0 +1,25 @@
+[07:16:19] Rendering: Loading Vertex shader f:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/shaders/main.hlsl, entry: VS:
+[07:16:19] Rendering: Running cross compilation.
+[07:16:19] Rendering: Loading D3D shader
+[07:16:19] Rendering: Recompiling from HLSL source...
+[07:16:19] Rendering: Saving shader to disk.
+[07:16:19] Rendering: Loading Pixel shader f:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/shaders/main.hlsl, entry: PS:
+[07:16:19] Rendering: Running cross compilation.
+[07:16:19] Rendering: Loading D3D shader
+[07:16:19] Rendering: Recompiling from HLSL source...
+[07:16:19] Rendering: Saving shader to disk.
+[07:16:19] [Warning] Physics (sceneloader.cpp:154): Undefined type SPHERE_TO_POINT, setting up as sphere.
+[07:16:19] [Warning] Physics (sceneloader.cpp:154): Undefined type SPHERE_TO_SPHERE, setting up as sphere.
+[07:16:19] [Warning] Assets (sceneloader.cpp:70): Got skinned mesh, skipping for now...
+[07:16:19] [Warning] Assets (sceneloader.cpp:70): Got skinned mesh, skipping for now...
+[07:16:19] [Warning] Physics (sceneloader.cpp:154): Undefined type BOX_HINGE, setting up as sphere.
+[07:16:19] [Warning] Physics (sceneloader.cpp:154): Undefined type BOX_TO_BOX_HINDGE, setting up as sphere.
+[07:16:19] [Warning] Physics (sceneloader.cpp:154): Undefined type BOX_TO_BOX_HINDGE, setting up as sphere.
+[07:16:19] [Warning] Physics (sceneloader.cpp:154): Undefined type CYLINDER_TO_POINT, setting up as sphere.
+[07:16:19] [Error] Assets (static_mesh_factory.cpp:25): Mesh F:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/models/portal.ply doesn't contain texture coordinates
+[07:16:19] [Error] Assets (static_mesh_factory.cpp:25): Mesh F:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/models/earth.ply doesn't contain texture coordinates
+[07:16:19] [Error] Assets (static_mesh_factory.cpp:25): Mesh F:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/models/Portal_cube.ply doesn't contain texture coordinates
+[07:16:19] [Error] Assets (static_mesh_factory.cpp:25): Mesh F:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/models/Turret.ply doesn't contain texture coordinates
+[07:16:19] [Error] Assets (static_mesh_factory.cpp:25): Mesh F:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/models/cube.ply doesn't contain texture coordinates
+[07:16:19] [Error] Assets (static_mesh_factory.cpp:25): Mesh F:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/models/cylinder.ply doesn't contain texture coordinates
+[07:16:19] [Error] Assets (static_mesh_factory.cpp:25): Mesh F:/work/DEV/GIT_DOWNLOADED/GameEngine2/content/models/plane_floor.ply doesn't contain texture coordinates

@@ -1,0 +1,48 @@
+add_executable(
+  engine WIN32
+  WinMain.cpp
+)
+
+# set(ENGINE_GRAPHICS_INTERFACE opengli)
+# set(ENGINE_SHADER_TARGET_LANG glsl)
+
+set(ENGINE_GRAPHICS_INTERFACE d3d11i)
+set(ENGINE_SHADER_TARGET_LANG hlsl)
+
+set(ENGINE_CACHE_ENABLED 0)
+set(ENGINE_DEBUG_GRAPHICS 1)
+set(ENGINE_DEBUG_D3D11LAYER 1)
+set(ENGINE_SHADER_FORCE_RECOMPILE 1)
+
+
+add_subdirectory(task)
+add_subdirectory(core)
+add_subdirectory(config)
+add_subdirectory(utils)
+add_subdirectory(interfaces)
+add_subdirectory(app)
+add_subdirectory(component)
+add_subdirectory(game)
+add_subdirectory(asset)
+add_subdirectory(legacy)
+add_subdirectory(renderer)
+add_subdirectory(runtime)
+add_subdirectory(platform)
+add_subdirectory(shader)
+add_subdirectory(behavior)
+
+target_link_libraries(engine PUBLIC config core app legacy utils)
+target_link_libraries(engine PRIVATE task behavior ntwindow)
+
+set_target_properties(engine PROPERTIES OUTPUT_NAME disco-engine
+	RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARY_DIR})
+
+add_custom_command(
+  TARGET engine
+  POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/assimp/lib/assimp-vc140-mt.dll" "$<TARGET_FILE_DIR:engine>"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/fmod/lib/fmod.dll" "$<TARGET_FILE_DIR:engine>"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/freetype/lib/freetype271MT.dll" "$<TARGET_FILE_DIR:engine>"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/ShaderConductor/lib/dxcompiler.dll" "$<TARGET_FILE_DIR:engine>"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/ShaderConductor/lib/ShaderConductor.dll" "$<TARGET_FILE_DIR:engine>"
+)
