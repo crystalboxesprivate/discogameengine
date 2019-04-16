@@ -1,0 +1,19 @@
+#pragma once
+
+namespace shader {
+enum class ShadingLanguage : unsigned char {
+  Dxil = 0,
+  SpirV,
+
+  Hlsl,
+  Glsl,
+  Essl,
+  Msl,
+
+  NumShadingLanguages,
+};
+}
+
+namespace config {
+static const shader::ShadingLanguage shader_language = shader::ShadingLanguage::${ENGINE_SHADER_TARGET_LANG};
+}

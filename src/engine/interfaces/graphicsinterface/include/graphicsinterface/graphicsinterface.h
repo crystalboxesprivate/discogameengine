@@ -16,9 +16,9 @@ static const i32 VERTEX_ATTRIBUTE_COUNT_MAX = 10;
 enum class PrimitiveTopology : u8 { PointList, LineList, LineStrip, TriangleList, TriangleStrip };
 
 struct DebugState {
-  DebugState(const char* title);
+  DebugState(const char *title);
   ~DebugState();
-  static void set_marker(const char* text);
+  static void set_marker(const char *text);
 };
 
 struct PipelineState {
@@ -29,9 +29,9 @@ struct PipelineState {
   PrimitiveTopology primitive_type;
   BoundShaders bound_shaders;
 };
-enum class SemanticName : u8 { Position, TexCoord, Normal, Color };
+enum class SemanticName : u8 { Position, TexCoord, Normal, Tangent, Color };
 struct VertexAttribute {
-  VertexBuffer *buffer;
+  u8 buffer_slot;
   SemanticName semantic_name;
   PixelFormat pixel_format;
   u32 aligned_byte_offset;
@@ -42,15 +42,35 @@ struct VertexStream {
   void add(const VertexAttribute &attribute) {
     attributes[count++] = attribute;
   }
+  void add_buffer(VertexBuffer *buffer) {
+    assert(buffer);
+    buffers[buffer_count++] = buffer;
+  }
   VertexAttribute attributes[VERTEX_ATTRIBUTE_COUNT_MAX];
+  VertexBuffer * buffers[VERTEX_ATTRIBUTE_COUNT_MAX];
   usize count = 0;
+  usize buffer_count = 0;
 };
 
 void set_pipeline_state(PipelineState &pipeline_state);
 
 void bind_uniform_buffer(u32 slot, ShaderStage stage, UniformBufferRef uniform_buffer);
 void set_vertex_stream(VertexStream &stream, ShaderRef VertexShader);
-void draw_indexed(IndexBufferRef index_buffer, PrimitiveTopology primitive_type, u32 index_count, u32 start_index, u32 vertex_start_index);
+void draw_indexed(IndexBufferRef index_buffer, PrimitiveTopology primitive_type, u32 index_count, u32 start_index,
+                  u32 vertex_start_index);
+
+
+
+struct Texture2D {
+  virtual void *get_native_ptr() = 0;
+  virtual u16 get_width() = 0;
+  virtual u16 get_height() = 0;
+  virtual PixelFormat get_pixel_format() = 0;
+};
+
+struct ShaderResourceView {
+  virtual void *get_native_ptr() = 0;
+};
 
 struct RenderTargetView {
   virtual void *get_native_ptr() = 0;
@@ -61,11 +81,17 @@ struct DepthStencilView {
 
 typedef SharedPtr<RenderTargetView> RenderTargetViewRef;
 typedef SharedPtr<DepthStencilView> DepthStencilViewRef;
+typedef SharedPtr<ShaderResourceView> ShaderResourceViewRef;
+typedef SharedPtr<Texture2D> Texture2DRef;
 
 RenderTargetView &get_main_render_target_view();
 DepthStencilView &get_main_depth_stencil_view();
 
-RenderTargetViewRef create_render_target_view(usize width, usize height, PixelFormat pixelformat);
+Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat);
+ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d);
+RenderTargetViewRef create_render_target_view(Texture2DRef texture2d);
+
+// Todo change / fix this 
 DepthStencilViewRef create_depth_stencil_view(usize width, usize height, PixelFormat pixelformat);
 
 bool delete_context();

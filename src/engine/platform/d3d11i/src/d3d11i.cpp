@@ -16,8 +16,6 @@ D3D11DepthStencilView depth_stencil_view;
 
 ID3D11Texture2D *depth_stencil_buffer = nullptr;
 
-i32 width, height;
-
 void present() {
   swap_chain->Present(0, 0);
 }
@@ -45,7 +43,7 @@ void *get_native_context() {
   return get_context();
 }
 
-void create_rtv() {
+void create_rtv(i32 width, i32 height) {
   ID3D11Texture2D *BackBuffer;
   swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)&BackBuffer);
 
@@ -55,7 +53,7 @@ void create_rtv() {
   BackBuffer->Release();
 }
 
-void create_dsv() {
+void create_dsv(i32 width, i32 height) {
   D3D11_TEXTURE2D_DESC DepthStencilDesc;
   DepthStencilDesc.Width = width;
   DepthStencilDesc.Height = height;
@@ -73,7 +71,7 @@ void create_dsv() {
   device->CreateDepthStencilView(depth_stencil_buffer, NULL, &depth_stencil_view.view);
 }
 
-void init_viewport() {
+void init_viewport(i32 width, i32 height) {
   // Create the Viewport
   D3D11_VIEWPORT Viewport;
   ZeroMemory(&Viewport, sizeof(D3D11_VIEWPORT));
@@ -90,6 +88,7 @@ void init_viewport() {
 
 bool create_context(void *window_ptr, void *data) {
   window::Window &win = *reinterpret_cast<window::Window *>(window_ptr);
+  i32 width, height;
   win.get_dimensions(width, height);
 
   DXGI_MODE_DESC BufferDesc;
@@ -122,13 +121,13 @@ bool create_context(void *window_ptr, void *data) {
   D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, device_flag, NULL, NULL, D3D11_SDK_VERSION,
                                 &SwapChainDesc, &swap_chain, &device, NULL, &device_context);
 
-  create_rtv();
-  create_dsv();
+  create_rtv(width, height);
+  create_dsv(width, height);
 
   ID3D11RenderTargetView *views[1];
   views[0] = render_target_view.view.Get();
   device_context->OMSetRenderTargets(1, views, depth_stencil_view.view.Get());
-  init_viewport();
+  init_viewport(width, height);
   // setWireFrameState();
   return true;
 }

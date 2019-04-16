@@ -56,7 +56,8 @@ AssetRef add(const String &filename, const String &alias) {
     }
   }
 
-  Factory *asset_factory = find_factory(filename);
+  Factory *asset_factory;
+  asset_factory = find_factory(filename);
   if (!asset_factory) {
     DEBUG_LOG(Assets, Error, "Couldn't find asset factory for: %s", filename.c_str());
     return false;

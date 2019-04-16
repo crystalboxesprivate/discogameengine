@@ -55,15 +55,8 @@ void bind_uniform_buffer(u32 slot, ShaderStage stage, UniformBufferRef uniform_b
   }
 }
 
-const char *semantic_names[] = {"POSITION", "TEXCOORD", "NORMAL", "COLOR"};
+const char *semantic_names[] = {"POSITION", "TEXCOORD", "NORMAL", "TANGENT", "COLOR"};
 
-DXGI_FORMAT d3d_pixel_formats[] = {
-    DXGI_FORMAT_R8G8B8A8_UNORM,     // R8G8B8A8F,
-    DXGI_FORMAT_R32G32B32_FLOAT,    // R32G32B32F,
-    DXGI_FORMAT_R32G32_FLOAT,       // R32G32F,
-    DXGI_FORMAT_R32G32B32A32_FLOAT, // FloatRGBA,
-    DXGI_FORMAT_UNKNOWN             // Unknown
-};
 
 void set_vertex_stream(VertexStream &stream, ShaderRef VertexShader) {
   D3DVertexShader &vertex = *reinterpret_cast<D3DVertexShader *>(VertexShader.get());
@@ -78,7 +71,7 @@ void set_vertex_stream(VertexStream &stream, ShaderRef VertexShader) {
       layout_desc[x] = {semantic_names[(u8)attr.semantic_name],
                         attr.semantic_index,
                         d3d_pixel_formats[(u8)attr.pixel_format],
-                        x,
+                        attr.buffer_slot,
                         attr.aligned_byte_offset,
                         D3D11_INPUT_PER_VERTEX_DATA,
                         0u};
@@ -100,15 +93,14 @@ void set_vertex_stream(VertexStream &stream, ShaderRef VertexShader) {
     u32 strides[VERTEX_ATTRIBUTE_COUNT_MAX];
     u32 offsets[VERTEX_ATTRIBUTE_COUNT_MAX];
 
-    for (u32 x = 0; x < stream.count; x++) {
-      auto &attr = stream.attributes[x];
-      auto buf = attr.buffer != nullptr ? static_cast<D3DVertexBuffer *>(attr.buffer) : nullptr;
+    for (u32 x = 0; x < stream.buffer_count; x++) {
+      auto buf = stream.buffers[x] != nullptr ? static_cast<D3DVertexBuffer *>(stream.buffers[x]) : nullptr;
       vertex_buffers[x] = buf ? buf->buffer.Get() : nullptr;
       strides[x] = buf ? (u32)buf->stride : 0;
       offsets[x] = 0;
     }
 
-    get_context()->IASetVertexBuffers(0, (u32) stream.count, vertex_buffers, strides, offsets);
+    get_context()->IASetVertexBuffers(0, (u32) stream.buffer_count, vertex_buffers, strides, offsets);
   }
 }
 

@@ -106,7 +106,7 @@ AssetRef find(usize hash);
 template <typename T>
 AssetHandle<T> add(const String &filename, const String &alias = "") {
   auto ref = add(filename, alias);
-  return AssetReference<T>(ref);
+  return AssetHandle<T>(ref);
 }
 
 // Type get_type_from_filename(const String &filename);

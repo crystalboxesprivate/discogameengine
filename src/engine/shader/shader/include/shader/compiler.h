@@ -36,6 +36,9 @@ struct Input {
   String entry_point = "main";
   graphicsinterface::ShaderStage shader_stage = graphicsinterface::ShaderStage::NumStages;
   String file_prefix = "";
+  String source = "";
+
+  Guid compile_id;
 
   Environment environemnt;
   bool skip_preprocessor = false;

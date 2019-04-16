@@ -7,6 +7,7 @@ namespace shader {
 struct UniformBufferDescription {
   // unsigned int gl_id;
   // unsigned int gl_binding_point;
+  usize unique_id = 0;
   graphicsinterface::UniformBufferRef resource;
   void update_resource();
   graphicsinterface::UniformBufferRef get_resource() {
@@ -32,6 +33,7 @@ struct UniformBufferDescription {
   };
 
   inline friend Archive &operator<<(Archive &archive, UniformBufferDescription &desc) {
+    archive << desc.unique_id;
     archive << desc.size;
     archive << desc.name;
     archive << desc.members;

@@ -8,10 +8,11 @@ namespace runtime {
 StaticMeshResource::StaticMeshResource() {
   namespace gi = graphicsinterface;
   vertex_stream.count = 0;
-  vertex_stream.add({nullptr, gi::SemanticName::Position, gi::PixelFormat::R32G32B32F, 0u, 0u});
-  vertex_stream.add({nullptr, gi::SemanticName::TexCoord, gi::PixelFormat::R32G32F, 0u, 0u});
-  vertex_stream.add({nullptr, gi::SemanticName::Normal, gi::PixelFormat::R32G32B32F, 0u, 0u});
-  vertex_stream.add({nullptr, gi::SemanticName::Color, gi::PixelFormat::R32G32B32F, 0u, 0u});
+  vertex_stream.add({0, gi::SemanticName::Position, gi::PixelFormat::R32G32B32F, 0u, 0u});
+  vertex_stream.add({1, gi::SemanticName::TexCoord, gi::PixelFormat::R32G32F, 0u, 0u});
+  vertex_stream.add({2, gi::SemanticName::Normal, gi::PixelFormat::R32G32B32F, 0u, 0u});
+  vertex_stream.add({3, gi::SemanticName::Tangent, gi::PixelFormat::R32G32B32F, 0u, 0u});
+  vertex_stream.add({4, gi::SemanticName::Color, gi::PixelFormat::R32G32B32F, 0u, 0u});
 }
 
 using namespace graphicsinterface;
@@ -71,6 +72,16 @@ StaticMeshResource &StaticMesh::get_render_resource() {
         offset = offset + vertex_byte_size;
       }
 
+      {
+        usize stride = sizeof(float) * 3;
+        usize vert_count = lod_item_info.vertex_count;
+        usize vertex_byte_size = vert_count * stride;
+        lod_resource.tangents = graphicsinterface::create_vertex_buffer(vert_count, stride, PixelFormat::R32G32B32F);
+        graphicsinterface::set_vertex_buffer_data(bulk_data.get_data() + offset, vertex_byte_size,
+                                                  lod_resource.tangents);
+        offset = offset + vertex_byte_size;
+      }
+
       if (lod_item_info.has_colors) {
         usize stride = sizeof(float) * 3;
         usize vert_count = lod_item_info.vertex_count;
@@ -80,11 +91,12 @@ StaticMeshResource &StaticMesh::get_render_resource() {
         offset = offset + vertex_byte_size;
       }
 
-      render_data->vertex_stream.attributes[0].buffer = lod_resource.positions.get();
-      render_data->vertex_stream.attributes[1].buffer = lod_resource.texcoords.get();
-      render_data->vertex_stream.attributes[2].buffer = lod_resource.normals.get();
-      render_data->vertex_stream.attributes[3].buffer = lod_resource.colors ? lod_resource.colors.get() : nullptr;
-
+      render_data->vertex_stream.add_buffer(lod_resource.positions.get());
+      render_data->vertex_stream.add_buffer(lod_resource.texcoords.get());
+      render_data->vertex_stream.add_buffer(lod_resource.normals.get());
+      render_data->vertex_stream.add_buffer(lod_resource.tangents.get());
+      if (lod_resource.colors)
+        render_data->vertex_stream.add_buffer(lod_resource.colors.get());
       render_data->lod_resources.push_back(lod_resource);
     }
     free();

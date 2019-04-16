@@ -5,10 +5,17 @@
 
 struct Guid {
   unsigned int a, b, c, d;
-  Guid() : a(0), b(0), c(0), d(0) {}
+  Guid()
+      : a(0)
+      , b(0)
+      , c(0)
+      , d(0) {
+  }
 
   static Guid make_new();
-  bool is_valid() const { return (a | b | c | d) != 0; }
+  bool is_valid() const {
+    return (a | b | c | d) != 0;
+  }
 
   const unsigned int &operator[](int index) const;
 
@@ -22,16 +29,20 @@ struct Guid {
 
   std::string to_string() const {
     char buff[128];
-    sprintf(buff, "%d-%d-%d-%d", a, b, c, d);
+    sprintf(buff, "%s-%s-%s-%s", std::to_string(a).c_str(), std::to_string(b).c_str(), std::to_string(c).c_str(),
+            std::to_string(d).c_str());
     return buff;
   }
 
   size_t get_hash() const;
-  friend Archive& operator<<(Archive& archive, Guid& guid);
+  friend Archive &operator<<(Archive &archive, Guid &guid);
 };
 
 namespace std {
-template <> struct hash<Guid> {
-  size_t operator()(const Guid &value) const { return value.get_hash(); }
+template <>
+struct hash<Guid> {
+  size_t operator()(const Guid &value) const {
+    return value.get_hash();
+  }
 };
 } // namespace std

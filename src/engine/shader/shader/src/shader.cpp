@@ -8,6 +8,7 @@
 #include <shader/cache.h>
 #include <utils/string.h>
 #include <config/config.h>
+#include <utils/path.h>
 
 namespace shader {
 using namespace cross;
@@ -32,11 +33,30 @@ const char *shader_stage_to_string(ShaderStage stage) {
   };
 }
 
+String get_shaders_root_dir() {
+  return utils::path::join(config::CONTENT_DIR, "shaders");
+}
+
+bool get_path_from_virtual_path(const String &virtual_path, String &out_path) {
+  if (utils::string::starts_with(virtual_path, "/Shaders/")) {
+    out_path = utils::path::join(get_shaders_root_dir(), utils::string::replace(virtual_path, "/Shaders/", ""));
+  } else {
+    //assert(false && "Invalid shader path");
+    out_path = virtual_path;
+    return false;
+  }
+  assert(utils::path::exists(out_path) && "path doesn't exist");
+  return true;
+}
+
 Shader &load(const String &filename, ShaderStage stage, const String &entry) {
   DEBUG_LOG(Rendering, Log, "Loading %s shader %s, entry: %s:", shader_stage_to_string(stage), filename.c_str(),
             entry.c_str());
 
-  AssetRef new_shader = asset::add(filename, shader_stage_to_string(stage));
+  String actual_path;
+  shader::get_path_from_virtual_path(filename, actual_path);
+
+  AssetRef new_shader = asset::add(actual_path, shader_stage_to_string(stage));
   assert(new_shader);
 
 #if ENGINE_SHADER_FORCE_RECOMPILE
@@ -51,20 +71,20 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
     DEBUG_LOG(Rendering, Log, "Running cross compilation.");
     Vector<compiler::Output> outputs;
 
-    Vector<compiler::Input> inputs = {{new_shader->source_filename, entry, (cross::Stage)stage, "", {}, false}};
+    Vector<compiler::Input> inputs = {{new_shader->source_filename, entry, (cross::Stage)stage, "", "", Guid(), {}, false}};
     Vector<String> out_sources;
     cross_compile(inputs, outputs, out_sources);
 
     compiler::Output &out = outputs[0];
 
     for (compiler::Error &err : out.errors) {
-      String error_string = err.shader_name +  ": " + err.shader_error;
+      String error_string = err.shader_name + ": " + err.shader_error;
       char s[512];
       sprintf(s, "%s", error_string.c_str());
       DEBUG_LOG(System, Error, "%s", s);
     }
 
-    String shader_code = config::SHADER_TARGET_LANGUAGE != String("hlsl") ? out_sources[0] : shader.description.source;
+    String shader_code = shader.description.source;
 
     for (compiler::ReflectionData::UniformBuffer &buffer_refl : out.reflection_data.uniform_buffers) {
       shader.uniform_buffers.resize(shader.uniform_buffers.size() + 1);
@@ -82,7 +102,7 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
 
   auto &uniform_buffer_map = app::get().get_shader_cache().uniform_buffer_map;
   for (auto &buf : shader.uniform_buffers) {
-    uniform_buffer_map[buf.name] = &buf;
+    uniform_buffer_map[utils::string::hash_code(buf.name)] = &buf;
   }
 
   shader.compiled = graphicsinterface::create_shader(shader.description);

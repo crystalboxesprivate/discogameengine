@@ -47,7 +47,7 @@ struct Time {
 };
 
 struct App {
-  void init(window::Window &window);
+  void init(window::Window *window);
   void update();
   component::ComponentRegistry &get_component_registry();
   shader::ShaderCache &get_shader_cache();

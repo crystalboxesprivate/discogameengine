@@ -4,6 +4,8 @@
 #include <utils/fs.h>
 #include <utils/string.h>
 
+#include <shader/shader.h>
+
 #include <utility>
 #include <fstream>
 #include <algorithm>
@@ -18,7 +20,11 @@ void memswap(void *ptr1, void *ptr2, size_t size) {
 bool load_shader_source(const char *virtual_path, String &contents, Vector<compiler::Error> *out_compiler_error) {
   String filename;
 
-  if (!utils::fs::load_file_to_string(virtual_path, contents)) {
+  if(! shader::get_path_from_virtual_path(virtual_path, filename) ) {
+    return false;
+  }
+
+  if (!utils::fs::load_file_to_string(filename, contents)) {
     if (out_compiler_error)
       out_compiler_error->push_back(
           {String("Error: Couldn't read file: ") + filename + " for virtual shader path " + virtual_path});
@@ -82,8 +88,9 @@ private:
       auto virtual_contents_it = self.shader_input.environemnt.virtual_path_to_contents.find(virtual_file_path);
       if (virtual_contents_it != self.shader_input.environemnt.virtual_path_to_contents.end()) {
         file_contents = virtual_contents_it->second;
+      } else {
+        helpers::load_shader_source(virtual_file_path.c_str(), file_contents, &self.shader_output.errors);
       }
-      helpers::load_shader_source(virtual_file_path.c_str(), file_contents, &self.shader_output.errors);
 
       if (file_contents.size() > 0) {
         file_contents =
@@ -104,6 +111,12 @@ private:
   compiler::Output &shader_output;
   Map<String, ShaderContents> cached_contents;
 };
+
+bool run(String &preprocessed_output, shader::compiler::Output &shader_output,
+         const shader::compiler::Input &shader_input) {
+  compiler::Definitions additional_defines;
+  return run(preprocessed_output, shader_output, shader_input, additional_defines);
+}
 
 bool run(String &preprocessed_output, compiler::Output &shader_output, const compiler::Input &shader_input,
          const compiler::Definitions &additional_defines) {

@@ -14,10 +14,17 @@
 #include <game/camera_component.h>
 #include <game/rigid_body_component.h>
 
+#include <renderer/rendercore.h>
+#include <shader/cache.h>
+
 void setup() {
   app::get().add_task(new task::TransformTask);
   app::get().add_behavior(new behavior::FirstPersonCamera);
   app::get().add_behavior(new behavior::PhysicsBehavior);
+
+  MaterialShader::add("/Shaders/Default.shader");
+  //MaterialShader::add("/Shaders/UserTest.shader");
+  app::get().get_shader_cache().compiler.compile();
 }
 
 void post_scene_setup() {
@@ -44,7 +51,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   main.set_cursor_mode(window::CursorMode::Disabled);
 
   app::App app;
-  app.init(main);
+  app.init(main_ptr);
   setup();
 
   auto scenes_folder = join(join(config::CONTENT_DIR, "scenes"), "physics.json");

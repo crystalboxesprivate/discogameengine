@@ -17,7 +17,7 @@
 
 namespace logging {
 namespace LogType {
-enum Type { System, Temp, Rendering, Physics, Assets, Game };
+enum Type { System, Temp, Rendering, Physics, Assets, Game, Shaders };
 }
 namespace VerbosityType {
 enum Type { Log, Warning, Error };
@@ -37,7 +37,7 @@ public:
   template <LogType::Type logging_type, VerbosityType::Type verbosity_type>
   static void log(const char *file, int line, const char *fmt, ...) {
     static const usize MAX_BUF_SIZE = 512;
-    char out_buf[MAX_BUF_SIZE];
+    // char out_buf[MAX_BUF_SIZE];
     {
       const char *verbosity = "";
       {
@@ -58,11 +58,11 @@ public:
 
       const char *logging_type_string = get_log_type_string(logging_type);
       // Write processed vargs into the buffer.
-      char formatted[MAX_BUF_SIZE];
+      // char formatted[MAX_BUF_SIZE];
       {
         va_list va;
         va_start(va, fmt);
-        vsprintf(formatted, fmt, va);
+        vsprintf(g_logger->formatted, fmt, va);
         va_end(va);
       }
       // Get nicely formatted time.
@@ -77,16 +77,16 @@ public:
         // For errors and warnings show line and the filename where the error did happen.
         // Get filename from __FILE_ is taken from here https://stackoverflow.com/a/8488201
         const char *source_filename = strrchr(file, '\\') ? strrchr(file, '\\') + 1 : file;
-        sprintf(out_buf, "[%s] [%s] %s (%s:%d): %s\n", time_buf, verbosity, logging_type_string,
-                source_filename, line, formatted);
+        sprintf(g_logger->out_buf, "[%s] [%s] %s (%s:%d): %s\n", time_buf, verbosity, logging_type_string,
+                source_filename, line, g_logger->formatted);
       } else
-        sprintf(out_buf, "[%s] %s: %s\n", time_buf, logging_type_string, formatted);
+        sprintf(g_logger->out_buf, "[%s] %s: %s\n", time_buf, logging_type_string, g_logger->formatted);
     }
     // Console output.
-    printf(out_buf);
+    printf(g_logger->out_buf);
 
     if (g_logger)
-      g_logger->write_to_file(out_buf);
+      g_logger->write_to_file(g_logger->out_buf);
   }
 
   void write_to_file(const char *out_buf) {
@@ -115,6 +115,9 @@ public:
 private:
   // Constructor
   void init();
+
+  char out_buf[4096];
+  char formatted[4096];
 
   String filename = nullptr;
   bool is_valid = false;

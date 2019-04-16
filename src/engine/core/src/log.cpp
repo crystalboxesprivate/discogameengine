@@ -48,6 +48,8 @@ const char *logging::get_log_type_string(LogType::Type log_type) {
   switch (log_type) {
   case LogType::System:
     return "System";
+  case LogType::Shaders:
+    return "Shaders";
   case LogType::Temp:
     return "Temp";
   case LogType::Rendering:

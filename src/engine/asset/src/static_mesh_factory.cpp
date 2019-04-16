@@ -20,6 +20,7 @@ void StaticMeshFactory::load_asset_data(asset::Asset &asset) {
   assert(ai_mesh.HasFaces());
   assert(ai_mesh.HasNormals());
   assert(ai_mesh.HasPositions());
+  // assert(ai_mesh.HasTangentsAndBitangents());
 
   if (!ai_mesh.HasTextureCoords(0))
     DEBUG_LOG(Assets, Error, "Mesh %s doesn't contain texture coordinates", mesh.source_filename.c_str());
@@ -35,9 +36,10 @@ void StaticMeshFactory::load_asset_data(asset::Asset &asset) {
     usize positions_byte_count = lod.vertex_count * sizeof(float) * 3;
     usize texcoords_byte_count = lod.vertex_count * sizeof(float) * 2;
     usize normals_byte_count = lod.vertex_count * sizeof(float) * 3;
+    usize tangents_byte_count = normals_byte_count;
     usize colors_byte_count = lod.has_colors ? lod.vertex_count * sizeof(float) * 3 : 0;
-    buffer_size =
-        index_byte_count + positions_byte_count + texcoords_byte_count + normals_byte_count + colors_byte_count;
+    buffer_size = index_byte_count + positions_byte_count + texcoords_byte_count + normals_byte_count +
+                  tangents_byte_count + colors_byte_count;
   }
 
   mesh.bulk_data.allocate(buffer_size);
@@ -102,6 +104,15 @@ void StaticMeshFactory::load_asset_data(asset::Asset &asset) {
     auto v = ai_mesh.mNormals[x];
     stride = 4 * 3;
     memcpy(mesh.bulk_data.get_data() + offset, &v.x, stride);
+    offset += stride;
+  }
+
+  for (u32 x = 0; x < ai_mesh.mNumVertices; x++) {
+    stride = 4 * 3;
+    if (ai_mesh.HasTangentsAndBitangents()) {
+      auto v = ai_mesh.mTangents[x];
+      memcpy(mesh.bulk_data.get_data() + offset, &v.x, stride);
+    }
     offset += stride;
   }
 

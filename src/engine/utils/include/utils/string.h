@@ -1,6 +1,7 @@
 #pragma once
 
 #include <engine>
+#include <sstream>
 
 namespace utils {
 namespace string {
@@ -31,7 +32,7 @@ static Vector<char> to_array(String &in_string) {
 }
 
 // https://stackoverflow.com/a/3418285
-static void replace_in_place(String in_string, const String &from, const String &to) {
+static void replace_in_place(String &in_string, const String &from, const String &to) {
   if (from.empty())
     return;
   size_t start_pos = 0;
@@ -84,6 +85,17 @@ constexpr usize hash_code(const char *s) {
 
 inline usize hash_code(const String &in_string) {
   return hash_code(in_string.c_str(), in_string.size());
+}
+
+static void parse_into_lines(const String &input, Vector<String> &out_arr) {
+  std::stringstream ss(input);
+  std::string to;
+
+  if (input.size()) {
+    while (std::getline(ss, to, '\n')) {
+      out_arr.push_back(to);
+    }
+  }
 }
 } // namespace string
 } // namespace utils

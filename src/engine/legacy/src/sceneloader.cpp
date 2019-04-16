@@ -16,7 +16,7 @@
 #include <runtime/texture2d.h>
 #include <runtime/static_mesh.h>
 
-#include <config/filesystem.h>
+#include <config/config.h>
 
 #include <utils/string.h>
 

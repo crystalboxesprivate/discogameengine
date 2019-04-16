@@ -3,11 +3,14 @@ add_executable(
   WinMain.cpp
 )
 
+add_executable(compiler_test main.cpp)
+
 # set(ENGINE_GRAPHICS_INTERFACE opengli)
-# set(ENGINE_SHADER_TARGET_LANG glsl)
+# set(ENGINE_SHADER_TARGET_LANG Glsl)
 
 set(ENGINE_GRAPHICS_INTERFACE d3d11i)
-set(ENGINE_SHADER_TARGET_LANG hlsl)
+set(ENGINE_SHADER_TARGET_LANG Hlsl)
+
 
 set(ENGINE_CACHE_ENABLED 0)
 set(ENGINE_DEBUG_GRAPHICS 1)
@@ -32,10 +35,16 @@ add_subdirectory(shader)
 add_subdirectory(behavior)
 
 target_link_libraries(engine PUBLIC config core app legacy utils)
-target_link_libraries(engine PRIVATE task behavior ntwindow component game)
+target_link_libraries(engine PRIVATE task behavior ntwindow component game renderer shader)
 
 set_target_properties(engine PROPERTIES OUTPUT_NAME disco-engine
-	RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARY_DIR})
+  RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARY_DIR})
+  
+target_link_libraries(compiler_test PUBLIC config core app legacy utils shader asset)
+set_target_properties(compiler_test PROPERTIES OUTPUT_NAME compiler_test
+  RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARY_DIR})
+target_link_libraries(compiler_test PRIVATE task behavior ntwindow component game preprocessor)
+
 
 add_custom_command(
   TARGET engine

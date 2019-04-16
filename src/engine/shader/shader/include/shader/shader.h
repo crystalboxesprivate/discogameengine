@@ -16,11 +16,14 @@ struct Shader : public Asset {
   declare_asset_type(Shader);
   ShaderDescription description;
 
+  Guid compile_id;
+
   Vector<UniformBufferDescription> uniform_buffers;
   ShaderRef compiled;
 
   virtual void serialize(Archive &archive) override {
     Asset::serialize(archive);
+    archive << compile_id;
     archive << description;
     archive << uniform_buffers;
   }
@@ -31,6 +34,7 @@ struct Shader : public Asset {
   }
 };
 
+bool get_path_from_virtual_path(const String &virtual_path, String &out_path);
 Shader &load(const String &filename, ShaderStage stage, const String &entry);
 
 } // namespace shader

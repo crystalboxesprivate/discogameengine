@@ -10,6 +10,7 @@ struct StaticMeshRenderData {
   SharedPtr<graphicsinterface::VertexBuffer> positions;
   SharedPtr<graphicsinterface::VertexBuffer> texcoords;
   SharedPtr<graphicsinterface::VertexBuffer> normals;
+  SharedPtr<graphicsinterface::VertexBuffer> tangents;
   SharedPtr<graphicsinterface::VertexBuffer> colors;
 
   void init_resource(StaticMesh &static_mesh);

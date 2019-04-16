@@ -53,8 +53,8 @@ void App::add_behavior(behavior::Behavior *new_behavior) {
   behaviors.push_back(SharedPtr<behavior::Behavior>(new_behavior));
 }
 
-void App::init(window::Window &window) {
-  window_ptr = &window;
+void App::init(window::Window *window) {
+  window_ptr = window;
   assert(!ptr);
   ptr = this;
   assert(!ptr->component_registry);
@@ -63,8 +63,11 @@ void App::init(window::Window &window) {
   ptr->component_registry = SharedPtr<ComponentRegistry>(new ComponentRegistry());
   ptr->asset_registry = SharedPtr<asset::Registry>(new asset::Registry());
   ptr->shader_cache = SharedPtr<shader::ShaderCache>(new shader::ShaderCache());
-  ptr->renderer = SharedPtr<renderer::Renderer>(new renderer::Renderer());
-  renderer->initialize();
+  // Do not create a render instance if the window wasn't initialized.
+  if (window_ptr) {
+    ptr->renderer = SharedPtr<renderer::Renderer>(new renderer::Renderer());
+    renderer->initialize();
+  }
 }
 
 void App::game_state_init() {
@@ -100,7 +103,6 @@ void App::update() {
 
   time.update(window.get_time());
   game_state_update();
-
   renderer->draw_image();
 
   window.set_window_title(string::sprintf("Game FPS: %d, delta time: %f", time.frames_per_second, time.delta_seconds));

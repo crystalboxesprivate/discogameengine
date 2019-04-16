@@ -3,9 +3,11 @@
 #include <cross/cross.h>
 #include <preprocessor/preprocessor.h>
 
+#include <config/shader_target.h>
+
 namespace cross {
 extern String g_root_dir;
-typedef char* Str;
+typedef char *Str;
 
 namespace helpers {
 bool starts_with(const String &with_string, const String &in_string) {
@@ -219,8 +221,8 @@ void set_shader_root_dir(const String &in_root_dir) {
   g_root_dir = in_root_dir;
 }
 
-void run_shader_conductor(const String &pre_processed_source, compiler::Input &input, compiler::Output &output,
-                          String &out_source) {
+void run_shader_conductor(compiler::Input &input, compiler::Output &output, String &out_data) {
+  const String &pre_processed_source = input.source;
   ShaderConductor::Compiler::SourceDesc source_description;
   ShaderConductor::Compiler::TargetDesc target_description;
 
@@ -246,22 +248,48 @@ void run_shader_conductor(const String &pre_processed_source, compiler::Input &i
         spirv_cross_helpers::get_execution_model_from_shader_stage((Stage)source_description.stage);
     compiler.set_entry_point(source_description.entryPoint, model);
     spirv_cross_helpers::configure_glsl_compiler(compiler, target_description);
-    out_source = compiler.compile();
+#if 0
+    String compiled = compiler.compile();
+
+    out_data.resize(compiled.size());
+    memcpy(out_data.data(), compiled.data(), compiled.size());
+#else
+    out_data = compiler.compile();
+#endif
 
     compiler::ReflectionData reflection_data;
     spirv_cross_helpers::load_reflection_data(output.reflection_data, compiler);
+
+    if (config::shader_language == shader::ShadingLanguage::Hlsl) {
+      // generate the hlsl code
+#if 0
+      target_description = {ShaderConductor::ShadingLanguage::Dxil, ""};
+
+      ShaderConductor::Compiler::ResultDesc hlsl_res =
+          ShaderConductor::Compiler::Compile(source_description, compiler_options, target_description);
+      out_data.resize(hlsl_res.target->Size());
+      memcpy(out_data.data(), hlsl_res.target->Data(), hlsl_res.target->Size());
+
+#else
+      out_data = pre_processed_source;
+      // out_data.resize(pre_processed_source.size());
+      // memcpy(out_data.data(), pre_processed_source.data(), pre_processed_source.size());
+#endif
+    }
   }
 }
 
 void cross_compile(Vector<compiler::Input> &inputs, Vector<compiler::Output> &compiler_outputs,
                    Vector<String> &out_sources) {
   for (compiler::Input &input : inputs) {
-    String pre_processed_result, cross_compiled_result;
+    String cross_compiled_result;
     compiler::Output compiler_output;
+    if (input.source.size() == 0) {
+      assert(input.virtual_source_path.size());
+      preprocessor::run(input.source, compiler_output, input, {});
+    }
 
-    preprocessor::run(pre_processed_result, compiler_output, input, {});
-    run_shader_conductor(pre_processed_result, input, compiler_output, cross_compiled_result);
-
+    run_shader_conductor(input, compiler_output, cross_compiled_result);
     out_sources.push_back(cross_compiled_result);
     compiler_outputs.push_back(compiler_output);
   }
