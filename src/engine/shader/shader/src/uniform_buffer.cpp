@@ -3,10 +3,10 @@
 namespace shader {
 void UniformBufferDescription::update_resource() {
   if (!resource) {
-    assert(storage_ptr);
-    resource = graphicsinterface::create_uniform_buffer(size, storage_ptr);
+    assert(storage_ptr.get_data());
+    resource = graphicsinterface::create_uniform_buffer(size, storage_ptr.get_data());
   }
-  graphicsinterface::set_uniform_buffer_data(storage_ptr, size, resource);
+  graphicsinterface::set_uniform_buffer_data(storage_ptr.get_data(), size, resource);
 }
 
 bool initialize_uniform_buffer_members(UniformBufferDescription &buffer,
@@ -15,7 +15,7 @@ bool initialize_uniform_buffer_members(UniformBufferDescription &buffer,
     return false;
 
   buffer.name = reflection_data.name;
-  buffer.storage_ptr = (u8 *)malloc(buffer.size);
+  buffer.storage_ptr.allocate(buffer.size);
 
   typedef compiler::ReflectionData::UniformBuffer::Member Member;
   typedef std::pair<const String, Member> Pair;
@@ -26,7 +26,7 @@ bool initialize_uniform_buffer_members(UniformBufferDescription &buffer,
     assert(member.offset < buffer.size);
 
     buffer.name_to_parameter_id[member.name] = (i32)buffer.members.size();
-    buffer.members.push_back({member.size, member.stride, member.offset, buffer.storage_ptr + member.offset});
+    buffer.members.push_back({member.size, member.stride, member.offset});
   }
   return true;
 }

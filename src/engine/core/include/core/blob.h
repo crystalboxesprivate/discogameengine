@@ -9,22 +9,30 @@ struct Blob {
       , size(0) {
   }
 
-  ~Blob() {
-    free();
+  Blob(const Blob &blob) {
+    if (blob.data) {
+      allocate(blob.get_size(), blob.get_data());
+    }
+  }
+  Blob &operator=(const Blob &blob) {
+    if (blob.data) {
+      allocate(blob.get_size(), blob.get_data());
+    }
+    return *this;
   }
 
-  inline u8 *get_data() {
+  inline u8 *get_data() const {
     return data.get();
   }
 
-  inline usize get_size() {
+  inline usize get_size() const {
     return size;
   }
 
   void allocate(usize in_size, void *init_data = nullptr) {
     assert(!data);
     assert(in_size);
-    data = std::make_unique<u8[]>(in_size);//(u8*) malloc(in_size);
+    data = std::make_unique<u8[]>(in_size);
     size = in_size;
 
     if (init_data)
@@ -32,16 +40,9 @@ struct Blob {
   }
 
   void free() {
+    data = nullptr;
     size = 0;
   }
-
-  //void move(Blob &to_blob) {
-  //  to_blob.data = data;
-  //  to_blob.size = size;
-  //  data = nullptr;
-  //  size = 0;
-  //}
-
   inline friend Archive &operator<<(Archive &archive, Blob &blob) {
     archive << blob.size;
     if (archive.is_loading()) {
@@ -54,7 +55,7 @@ struct Blob {
   }
 
 private:
-  //u8 *data;
+  // u8 *data;
   UniquePtr<u8[]> data;
   usize size;
 };

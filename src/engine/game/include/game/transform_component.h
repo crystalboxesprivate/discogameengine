@@ -10,6 +10,7 @@ struct TransformComponent {
   glm::vec3 scale3d = glm::vec3(1.f);
   glm::quat orient = glm::vec3(0, 0, 0);
   // This value is automatically recalculated each frame.
+  glm::mat4 transform_matrix_previous = glm::mat4(1.f);
   glm::mat4 transform_matrix = glm::mat4(1.f);
 };
 } // namespace game

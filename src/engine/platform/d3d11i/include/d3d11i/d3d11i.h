@@ -7,8 +7,8 @@
 using Microsoft::WRL::ComPtr;
 
 namespace graphicsinterface {
-ID3D11Device *get_device();
-ID3D11DeviceContext *get_context();
+// ID3D11Device *get_device();
+// ID3D11DeviceContext *get_context();
 
 static DXGI_FORMAT d3d_pixel_formats[] = {
     DXGI_FORMAT_R8G8B8A8_UNORM,     // R8G8B8A8F,

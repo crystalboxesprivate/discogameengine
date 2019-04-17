@@ -20,6 +20,7 @@ void TransformTask::update() {
     model_matrix = model_matrix * rotation_matrix;
     mat4 scale_matrix = scale(mat4(1.0f), transform.scale3d);
     model_matrix = model_matrix * scale_matrix;
+    transform.transform_matrix_previous = transform.transform_matrix;
     transform.transform_matrix = model_matrix;
   }
 }

@@ -16,7 +16,7 @@ struct StaticMesh : public asset::Asset {
 
   Blob bulk_data;
   virtual void free() override {
-    bulk_data.free();
+    bulk_data = Blob();
   }
 
   StaticMeshResource &get_render_resource();

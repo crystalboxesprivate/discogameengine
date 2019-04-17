@@ -41,7 +41,7 @@ bool get_path_from_virtual_path(const String &virtual_path, String &out_path) {
   if (utils::string::starts_with(virtual_path, "/Shaders/")) {
     out_path = utils::path::join(get_shaders_root_dir(), utils::string::replace(virtual_path, "/Shaders/", ""));
   } else {
-    //assert(false && "Invalid shader path");
+    // assert(false && "Invalid shader path");
     out_path = virtual_path;
     return false;
   }
@@ -71,7 +71,8 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
     DEBUG_LOG(Rendering, Log, "Running cross compilation.");
     Vector<compiler::Output> outputs;
 
-    Vector<compiler::Input> inputs = {{new_shader->source_filename, entry, (cross::Stage)stage, "", "", Guid(), {}, false}};
+    Vector<compiler::Input> inputs = {
+        {new_shader->source_filename, entry, (cross::Stage)stage, "", "", Guid(), {}, false}};
     Vector<String> out_sources;
     cross_compile(inputs, outputs, out_sources);
 
@@ -83,8 +84,11 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
       sprintf(s, "%s", error_string.c_str());
       DEBUG_LOG(System, Error, "%s", s);
     }
+    if (out.errors.size()) {
+      assert(false);
+    }
 
-    String shader_code = shader.description.source;
+    String shader_code = out_sources[0];
 
     for (compiler::ReflectionData::UniformBuffer &buffer_refl : out.reflection_data.uniform_buffers) {
       shader.uniform_buffers.resize(shader.uniform_buffers.size() + 1);

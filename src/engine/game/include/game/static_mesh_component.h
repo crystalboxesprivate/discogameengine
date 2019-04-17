@@ -6,13 +6,9 @@
 
 namespace game {
 struct TransformComponent;
-struct StaticMeshComponent /*: public PrimitiveComponent*/ {
-  //declare_component(StaticMeshComponent);
-  StaticMeshComponent()
-     /* : PrimitiveComponent() */{
-  }
-  asset::AssetHandle<runtime::StaticMesh> static_mesh;
+struct StaticMeshComponent {
   component::ComponentHandle2<TransformComponent> cached_transform_component;
+  asset::AssetHandle<runtime::StaticMesh> static_mesh;
 };
 } // namespace game
 declare_component(game::StaticMeshComponent)

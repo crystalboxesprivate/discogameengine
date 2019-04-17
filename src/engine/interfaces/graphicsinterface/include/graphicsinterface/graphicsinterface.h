@@ -47,7 +47,7 @@ struct VertexStream {
     buffers[buffer_count++] = buffer;
   }
   VertexAttribute attributes[VERTEX_ATTRIBUTE_COUNT_MAX];
-  VertexBuffer * buffers[VERTEX_ATTRIBUTE_COUNT_MAX];
+  VertexBuffer *buffers[VERTEX_ATTRIBUTE_COUNT_MAX];
   usize count = 0;
   usize buffer_count = 0;
 };
@@ -58,8 +58,7 @@ void bind_uniform_buffer(u32 slot, ShaderStage stage, UniformBufferRef uniform_b
 void set_vertex_stream(VertexStream &stream, ShaderRef VertexShader);
 void draw_indexed(IndexBufferRef index_buffer, PrimitiveTopology primitive_type, u32 index_count, u32 start_index,
                   u32 vertex_start_index);
-
-
+void draw(u32 vertex_count, u32 vertex_start_location);
 
 struct Texture2D {
   virtual void *get_native_ptr() = 0;
@@ -79,26 +78,43 @@ struct DepthStencilView {
   virtual void *get_native_ptr() = 0;
 };
 
+struct SamplerState {
+  virtual void *get_native_ptr() = 0;
+};
+
 typedef SharedPtr<RenderTargetView> RenderTargetViewRef;
 typedef SharedPtr<DepthStencilView> DepthStencilViewRef;
 typedef SharedPtr<ShaderResourceView> ShaderResourceViewRef;
 typedef SharedPtr<Texture2D> Texture2DRef;
+typedef SharedPtr<SamplerState> SamplerStateRef;
 
-RenderTargetView &get_main_render_target_view();
-DepthStencilView &get_main_depth_stencil_view();
+RenderTargetViewRef get_main_render_target_view();
+DepthStencilViewRef get_main_depth_stencil_view();
 
+SamplerStateRef create_sampler_state();
 Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat);
 ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d);
 RenderTargetViewRef create_render_target_view(Texture2DRef texture2d);
 
-// Todo change / fix this 
+void set_render_targets(i32 num_render_targets, RenderTargetViewRef *render_targets,
+                        DepthStencilViewRef depth_stencil_view);
+
+// Todo change / fix this
 DepthStencilViewRef create_depth_stencil_view(usize width, usize height, PixelFormat pixelformat);
 
 bool delete_context();
 bool create_context(void *window_ptr, void *data);
 
-void clear_render_target_view(RenderTargetView &view, const glm::vec4 &clear_color);
-void clear_depth_stencil_view(DepthStencilView &view, u32 clear_flags, float depth = 1.f, float stencil = 0.f);
+struct ShaderParameter {
+  i32 base_index = 0;
+};
+
+void set_shader_resource_view(const ShaderParameter& shader_parameter, ShaderResourceViewRef srv, ShaderRef shader);
+void set_sampler_state(const ShaderParameter& shader_parameter, SamplerStateRef sampler_state, ShaderRef shader);
+
+
+void clear_render_target_view(RenderTargetViewRef view, const glm::vec4 &clear_color);
+void clear_depth_stencil_view(DepthStencilViewRef view, u32 clear_flags, float depth = 1.f, float stencil = 0.f);
 void set_viewport(u32 x, u32 y, usize width, usize height);
 
 IndexBufferRef create_index_buffer(usize count, void *initial_data = nullptr);

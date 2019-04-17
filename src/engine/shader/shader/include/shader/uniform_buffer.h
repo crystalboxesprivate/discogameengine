@@ -11,14 +11,17 @@ struct UniformBufferDescription {
   graphicsinterface::UniformBufferRef resource;
   void update_resource();
   graphicsinterface::UniformBufferRef get_resource() {
-    assert(resource);
+    if (!resource) {
+      assert(storage_ptr.get_data());
+      resource = graphicsinterface::create_uniform_buffer(size, storage_ptr.get_data());
+    }
     return resource;
   }
   struct MemberData {
     usize size;
     usize element_stride;
     usize offset;
-    u8 *data_ptr;
+
     // for arrays and matrices
     bool containts_children() {
       return size != element_stride;
@@ -46,24 +49,15 @@ struct UniformBufferDescription {
   }
 
   void allocate_storage() {
-    assert(!storage_ptr);
-    storage_ptr = (u8 *)malloc(size);
-    for (auto &member : members) {
-      member.data_ptr = storage_ptr + member.offset;
-    }
+    storage_ptr.allocate(size);
   }
 
   UniformBufferDescription()
-      : storage_ptr(0)
-      , size(0)
+      : size(0)
       , resource(nullptr) {
   }
 
   ~UniformBufferDescription() {
-    if (storage_ptr) {
-      free(storage_ptr);
-      storage_ptr = nullptr;
-    }
   }
 
   const String get_uniform_name() {
@@ -81,12 +75,12 @@ struct UniformBufferDescription {
       size = size == 0 ? member_data.size : size;
       size = size > member_data.size ? member_data.size : size;
     }
-    memcpy(member_data.data_ptr, data, size);
+    memcpy(storage_ptr.get_data() + member_data.offset, data, size);
   }
 
   usize size;
   String name;
-  u8 *storage_ptr;
+  Blob storage_ptr;
 
   HashMap<String, i32> name_to_parameter_id;
   Vector<MemberData> members;
@@ -100,7 +94,6 @@ struct UniformBufferDescription {
     return &members[res];
   }
 };
-typedef UniquePtr<UniformBufferDescription> UniformBufferDescPtr;
 bool initialize_uniform_buffer_members(UniformBufferDescription &buffer,
                                        compiler::ReflectionData::UniformBuffer &reflection_data);
 } // namespace shader

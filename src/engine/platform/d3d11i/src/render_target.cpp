@@ -1,6 +1,8 @@
 #include <d3d11i/d3d11i.h>
 
 namespace graphicsinterface {
+extern ID3D11Device *device;
+extern ID3D11DeviceContext *device_context;
 
 Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat) {
   auto tex = new D3D11Texture2D;
@@ -25,7 +27,7 @@ Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat
   texture_desc.CPUAccessFlags = 0;
   texture_desc.MiscFlags = 0;
 
-  result = get_device()->CreateTexture2D(&texture_desc, NULL, &tex->view);
+  result = device->CreateTexture2D(&texture_desc, NULL, &tex->view);
 
   if (FAILED(result)) {
     assert(false);
@@ -47,14 +49,39 @@ ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d) {
   shaderResourceViewDesc.Texture2D.MipLevels = 1;
 
   // Create the shader resource view.
-  result = get_device()->CreateShaderResourceView(tex->view.Get(), &shaderResourceViewDesc, &srv->view);
+  result = device->CreateShaderResourceView(tex->view.Get(), &shaderResourceViewDesc, &srv->view);
   if (FAILED(result)) {
     assert(false);
-  return nullptr;
-
+    return nullptr;
   }
 
   return ShaderResourceViewRef(srv);
+}
+
+void set_shader_resource_view(const ShaderParameter &shader_parameter, ShaderResourceViewRef srv, ShaderRef shader) {
+  ID3D11ShaderResourceView *srvs[1];
+
+  auto stage = shader->description.stage;
+  if (stage == ShaderStage::Pixel) {
+    auto ptr = (ID3D11PixelShader *)shader->get_native_ptr();
+    srvs[0] = (ID3D11ShaderResourceView *)srv->get_native_ptr();
+    device_context->PSSetShaderResources(shader_parameter.base_index, 1, srvs);
+    return;
+  }
+  assert(false && "Unsupported shader stage.");
+}
+
+void set_sampler_state(const ShaderParameter &shader_parameter, SamplerStateRef sampler_state, ShaderRef shader) {
+  ID3D11SamplerState *samplers[1];
+
+  auto stage = shader->description.stage;
+  if (stage == ShaderStage::Pixel) {
+    auto ptr = (ID3D11PixelShader *)shader->get_native_ptr();
+    samplers[0] = (ID3D11SamplerState *)sampler_state->get_native_ptr();
+    device_context->PSSetSamplers(shader_parameter.base_index, 1, samplers);
+    return;
+  }
+  assert(false && "Unsupported shader stage.");
 }
 
 RenderTargetViewRef create_render_target_view(Texture2DRef texture2d) {
@@ -69,7 +96,7 @@ RenderTargetViewRef create_render_target_view(Texture2DRef texture2d) {
   desc.Texture2D.MipSlice = 0;
 
   // Create the render target view.
-  result = get_device()->CreateRenderTargetView(tex->view.Get(), &desc, &rtv->view);
+  result = device->CreateRenderTargetView(tex->view.Get(), &desc, &rtv->view);
   if (FAILED(result)) {
     assert(false);
     return nullptr;
@@ -82,13 +109,13 @@ DepthStencilViewRef create_depth_stencil_view(usize width, usize height, PixelFo
   return nullptr;
 }
 
-void clear_render_target_view(RenderTargetView &in_view, const glm::vec4 &clear_color) {
-  ID3D11RenderTargetView *view = reinterpret_cast<ID3D11RenderTargetView *>(in_view.get_native_ptr());
+void clear_render_target_view(RenderTargetViewRef in_view, const glm::vec4 &clear_color) {
+  ID3D11RenderTargetView *view = reinterpret_cast<ID3D11RenderTargetView *>(in_view->get_native_ptr());
 
-  get_context()->ClearRenderTargetView(view, (float *)&clear_color[0]);
+  device_context->ClearRenderTargetView(view, (float *)&clear_color[0]);
 }
-void clear_depth_stencil_view(DepthStencilView &in_view, u32 clear_flags, float depth, float stencil) {
-  ID3D11DepthStencilView *view = reinterpret_cast<ID3D11DepthStencilView *>(in_view.get_native_ptr());
-  get_context()->ClearDepthStencilView(view, clear_flags, depth, (u8)stencil);
+void clear_depth_stencil_view(DepthStencilViewRef in_view, u32 clear_flags, float depth, float stencil) {
+  ID3D11DepthStencilView *view = reinterpret_cast<ID3D11DepthStencilView *>(in_view->get_native_ptr());
+  device_context->ClearDepthStencilView(view, clear_flags, depth, (u8)stencil);
 }
 } // namespace graphicsinterface

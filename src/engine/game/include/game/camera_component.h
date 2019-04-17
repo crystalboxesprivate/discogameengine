@@ -5,7 +5,6 @@
 namespace game {
 using namespace component;
 struct CameraComponent /*: public Component*/ {
-  //declare_component(CameraComponent);
   CameraComponent()
       : speed(100.f) {
   }

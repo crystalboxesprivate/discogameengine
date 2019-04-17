@@ -11,8 +11,10 @@ ID3D11Device *device = nullptr;
 ID3D11DeviceContext *device_context = nullptr;
 IDXGISwapChain *swap_chain = nullptr;
 
-D3D11RenderTargetView render_target_view;
-D3D11DepthStencilView depth_stencil_view;
+D3D11RenderTargetView *render_target_view;
+D3D11DepthStencilView *depth_stencil_view;
+RenderTargetViewRef render_target_view_ref;
+DepthStencilViewRef depth_stencil_view_ref;
 
 ID3D11Texture2D *depth_stencil_buffer = nullptr;
 
@@ -28,12 +30,12 @@ ID3D11DeviceContext *get_context() {
   return device_context;
 }
 
-RenderTargetView &get_main_render_target_view() {
-  return render_target_view;
+RenderTargetViewRef get_main_render_target_view() {
+  return render_target_view_ref;
 }
 
-DepthStencilView &get_main_depth_stencil_view() {
-  return depth_stencil_view;
+DepthStencilViewRef get_main_depth_stencil_view() {
+  return depth_stencil_view_ref;
 }
 
 void *get_native_device() {
@@ -47,10 +49,14 @@ void create_rtv(i32 width, i32 height) {
   ID3D11Texture2D *BackBuffer;
   swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void **)&BackBuffer);
 
-  HRESULT hr = device->CreateRenderTargetView(BackBuffer, NULL, &render_target_view.view);
+  render_target_view = new D3D11RenderTargetView;
+
+  HRESULT hr = device->CreateRenderTargetView(BackBuffer, NULL, &render_target_view->view);
   if (FAILED(hr))
     assert(false);
   BackBuffer->Release();
+
+  render_target_view_ref = RenderTargetViewRef(render_target_view);
 }
 
 void create_dsv(i32 width, i32 height) {
@@ -66,9 +72,12 @@ void create_dsv(i32 width, i32 height) {
   DepthStencilDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
   DepthStencilDesc.CPUAccessFlags = 0;
   DepthStencilDesc.MiscFlags = 0;
+  depth_stencil_view = new D3D11DepthStencilView;
 
   device->CreateTexture2D(&DepthStencilDesc, NULL, &depth_stencil_buffer);
-  device->CreateDepthStencilView(depth_stencil_buffer, NULL, &depth_stencil_view.view);
+  device->CreateDepthStencilView(depth_stencil_buffer, NULL, &depth_stencil_view->view);
+
+  depth_stencil_view_ref = DepthStencilViewRef(depth_stencil_view);
 }
 
 void init_viewport(i32 width, i32 height) {
@@ -125,8 +134,8 @@ bool create_context(void *window_ptr, void *data) {
   create_dsv(width, height);
 
   ID3D11RenderTargetView *views[1];
-  views[0] = render_target_view.view.Get();
-  device_context->OMSetRenderTargets(1, views, depth_stencil_view.view.Get());
+  views[0] = render_target_view->view.Get();
+  device_context->OMSetRenderTargets(1, views, depth_stencil_view->view.Get());
   init_viewport(width, height);
   // setWireFrameState();
   return true;

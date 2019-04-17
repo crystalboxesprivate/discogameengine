@@ -2,7 +2,8 @@
 
 namespace graphicsinterface {
 HRESULT Result;
-
+extern ID3D11Device *device;
+extern ID3D11DeviceContext *device_context;
 // TODO merge buffer creation code
 
 UniformBufferRef create_uniform_buffer(usize size, void *initial_data) {
@@ -16,7 +17,7 @@ UniformBufferRef create_uniform_buffer(usize size, void *initial_data) {
   desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
   desc.CPUAccessFlags = 0;
   desc.MiscFlags = 0;
-  Result = get_device()->CreateBuffer(&desc, nullptr, &buffer.buffer);
+  Result = device->CreateBuffer(&desc, nullptr, &buffer.buffer);
 
   if (FAILED(Result))
     assert(false && "Buffer creation failed");
@@ -33,7 +34,7 @@ IndexBufferRef create_index_buffer(usize count, void *initial_data) {
   desc.ByteWidth = (u32)buffer->get_num_bytes();
   desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
   desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-  Result = get_device()->CreateBuffer(&desc, (const D3D11_SUBRESOURCE_DATA *)initial_data, &buffer->buffer);
+  Result = device->CreateBuffer(&desc, (const D3D11_SUBRESOURCE_DATA *)initial_data, &buffer->buffer);
 
   if (FAILED(Result))
     assert(false && "Buffer creation failed");
@@ -53,7 +54,7 @@ VertexBufferRef create_vertex_buffer(usize count, usize element_size, PixelForma
   desc.ByteWidth = (u32)buffer.get_num_bytes();
   desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
   desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-  Result = get_device()->CreateBuffer(&desc, (const D3D11_SUBRESOURCE_DATA *)initial_data, &buffer.buffer);
+  Result = device->CreateBuffer(&desc, (const D3D11_SUBRESOURCE_DATA *)initial_data, &buffer.buffer);
 
   if (FAILED(Result))
     assert(false && "Buffer creation failed");
@@ -63,14 +64,14 @@ VertexBufferRef create_vertex_buffer(usize count, usize element_size, PixelForma
 
 void set_buffer_data(ID3D11Resource *resource, void *data, usize byte_count) {
   D3D11_MAPPED_SUBRESOURCE mapped_subresource;
-  get_context()->Map(resource, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_subresource);
+  device_context->Map(resource, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_subresource);
   memcpy(mapped_subresource.pData, data, byte_count);
-  get_context()->Unmap(resource, 0);
+  device_context->Unmap(resource, 0);
 }
 
 void set_uniform_buffer_data(void *data, usize byte_count, UniformBufferRef buffer) {
   auto &uniform_buffer = *(D3DUniformBuffer *)buffer.get();
-  get_context()->UpdateSubresource(uniform_buffer.buffer.Get(), 0, nullptr, data, 0, 0);
+  device_context->UpdateSubresource(uniform_buffer.buffer.Get(), 0, nullptr, data, 0, 0);
 }
 
 void set_index_buffer_data(void *data, usize byte_count, IndexBufferRef buffer) {

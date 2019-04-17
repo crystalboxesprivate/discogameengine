@@ -3,6 +3,8 @@
 #include <config/config.h>
 
 namespace graphicsinterface {
+extern ID3D11Device *device;
+extern ID3D11DeviceContext *device_context;
 #ifdef ENGINE_DEBUG_GRAPHICS
 Vector<ComPtr<ID3DUserDefinedAnnotation>> annotations;
 #endif
@@ -10,7 +12,7 @@ Vector<ComPtr<ID3DUserDefinedAnnotation>> annotations;
 DebugState::DebugState(const char *title) {
 #ifdef ENGINE_DEBUG_GRAPHICS
   ComPtr<ID3DUserDefinedAnnotation> pPerf;
-  HRESULT hr = get_context()->QueryInterface(IID_PPV_ARGS(&pPerf));
+  HRESULT hr = device_context->QueryInterface(IID_PPV_ARGS(&pPerf));
 
   if (FAILED(hr)) {
     assert(false);
@@ -34,7 +36,7 @@ DebugState::~DebugState() {
 void DebugState::set_marker(const char *text) {
 #ifdef ENGINE_DEBUG_GRAPHICS
   ComPtr<ID3DUserDefinedAnnotation> pPerf;
-  HRESULT hr = get_context()->QueryInterface(__uuidof(pPerf), reinterpret_cast<void **>(pPerf.Get()));
+  HRESULT hr = device_context->QueryInterface(__uuidof(pPerf), reinterpret_cast<void **>(pPerf.Get()));
   if (FAILED(hr))
     return;
 
