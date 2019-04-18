@@ -3,7 +3,7 @@
 #include <runtime/texture2d.h>
 
 struct Texture2DFactory : public asset::Factory {
-  virtual const char* get_filename_extensions() override {
+  virtual const char *get_filename_extensions() override {
     return "bmp;png;tga;jpg";
   }
 
@@ -11,8 +11,7 @@ struct Texture2DFactory : public asset::Factory {
     auto &asset = *new runtime::Texture2D;
     return asset::AssetRef(new runtime::Texture2D);
   }
+
 protected:
-  virtual void load_asset_data(asset::Asset& asset) {
-    assert(false);
-  }
+  virtual void load_asset_data(asset::Asset &asset) override;
 };

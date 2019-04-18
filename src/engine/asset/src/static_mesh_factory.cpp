@@ -125,6 +125,7 @@ void StaticMeshFactory::load_asset_data(asset::Asset &asset) {
     }
   }
   //#endif
+  assert(!mesh.lod_info.size());
   mesh.lod_info.push_back(lod);
   aiReleaseImport(scene);
 }

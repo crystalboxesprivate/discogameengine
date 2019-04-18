@@ -5,6 +5,8 @@
 #include <app/app.h>
 #include <runtime/static_mesh.h>
 #include <runtime/static_mesh_resource.h>
+#include <runtime/texture2d_resource.h>
+#include <runtime/texture2d.h>
 #include <config/config.h>
 #include <utils/path.h>
 #include <shader/shader.h>
@@ -13,6 +15,7 @@
 #include <game/static_mesh_component.h>
 #include <game/transform_component.h>
 #include <game/metadata_component.h>
+#include <game/material_component.h>
 #include <game/camera_component.h>
 #include <game/light_component.h>
 
@@ -251,7 +254,7 @@ void Renderer::draw_static_mesh_gbuffer() {
   gi::set_render_targets(4, gbuffer.rts, gi::get_main_depth_stencil_view());
   gi::clear_render_target_view(gbuffer.color.render_target_view, glm::vec4(0));
 
-  // get components of type
+  // Get components of type.
   gi::PipelineState state;
 #if 0
   state.bound_shaders.vertex = gbuffer_vertex->compiled;
@@ -268,7 +271,7 @@ void Renderer::draw_static_mesh_gbuffer() {
       g_buffer_hader_pair.pixel.instance = app::get().get_shader_cache().shaders[g_buffer_hader_pair.pixel.global_id];
     }
   }
-  state.bound_shaders.vertex = g_buffer_hader_pair.vertex.instance; // quad_vertex->compiled;
+  state.bound_shaders.vertex = g_buffer_hader_pair.vertex.instance;
   state.bound_shaders.pixel = g_buffer_hader_pair.pixel.instance;
 #endif
 
@@ -283,7 +286,6 @@ void Renderer::draw_static_mesh_gbuffer() {
   gi::bind_uniform_buffer(0, gi::ShaderStage::Vertex, camera_uniform_buf->get_resource());
   gi::bind_uniform_buffer(1, gi::ShaderStage::Vertex, model_uniform_buf->get_resource());
 
-  // TODO move out of for loop...
   load_camera_params(camera_uniform_buf);
 
   auto &static_meshes = component::get_array_of_components<StaticMeshComponent>();
@@ -294,12 +296,32 @@ void Renderer::draw_static_mesh_gbuffer() {
     if (!static_mesh_asset)
       continue;
 
-    gi::DebugState state("Draw mesh");
+    gi::DebugState draw_mesh_debug("Draw mesh");
     auto entity_id = component::get_entity_id<StaticMeshComponent>(x);
     get_transform(entity_id, mesh.cached_transform_component, model_uniform_buf);
 
-    StaticMeshResource &resource = static_mesh_asset->get_render_resource();
+    StaticMeshResource *resource_ptr = static_mesh_asset->get_render_resource();
+    if (!resource_ptr) {
+      continue;
+    } 
+    StaticMeshResource &resource = *resource_ptr;
     StaticMeshRenderData &render_data = resource.lod_resources[0];
+    {
+      using game::MaterialParameterComponent;
+      MaterialParameterComponent &material = *component::find_and_get_mut<MaterialParameterComponent>(entity_id);
+      for (i32 index = 0; index < material.textures.size(); index++) {
+        // for (auto &texture : material.textures) {
+        auto texture = material.textures[index].get();
+        auto res = texture->get_resource();
+        if (!res) {
+          continue;
+        }
+        if (res->srv) {
+          gi::set_shader_resource_view({index}, res->srv, state.bound_shaders.pixel);
+          gi::set_sampler_state({index}, res->sampler_state, state.bound_shaders.pixel);
+        }
+      }
+    }
     gi::set_vertex_stream(resource.vertex_stream, gbuffer_vertex->compiled);
     gi::draw_indexed(render_data.indices, gi::PrimitiveTopology::TriangleList, (u32)render_data.indices->get_count(), 0,
                      0);

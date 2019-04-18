@@ -4,7 +4,24 @@ namespace graphicsinterface {
 extern ID3D11Device *device;
 extern ID3D11DeviceContext *device_context;
 
-Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat) {
+i32 get_byte_count_from_pixelformat(PixelFormat pixel_format) {
+  switch (pixel_format) {
+  case PixelFormat::FloatRGBA:
+    return 16;
+  case PixelFormat::R32G32B32F:
+    return 12;
+  case PixelFormat::R32G32F:
+    return 8;
+  case PixelFormat::R8G8B8A8F:
+    return 4;
+  default:
+    assert("Unimplemented" && false);
+    break;
+  }
+  return 0;
+}
+
+Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void *data) {
   auto tex = new D3D11Texture2D;
   tex->width = (u16)width;
   tex->height = (u16)height;
@@ -26,9 +43,16 @@ Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat
   texture_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
   texture_desc.CPUAccessFlags = 0;
   texture_desc.MiscFlags = 0;
-
-  result = device->CreateTexture2D(&texture_desc, NULL, &tex->view);
-
+  if (data) {
+    D3D11_SUBRESOURCE_DATA subresource_data;
+    i32 bytes_per_pixel = get_byte_count_from_pixelformat(pixelformat);
+    subresource_data.pSysMem = data;
+    subresource_data.SysMemPitch = (u32)width * bytes_per_pixel;
+    subresource_data.SysMemSlicePitch = (u32)(width * height) * bytes_per_pixel;
+    result = device->CreateTexture2D(&texture_desc, &subresource_data, &tex->view);
+  } else {
+    result = device->CreateTexture2D(&texture_desc, NULL, &tex->view);
+  }
   if (FAILED(result)) {
     assert(false);
     return nullptr;

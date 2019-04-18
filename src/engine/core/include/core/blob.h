@@ -5,42 +5,47 @@
 
 struct Blob {
   Blob()
-      : data(nullptr)
-      , size(0) {
+      : size(0) {
   }
 
   Blob(const Blob &blob) {
-    if (blob.data) {
+    if (blob.data.size()) {
       allocate(blob.get_size(), blob.get_data());
     }
   }
+
   Blob &operator=(const Blob &blob) {
-    if (blob.data) {
+    if (blob.data.size()) {
       allocate(blob.get_size(), blob.get_data());
     }
     return *this;
   }
 
-  inline u8 *get_data() const {
-    return data.get();
+  inline const u8 *get_data() const {
+    return data.data();
+  }
+
+  inline u8 *get_data() {
+    return data.data();
   }
 
   inline usize get_size() const {
     return size;
   }
 
-  void allocate(usize in_size, void *init_data = nullptr) {
-    assert(!data);
+  void allocate(usize in_size, const void *init_data = nullptr) {
+    assert(!data.size());
     assert(in_size);
-    data = std::make_unique<u8[]>(in_size);
+    data.resize(in_size);
     size = in_size;
 
     if (init_data)
-      memcpy(data.get(), init_data, in_size);
+      memcpy(data.data(), init_data, in_size);
   }
 
   void free() {
-    data = nullptr;
+    data.clear();
+    data.shrink_to_fit();
     size = 0;
   }
   inline friend Archive &operator<<(Archive &archive, Blob &blob) {
@@ -56,6 +61,6 @@ struct Blob {
 
 private:
   // u8 *data;
-  UniquePtr<u8[]> data;
+  Vector<u8> data;
   usize size;
 };

@@ -5,6 +5,7 @@ add_library(
   include/core/typedefs.h
   include/core/archive.h
   include/core/guid.h
+  include/core/queue.h
   include/core/log.h
   include/core/math/math.h
   include/core/math/color.h
@@ -13,6 +14,7 @@ add_library(
   src/guid.cpp
   src/log.cpp
   src/color.cpp
+  src/queue.cpp
 )
 target_include_directories(core PUBLIC include)
 target_link_libraries(core PUBLIC glm utils component)

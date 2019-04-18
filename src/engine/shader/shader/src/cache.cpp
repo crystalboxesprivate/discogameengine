@@ -25,9 +25,9 @@ void ShaderCompiler::compile() {
     assert(new_shader);
 
 #if ENGINE_SHADER_FORCE_RECOMPILE
-    asset::load_to_ram(new_shader, true);
+    asset::load_to_ram(new_shader, true, true);
 #else
-    asset::load_to_ram(new_shader);
+    asset::load_to_ram(new_shader, false, true);
 #endif
 
     Shader &shader = *reinterpret_cast<Shader *>(new_shader.get());
@@ -60,7 +60,7 @@ void ShaderCompiler::compile() {
       Shader &shader = *reinterpret_cast<Shader *>(to_compile_shaders[x].get());
       shader.description.source = out_sources[x];
       shader.compile_id = to_compile_inputs[x].compile_id;
-      String shader_code = shader.description.source;
+      String shader_code = to_compile_inputs[x].source;//shader.description.source;
 
       compiler::Output &out = compiler_outputs[x];
 

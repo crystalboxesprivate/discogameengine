@@ -92,7 +92,11 @@ struct AssetHandle {
   }
 
   inline T *get() {
-    return reinterpret_cast<T *>(get_ref().get());
+    return static_cast<T *>(get_ref().get());
+  }  
+
+  inline const T *get() const {
+    return static_cast<T *>(get_ref().get());
   }
 };
 
@@ -110,17 +114,17 @@ AssetHandle<T> add(const String &filename, const String &alias = "") {
 }
 
 // Type get_type_from_filename(const String &filename);
-Asset &get_default_asset(Type asset_type);
+Asset *get_default_asset(Type asset_type);
 
 template <typename T>
-T &get_default(Type asset_type) {
-  T &asset_of_type = *reinterpret_cast<T *>(&get_default_asset(asset_type));
-  asset_of_type.is_valid();
+T *get_default(Type asset_type) {
+  T *asset_of_type = static_cast<T *>(get_default_asset(asset_type));
+  //asset_of_type->is_valid();
   return asset_of_type;
 }
 
-void load_to_ram(Asset &asset, bool force_rebuild = false);
-void load_to_ram(AssetRef asset, bool force_rebuild = false);
+void load_to_ram(Asset &asset, bool force_rebuild = false, bool load_immediately = false);
+void load_to_ram(AssetRef asset, bool force_rebuild = false, bool load_immediately = false);
 
 void resave_to_disk(Asset &asset);
 void resave_to_disk(AssetRef asset);

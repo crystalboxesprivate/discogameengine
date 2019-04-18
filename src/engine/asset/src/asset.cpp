@@ -12,11 +12,14 @@
 #include <utils/path.h>
 #include <utils/helpers.h>
 #include <config/config.h>
+#include <core/queue.h>
+#include <thread>
 
 namespace asset {
-Asset &get_default_asset(Type asset_type) {
-  assert(false && "not implemented initialization of default assets");
-  Asset &asset = *app::get().get_asset_registry().default_assets[asset_type];
+Asset *get_default_asset(Type asset_type) {
+  //DEBUG_LOG(Assets, Error, "not implemented initialization of default assets");
+  return nullptr;
+  Asset *asset = app::get().get_asset_registry().default_assets[asset_type].get();;
   return asset;
 }
 
@@ -113,19 +116,62 @@ void resave_to_disk(AssetRef asset) {
   resave_to_disk(*asset.get());
 }
 
-void load_to_ram(AssetRef asset, bool force_rebuild) {
-  load_to_ram(*asset.get(), force_rebuild);
+struct AssetThread {
+  struct AssetTask {
+    Asset *asset;
+    bool force_rebuild;
+  };
+
+  void add(AssetTask asset) {
+    asset.asset->is_loading = true;
+    asset.asset->is_loaded_to_ram = false;
+
+    assets_to_load.enqueue(asset);
+    if (!is_running) {
+      std::thread t1(AssetThread::process_assets, this);
+      t1.detach();  
+    }
+  }
+
+  static void process_assets(AssetThread *instance) {
+    instance->is_running = true;
+
+    while (!instance->assets_to_load.is_empty()) {
+      auto asset_task = instance->assets_to_load.dequeue();
+      AssetThread::load(*asset_task.asset, asset_task.force_rebuild);
+    }
+
+    instance->is_running = false;
+  }
+
+  static void load(Asset &asset, bool force_rebuild) {
+    {
+
+      Factory *asset_factory = find_factory(asset.source_filename);
+      assert(asset_factory);
+      (*asset_factory).load(asset, force_rebuild);
+
+      asset.is_loading = false;
+      asset.is_loaded_to_ram = true;
+    }
+  }
+  Queue<AssetTask> assets_to_load;
+  bool is_running = false;
+};
+
+AssetThread asset_thread;
+
+void load_to_ram(AssetRef asset, bool force_rebuild, bool load_immediately) {
+  load_to_ram(*asset.get(), force_rebuild, load_immediately);
 }
 
-void load_to_ram(Asset &asset, bool force_rebuild) {
-  asset.is_loading = true;
-
-  Factory *asset_factory = find_factory(asset.source_filename);
-  assert(asset_factory);
-  (*asset_factory).load(asset, force_rebuild);
-
-  asset.is_loading = false;
-  asset.is_loaded_to_ram = true;
+void load_to_ram(Asset &asset, bool force_rebuild, bool load_immediately) {
+  if (asset.is_loaded_to_ram || asset.is_loading)
+    return;
+  asset_thread.add({&asset, force_rebuild});
+  if (load_immediately) {
+    AssetThread::load(asset, force_rebuild);
+  }
 }
 
 void free(usize asset_hash) {

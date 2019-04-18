@@ -4,7 +4,6 @@
 #include <runtime/static_mesh_resource.h>
 
 namespace runtime {
-
 StaticMeshResource::StaticMeshResource() {
   namespace gi = graphicsinterface;
   vertex_stream.count = 0;
@@ -16,7 +15,7 @@ StaticMeshResource::StaticMeshResource() {
 }
 
 using namespace graphicsinterface;
-StaticMeshResource &StaticMesh::get_render_resource() {
+StaticMeshResource *StaticMesh::get_render_resource() {
   // if it's not loaded then return default staticmeshresource
   if (!render_data) {
     render_data = SharedPtr<StaticMeshResource>(new StaticMeshResource);
@@ -25,11 +24,14 @@ StaticMeshResource &StaticMesh::get_render_resource() {
   if (!render_data->lod_resources.size()) {
     // init loading stuff
     if (!is_loading) {
-      asset::load_to_ram(*this);
+      asset::load_to_ram(*this, false, false);
     }
 
     if (!is_loaded_to_ram) {
-      return *asset::get_default<StaticMesh>(asset::Type::StaticMesh).render_data.get();
+      auto default_asset = asset::get_default<StaticMesh>(asset::Type::StaticMesh);
+      if (default_asset)
+        return default_asset->render_data.get();
+      return nullptr;
     }
 
     usize offset = 0;
@@ -102,7 +104,7 @@ StaticMeshResource &StaticMesh::get_render_resource() {
     free();
   }
 
-  return *(render_data.get());
+  return render_data.get();
 }
 
 void StaticMesh::serialize(Archive &archive) {

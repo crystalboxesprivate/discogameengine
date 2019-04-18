@@ -10,6 +10,7 @@ add_library(
   src/factory.cpp
   src/shader_factory.cpp
   src/static_mesh_factory.cpp
+  src/texture2d_factory.cpp
 )
 target_include_directories(asset PUBLIC include)
-target_link_libraries(asset PRIVATE app core runtime shader cross config assimp)
+target_link_libraries(asset PRIVATE app core runtime shader cross config assimp stb)

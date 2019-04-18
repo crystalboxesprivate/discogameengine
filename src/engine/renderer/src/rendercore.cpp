@@ -31,7 +31,7 @@ asset::AssetHandle<MaterialShader> MaterialShader::add(const String &filename) {
   shader::get_path_from_virtual_path(filename, actual_path);
   asset::AssetHandle<MaterialShader> handle = asset::add<MaterialShader>(actual_path, "MaterialShader");
   auto asset = handle.get();
-  asset::load_to_ram(handle.get_ref());
+  asset::load_to_ram(handle.get_ref(), false, true);
 
   for (auto &vertex_type : vertex_types) {
     shader::compiler::Environment env;

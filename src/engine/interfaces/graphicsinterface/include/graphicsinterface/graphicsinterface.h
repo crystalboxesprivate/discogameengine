@@ -92,7 +92,7 @@ RenderTargetViewRef get_main_render_target_view();
 DepthStencilViewRef get_main_depth_stencil_view();
 
 SamplerStateRef create_sampler_state();
-Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat);
+Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void* data = nullptr);
 ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d);
 RenderTargetViewRef create_render_target_view(Texture2DRef texture2d);
 

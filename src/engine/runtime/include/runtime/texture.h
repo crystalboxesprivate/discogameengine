@@ -4,7 +4,7 @@
 
 namespace runtime {
 struct Texture : public Renderable {
-  virtual usize get_size_x() = 0;
-  virtual usize get_size_y() = 0;
+  virtual u16 get_size_x() const = 0;
+  virtual u16 get_size_y() const = 0;
 };
 } // namespace runtime

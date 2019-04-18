@@ -58,9 +58,9 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
   assert(new_shader);
 
 #if ENGINE_SHADER_FORCE_RECOMPILE
-  asset::load_to_ram(new_shader, true);
+  asset::load_to_ram(new_shader, true, true);
 #else
-  asset::load_to_ram(new_shader);
+  asset::load_to_ram(new_shader, false, true);
 #endif
 
   Shader &shader = *reinterpret_cast<Shader *>(new_shader.get());
