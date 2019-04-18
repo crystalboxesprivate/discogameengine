@@ -21,6 +21,7 @@ static DXGI_FORMAT d3d_pixel_formats[] = {
 struct D3D11Texture2D : public Texture2D {
   DXGI_FORMAT dxgi_format;
   ComPtr<ID3D11Texture2D> view;
+  bool generate_mips = false;
   virtual void *get_native_ptr() {
     return view.Get();
   }

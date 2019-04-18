@@ -30,7 +30,7 @@ void Texture2DResource::init() {
     //assert(width);
     //assert(height);
     // it's loaded _. create render resource load texture blob into vram
-    texture2d = gi::create_texture2d(width, height, pixel_format, (void *)owner->texture_data.get_data());
+    texture2d = gi::create_texture2d(width, height, pixel_format, (void *)owner->texture_data.get_data(), true);
     sampler_state = gi::create_sampler_state();
     srv = gi::create_shader_resource_view(texture2d);
     // texture is loaded to gpu

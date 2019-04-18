@@ -21,12 +21,13 @@ i32 get_byte_count_from_pixelformat(PixelFormat pixel_format) {
   return 0;
 }
 
-Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void *data) {
+Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void *data, bool generate_mips) {
   auto tex = new D3D11Texture2D;
   tex->width = (u16)width;
   tex->height = (u16)height;
   tex->pixel_format = pixelformat;
   tex->dxgi_format = d3d_pixel_formats[(u8)pixelformat];
+  tex->generate_mips = generate_mips;
 
   D3D11_TEXTURE2D_DESC texture_desc;
   HRESULT result;
@@ -42,7 +43,7 @@ Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat
   texture_desc.Usage = D3D11_USAGE_DEFAULT;
   texture_desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
   texture_desc.CPUAccessFlags = 0;
-  texture_desc.MiscFlags = 0;
+  texture_desc.MiscFlags = generate_mips ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
   if (data) {
     D3D11_SUBRESOURCE_DATA subresource_data;
     i32 bytes_per_pixel = get_byte_count_from_pixelformat(pixelformat);
@@ -70,13 +71,17 @@ ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d) {
   shaderResourceViewDesc.Format = tex->dxgi_format;
   shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
   shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
-  shaderResourceViewDesc.Texture2D.MipLevels = 1;
+  shaderResourceViewDesc.Texture2D.MipLevels = -1;
 
   // Create the shader resource view.
   result = device->CreateShaderResourceView(tex->view.Get(), &shaderResourceViewDesc, &srv->view);
   if (FAILED(result)) {
     assert(false);
     return nullptr;
+  }
+
+  if (tex->generate_mips) {
+    device_context->GenerateMips(srv->view.Get());
   }
 
   return ShaderResourceViewRef(srv);
