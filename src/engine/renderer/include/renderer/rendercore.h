@@ -10,7 +10,7 @@ void initialize_default_shaders();
 } // namespace renderer
 
 #define declare_vertex_type(type)                                                                                      \
-  constexpr u32 guid() {                                                                                               \
+  static constexpr u32 guid() {                                                                                        \
     return (u32)utils::string::hash_code(#type);                                                                       \
   }                                                                                                                    \
   virtual u32 get_unique_id() override {                                                                               \
@@ -60,7 +60,7 @@ struct RenderPass {
 
   struct ShaderId {
     Guid global_id;
-    shader::ShaderRef Shader;
+    shader::ShaderRef instance;
 
     inline friend Archive &operator<<(Archive &archive, ShaderId &id) {
       archive << id.global_id;
@@ -120,17 +120,17 @@ struct GBufferRenderPass : public RenderPass {
 struct MaterialShader : public asset::Asset {
   declare_asset_type(MaterialShader);
   virtual void serialize(Archive &archive) override {
-    serialize(archive);
+    asset::Asset::serialize(archive);
     archive << compiled_shaders;
   }
-  static void add(const String &filename);
+  static asset::AssetHandle<MaterialShader> add(const String &filename);
   HashMap<u32, RenderPass::ShaderPair> compiled_shaders;
   bool ready;
 };
 
 struct MaterialShaderFactory : public asset::Factory {
   virtual const char *get_filename_extensions() {
-    return "shader";
+    return "hlslinc";
   }
   virtual asset::AssetRef create(const String &filename) {
     return asset::AssetRef(new MaterialShader);

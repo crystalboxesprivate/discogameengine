@@ -6,6 +6,7 @@ x64/Debug/*
 cmake-build-debug/*
 build/*
 .DS_Store
+cache/*
 
 src/third_party/*
 content/*

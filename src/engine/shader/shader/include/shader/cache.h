@@ -29,6 +29,7 @@ struct ShaderCache {
       : compiler(this) {
   }
 
+  struct MaterialShader *default_shader = nullptr;
   ShaderCompiler compiler;
   HashMap<Guid, graphicsinterface::ShaderRef> shaders;
   HashMap<usize, UniformBufferDescription *> uniform_buffer_map;

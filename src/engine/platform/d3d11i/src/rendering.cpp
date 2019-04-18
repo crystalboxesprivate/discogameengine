@@ -99,7 +99,7 @@ void set_render_targets(i32 num_render_targets, RenderTargetViewRef *render_targ
     d3d11_rtvs[x] = (ID3D11RenderTargetView *)render_targets[x]->get_native_ptr();
   }
   device_context->OMSetRenderTargets(num_render_targets, d3d11_rtvs,
-                                     (ID3D11DepthStencilView *)depth_stencil_view->get_native_ptr());
+                                     depth_stencil_view ? (ID3D11DepthStencilView *)depth_stencil_view->get_native_ptr() : nullptr);
 }
 
 const char *semantic_names[] = {"POSITION", "TEXCOORD", "NORMAL", "TANGENT", "COLOR"};

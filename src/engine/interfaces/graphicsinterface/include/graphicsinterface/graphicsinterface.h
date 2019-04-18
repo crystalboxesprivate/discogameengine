@@ -109,9 +109,49 @@ struct ShaderParameter {
   i32 base_index = 0;
 };
 
-void set_shader_resource_view(const ShaderParameter& shader_parameter, ShaderResourceViewRef srv, ShaderRef shader);
-void set_sampler_state(const ShaderParameter& shader_parameter, SamplerStateRef sampler_state, ShaderRef shader);
+void set_shader_resource_view(const ShaderParameter &shader_parameter, ShaderResourceViewRef srv, ShaderRef shader);
+void set_sampler_state(const ShaderParameter &shader_parameter, SamplerStateRef sampler_state, ShaderRef shader);
 
+void set_z_buffer(bool enabled);
+
+struct BlendState {};
+typedef SharedPtr<BlendState> BlendStateRef;
+
+//
+// Blending constants
+extern const int ZERO;
+extern const int ONE;
+extern const int SRC_COLOR;
+extern const int ONE_MINUS_SRC_COLOR;
+extern const int DST_COLOR;
+extern const int ONE_MINUS_DST_COLOR;
+extern const int SRC_ALPHA;
+extern const int ONE_MINUS_SRC_ALPHA;
+extern const int DST_ALPHA;
+extern const int ONE_MINUS_DST_ALPHA;
+extern const int SRC_ALPHA_SATURATE;
+
+extern const int BM_ADD;
+extern const int BM_SUBTRACT;
+extern const int BM_REVERSE_SUBTRACT;
+extern const int BM_MIN;
+extern const int BM_MAX;
+
+// Mask constants
+#define RED 0x1
+#define GREEN 0x2
+#define BLUE 0x4
+#define ALPHA 0x8
+
+#define ALL (RED | GREEN | BLUE | ALPHA)
+
+BlendStateRef addBlendState(const int srcFactorRGB, const int destFactorRGB, const int srcFactorAlpha,
+                            const int destFactorAlpha, const int blendModeRGB, const int blendModeAlpha,
+                            const int mask = ALL, const bool alphaToCoverage = false);
+
+BlendStateRef addBlendState(const int srcFactor, const int destFactor, const int blendMode = BM_ADD,
+                            const int mask = ALL, const bool alphaToCoverage = false);
+void set_blend_state(BlendStateRef blend_state);
 
 void clear_render_target_view(RenderTargetViewRef view, const glm::vec4 &clear_color);
 void clear_depth_stencil_view(DepthStencilViewRef view, u32 clear_flags, float depth = 1.f, float stencil = 0.f);

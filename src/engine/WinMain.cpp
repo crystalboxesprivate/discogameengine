@@ -22,8 +22,7 @@ void setup() {
   app::get().add_behavior(new behavior::FirstPersonCamera);
   app::get().add_behavior(new behavior::PhysicsBehavior);
 
-  MaterialShader::add("/Shaders/Default.shader");
-  //MaterialShader::add("/Shaders/UserTest.shader");
+  app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/Default.hlslinc").get();
   app::get().get_shader_cache().compiler.compile();
 }
 

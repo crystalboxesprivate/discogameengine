@@ -9,7 +9,7 @@ struct Renderer {
 
 
   void init_gbuffer();
-  void draw_gbuffer();
+  void draw_static_mesh_gbuffer();
   void draw_quad();
 
   void draw_light_pass();

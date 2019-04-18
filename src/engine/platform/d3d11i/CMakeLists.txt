@@ -9,6 +9,7 @@ add_library(
   src/shader_compilation.cpp
   src/rendering.cpp
   src/debug.cpp
+  src/blending_state.cpp
 )
 
 target_include_directories(d3d11i PUBLIC include)

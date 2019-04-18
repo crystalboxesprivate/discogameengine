@@ -50,8 +50,6 @@ bool get_path_from_virtual_path(const String &virtual_path, String &out_path) {
 }
 
 Shader &load(const String &filename, ShaderStage stage, const String &entry) {
-  DEBUG_LOG(Rendering, Log, "Loading %s shader %s, entry: %s:", shader_stage_to_string(stage), filename.c_str(),
-            entry.c_str());
 
   String actual_path;
   shader::get_path_from_virtual_path(filename, actual_path);
@@ -68,7 +66,7 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
   Shader &shader = *reinterpret_cast<Shader *>(new_shader.get());
 
   if (shader.description.needs_to_recompile) {
-    DEBUG_LOG(Rendering, Log, "Running cross compilation.");
+    DEBUG_LOG(Shaders, Log, "Running cross compilation.");
     Vector<compiler::Output> outputs;
 
     Vector<compiler::Input> inputs = {
@@ -101,7 +99,8 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
     shader.description.source = shader_code;
     shader.description.entry_point = entry;
   } else {
-    DEBUG_LOG(Rendering, Log, "Loaded from cache.");
+    DEBUG_LOG(Shaders, Log, "Loaded %s shader %s (%s) from cache", shader_stage_to_string(stage), filename.c_str(),
+              entry.c_str());
   }
 
   auto &uniform_buffer_map = app::get().get_shader_cache().uniform_buffer_map;
@@ -113,7 +112,8 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
   assert(shader.compiled);
 
   if (shader.description.needs_to_recompile) {
-    DEBUG_LOG(Rendering, Log, "Saving shader to disk.");
+    DEBUG_LOG(Shaders, Log, "Compiled and cached %s shader %s (%s) to disk", shader_stage_to_string(stage),
+              filename.c_str(), entry.c_str());
     shader.description.needs_to_recompile = false;
     asset::resave_to_disk(new_shader);
   }

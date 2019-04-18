@@ -49,8 +49,6 @@ void compile_shader(ShaderDescription &shader) {
 
 ShaderRef create_shader(ShaderDescription &shader) {
   assert(shader.stage != ShaderStage::NumStages);
-  DEBUG_LOG(Rendering, Log, "Loading D3D shader");
-
   if (shader.needs_to_recompile) {
     assert(shader.source.size());
     assert(shader.entry_point.size());
@@ -62,7 +60,7 @@ ShaderRef create_shader(ShaderDescription &shader) {
   switch (shader.stage) {
   case ShaderStage::Vertex: {
 
-    auto vertex_shader = new D3DVertexShader();
+    auto vertex_shader = new D3DVertexShader;
     d3d_shader = vertex_shader;
     HRESULT hr = device->CreateVertexShader(shader.compiled_blob.data(), shader.compiled_blob.size(), nullptr,
                                                   &vertex_shader->shader);
@@ -74,7 +72,7 @@ ShaderRef create_shader(ShaderDescription &shader) {
     break;
   }
   case ShaderStage::Pixel: {
-    auto pixel_shader = new D3DPixelShader();
+    auto pixel_shader = new D3DPixelShader;
     d3d_shader = pixel_shader;
     HRESULT hr = device->CreatePixelShader(shader.compiled_blob.data(), shader.compiled_blob.size(), nullptr,
                                                  &pixel_shader->shader);

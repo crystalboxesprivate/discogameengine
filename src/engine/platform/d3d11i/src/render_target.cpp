@@ -58,26 +58,31 @@ ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d) {
   return ShaderResourceViewRef(srv);
 }
 
+ID3D11ShaderResourceView *shader_resource_views_arr[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT];
 void set_shader_resource_view(const ShaderParameter &shader_parameter, ShaderResourceViewRef srv, ShaderRef shader) {
-  ID3D11ShaderResourceView *srvs[1];
+  shader_resource_views_arr[0] = {nullptr};
+
+  if (srv) {
+    auto ptr = (ID3D11PixelShader *)shader->get_native_ptr();
+    shader_resource_views_arr[0] = (ID3D11ShaderResourceView *)srv->get_native_ptr();
+  }
 
   auto stage = shader->description.stage;
   if (stage == ShaderStage::Pixel) {
-    auto ptr = (ID3D11PixelShader *)shader->get_native_ptr();
-    srvs[0] = (ID3D11ShaderResourceView *)srv->get_native_ptr();
-    device_context->PSSetShaderResources(shader_parameter.base_index, 1, srvs);
+    device_context->PSSetShaderResources(shader_parameter.base_index, 1, shader_resource_views_arr);
     return;
   }
   assert(false && "Unsupported shader stage.");
 }
 
+ID3D11SamplerState *samplers[1];
 void set_sampler_state(const ShaderParameter &shader_parameter, SamplerStateRef sampler_state, ShaderRef shader) {
-  ID3D11SamplerState *samplers[1];
-
   auto stage = shader->description.stage;
-  if (stage == ShaderStage::Pixel) {
+  if (sampler_state) {
     auto ptr = (ID3D11PixelShader *)shader->get_native_ptr();
     samplers[0] = (ID3D11SamplerState *)sampler_state->get_native_ptr();
+  }
+  if (stage == ShaderStage::Pixel) {
     device_context->PSSetSamplers(shader_parameter.base_index, 1, samplers);
     return;
   }
