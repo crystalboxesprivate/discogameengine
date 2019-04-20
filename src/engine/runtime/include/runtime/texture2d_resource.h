@@ -1,3 +1,5 @@
+#pragma once
+
 #include <renderer/resource.h>
 #include <graphicsinterface/graphicsinterface.h>
 

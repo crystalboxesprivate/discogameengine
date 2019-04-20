@@ -7,6 +7,7 @@
 #include <asset/texture2d_factory.h>
 #include <asset/static_mesh_factory.h>
 #include <asset/shader_factory.h>
+#include <asset/texturecube_factory.h>
 
 #include <config/config.h>
 
@@ -66,7 +67,7 @@ void init_factories() {
     Factory &factory = *asset::factory::AssetFactory::factories[z]->get();
 
     const char *extensions = factory.get_filename_extensions();
-    char buf[10];
+    char buf[24];
     usize len = strlen(extensions);
     for (int x = 0, y = 0; x < len + 1; x++, y++) {
       if (extensions[x] == ';' || x == len) {
@@ -92,5 +93,6 @@ Factory *find_factory(const String &filename) {
 }
 } // namespace asset
 implement_asset_factory(Texture2DFactory);
+implement_asset_factory(TextureCubeFactory);
 implement_asset_factory(StaticMeshFactory);
 implement_asset_factory(ShaderFactory);

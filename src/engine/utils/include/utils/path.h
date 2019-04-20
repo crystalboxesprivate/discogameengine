@@ -6,6 +6,8 @@ namespace utils {
 namespace path {
 String join(const String &a, const String &b);
 bool exists(const String&path);
+
+String parent(const String&  in_path );
 String filename(const String& in_path, bool keep_extension = true);
 
 static void splitext(const String &in_filename, String &file, String &ext) {

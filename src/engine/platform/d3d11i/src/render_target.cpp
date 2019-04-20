@@ -4,23 +4,6 @@ namespace graphicsinterface {
 extern ID3D11Device *device;
 extern ID3D11DeviceContext *device_context;
 
-i32 get_byte_count_from_pixelformat(PixelFormat pixel_format) {
-  switch (pixel_format) {
-  case PixelFormat::FloatRGBA:
-    return 16;
-  case PixelFormat::R32G32B32F:
-    return 12;
-  case PixelFormat::R32G32F:
-    return 8;
-  case PixelFormat::R8G8B8A8F:
-    return 4;
-  default:
-    assert("Unimplemented" && false);
-    break;
-  }
-  return 0;
-}
-
 Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void *data, bool generate_mips) {
   // TODO refactor this mess
   auto tex = new D3D11Texture2D;
@@ -79,7 +62,6 @@ ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d) {
   // Setup the description of the shader resource view.
   shaderResourceViewDesc.Format = tex->dxgi_format;
   shaderResourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-  // shaderResourceViewDesc.Texture2D.MostDetailedMip = 0;
   shaderResourceViewDesc.Texture2D.MipLevels = -1;
 
   // Create the shader resource view.

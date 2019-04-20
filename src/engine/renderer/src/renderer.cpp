@@ -3,14 +3,19 @@
 #include <renderer/rendercore.h>
 #include <graphicsinterface/graphicsinterface.h>
 #include <app/app.h>
-#include <runtime/static_mesh.h>
-#include <runtime/static_mesh_resource.h>
-#include <runtime/texture2d_resource.h>
-#include <runtime/texture2d.h>
 #include <config/config.h>
 #include <utils/path.h>
 #include <shader/shader.h>
 #include <shader/cache.h>
+
+#include <runtime/static_mesh.h>
+#include <runtime/static_mesh_resource.h>
+#include <runtime/texture2d_resource.h>
+#include <runtime/texture2d.h>
+#include <runtime/texturecube.h>
+#include <runtime/texturecube_resource.h>
+
+#include <renderer/procedural_geo.h>
 
 #include <game/static_mesh_component.h>
 #include <game/transform_component.h>
@@ -32,6 +37,7 @@ using game::TransformComponent;
 using runtime::StaticMesh;
 using runtime::StaticMeshRenderData;
 using runtime::StaticMeshResource;
+using runtime::TextureCube;
 using shader::Shader;
 
 using namespace glm;
@@ -75,10 +81,56 @@ Shader *gbuffer_pixel;
 
 RenderTargetResource color_intermediate_buffer;
 gi::BlendStateRef blend_state;
+gi::BlendStateRef blend_state_skybox;
 
 MaterialShader *default_shader;
 
-void load_camera_params(shader::UniformBufferDescription *camera_uniform_buf) {
+struct SkyBox {
+  TextureCube *defaultTextureCube = nullptr;
+  asset::AssetHandle<TextureCube> asset;
+
+  gi::VertexStream stream;
+  gi::IndexBufferRef indices;
+  gi::VertexBufferRef vertices;
+
+  Shader *vertex_shader;
+  Shader *pixel_shader;
+};
+
+SkyBox test_skybox;
+shader::UniformBufferDescription *camera_uniform_buf = nullptr;
+
+void Renderer::initialize() {
+  using namespace utils::path;
+  load_shaders();
+  init_gbuffer();
+  // Cubemap
+  String cubepath = utils::path::join(
+      config::CONTENT_DIR, "textures/ExportedCubemaps/Hilton_Head_Beach_Club/Hilton_Head_Beach_Club.png.cubemapjson");
+  test_skybox.asset = asset::add<TextureCube>(cubepath);
+  test_skybox.defaultTextureCube = test_skybox.asset.get();
+  {
+    Vector<glm::vec3> positions;
+    Vector<i32> indices;
+    // CreateSphere(10, 10, indices, positions);
+
+    sphere_geometry(indices, positions, 512.f, 32, 32);
+
+    test_skybox.indices = gi::create_index_buffer(indices.size(), nullptr);
+    gi::set_index_buffer_data(indices.data(), indices.size() * 4, test_skybox.indices);
+
+    test_skybox.vertices = gi::create_vertex_buffer(positions.size(), 3 * 4, gi::PixelFormat::R32G32B32F, nullptr);
+    gi::set_vertex_buffer_data(positions.data(), positions.size() * 3 * 4, test_skybox.vertices);
+
+    test_skybox.stream.add({0, gi::SemanticName::Position, gi::PixelFormat::R32G32B32F, 0, 0});
+    test_skybox.stream.add_buffer(test_skybox.vertices.get());
+  }
+  DEBUG_LOG(Rendering, Log, "Renderer initialized");
+}
+
+void load_camera_params() {
+  camera_uniform_buf = app::get().get_shader_cache().uniform_buffer_map[utils::string::hash_code("CameraParameters")];
+
   mat4 projection, view;
   auto &cameras = component::get_vector_of_components<CameraComponent>();
   assert(cameras.slots.size());
@@ -117,6 +169,9 @@ void Renderer::load_shaders() {
   quad_pixel = &shader::load("/Shaders/quad.hlsl", gi::ShaderStage::Pixel, "PS");
 
   light_pass_ps = &shader::load("/Shaders/LightPass.hlsl", gi::ShaderStage::Pixel, "PS");
+
+  test_skybox.vertex_shader = &shader::load("/Shaders/Skybox.hlsl", graphicsinterface::ShaderStage::Vertex, "VS");
+  test_skybox.pixel_shader = &shader::load("/Shaders/Skybox.hlsl", graphicsinterface::ShaderStage::Pixel, "PS");
 
   gbuffer_vertex = &shader::load("/Shaders/main.hlsl", graphicsinterface::ShaderStage::Vertex, "VS");
   gbuffer_pixel = &shader::load("/Shaders/main.hlsl", graphicsinterface::ShaderStage::Pixel, "PS");
@@ -158,6 +213,34 @@ void Renderer::init_gbuffer() {
   }
 
   blend_state = gi::addBlendState(gi::ONE, gi::ONE);
+  blend_state_skybox = gi::addBlendState(gi::SRC_ALPHA, gi::ONE_MINUS_SRC_ALPHA);
+}
+
+void Renderer::draw_skybox() {
+  assert(test_skybox.defaultTextureCube);
+  gi::DebugState gbuffer_debug_state("Sky box pass");
+
+  auto res = test_skybox.defaultTextureCube->get_resource();
+  if (!res) {
+    return;
+  }
+  // clear them
+  gi::PipelineState state;
+  state.bound_shaders.vertex = test_skybox.vertex_shader->compiled;
+  state.bound_shaders.pixel = test_skybox.pixel_shader->compiled;
+  state.primitive_type = gi::PrimitiveTopology::TriangleStrip;
+
+  gi::bind_uniform_buffer(0, gi::ShaderStage::Vertex, camera_uniform_buf->get_resource());
+
+  gi::ShaderParameter srv_parameter;
+  gi::set_shader_resource_view(srv_parameter, res->srv_color, test_skybox.pixel_shader->compiled);
+  gi::set_sampler_state(srv_parameter, res->sampler_state, test_skybox.pixel_shader->compiled);
+  gi::set_pipeline_state(state);
+  gi::set_vertex_stream(test_skybox.stream, test_skybox.vertex_shader->compiled);
+  gi::draw_indexed(test_skybox.indices, gi::PrimitiveTopology::TriangleList, (u32)test_skybox.indices->get_count(), 0,
+                   0);
+
+  gi::set_shader_resource_view(srv_parameter, nullptr, test_skybox.pixel_shader->compiled);
 }
 
 void Renderer::draw_light_pass() {
@@ -165,6 +248,8 @@ void Renderer::draw_light_pass() {
 
   gi::set_render_targets(1, &color_intermediate_buffer.render_target_view, nullptr);
   gi::clear_render_target_view(color_intermediate_buffer.render_target_view, glm::vec4(0));
+
+  draw_skybox();
 
   constexpr usize id = utils::string::hash_code("LightPassParams");
   auto uniform_buf = app::get().get_shader_cache().uniform_buffer_map[id];
@@ -196,9 +281,13 @@ void Renderer::draw_light_pass() {
     uniform_buf->set_raw_parameter("viewPos", (void *)&xf.position[0], sizeof(vec3));
 
   // gi::set_alpha_blending(true);
-  gi::set_blend_state(blend_state);
   auto &lights = component::get_array_of_components<LightComponent>();
+
+  gi::set_blend_state(blend_state_skybox);
   for (int linear_index = 0; linear_index < lights.size(); linear_index++) {
+    if (linear_index == 1) {
+      gi::set_blend_state(blend_state);
+    }
     auto &light = lights[linear_index];
     auto entity_id = component::get_entity_id<LightComponent>(linear_index);
     auto &transform = *component::find_and_get<TransformComponent>(entity_id);
@@ -218,12 +307,6 @@ void Renderer::draw_light_pass() {
   gi::set_shader_resource_view({1}, nullptr, light_pass_ps->compiled);
   gi::set_shader_resource_view({2}, nullptr, light_pass_ps->compiled);
   gi::set_shader_resource_view({3}, nullptr, light_pass_ps->compiled);
-}
-
-void Renderer::initialize() {
-  using namespace utils::path;
-  load_shaders();
-  init_gbuffer();
 }
 
 void Renderer::draw_quad() {
@@ -252,7 +335,10 @@ void Renderer::draw_static_mesh_gbuffer() {
   gi::DebugState gbuffer_debug_state("Gbuffer start");
 
   gi::set_render_targets(4, gbuffer.rts, gi::get_main_depth_stencil_view());
+  gi::clear_render_target_view(gbuffer.world_pos.render_target_view, glm::vec4(0));
+  gi::clear_render_target_view(gbuffer.material_attributes.render_target_view, glm::vec4(0));
   gi::clear_render_target_view(gbuffer.color.render_target_view, glm::vec4(0));
+  gi::clear_render_target_view(gbuffer.world_normal.render_target_view, glm::vec4(0));
 
   // Get components of type.
   gi::PipelineState state;
@@ -277,16 +363,12 @@ void Renderer::draw_static_mesh_gbuffer() {
 
   state.primitive_type = gi::PrimitiveTopology::TriangleList;
   gi::set_pipeline_state(state);
+  gi::bind_uniform_buffer(0, gi::ShaderStage::Vertex, camera_uniform_buf->get_resource());
 
-  auto camera_uniform_buf =
-      app::get().get_shader_cache().uniform_buffer_map[utils::string::hash_code("CameraParameters")];
   auto model_uniform_buf =
       app::get().get_shader_cache().uniform_buffer_map[utils::string::hash_code("ModelParameters")];
 
-  gi::bind_uniform_buffer(0, gi::ShaderStage::Vertex, camera_uniform_buf->get_resource());
   gi::bind_uniform_buffer(1, gi::ShaderStage::Vertex, model_uniform_buf->get_resource());
-
-  load_camera_params(camera_uniform_buf);
 
   auto &static_meshes = component::get_array_of_components<StaticMeshComponent>();
   for (int x = 0; x < static_meshes.size(); x++) {
@@ -303,7 +385,7 @@ void Renderer::draw_static_mesh_gbuffer() {
     StaticMeshResource *resource_ptr = static_mesh_asset->get_render_resource();
     if (!resource_ptr) {
       continue;
-    } 
+    }
     StaticMeshResource &resource = *resource_ptr;
     StaticMeshRenderData &render_data = resource.lod_resources[0];
     {
@@ -332,11 +414,19 @@ void Renderer::draw_image() {
   gi::clear_render_target_view(gi::get_main_render_target_view(), glm::vec4(0));
   gi::clear_depth_stencil_view(gi::get_main_depth_stencil_view(), GI_CLEAR_DEPTH | GI_CLEAR_STENCIL, 1.f, 0.f);
 
+  load_camera_params();
+
+  // draw skybox
+
   draw_static_mesh_gbuffer();
 
   gi::set_z_buffer(false);
+  // draw_skybox();
+
   draw_light_pass();
+
   draw_quad();
+
   /*
     post effects go here...
   */

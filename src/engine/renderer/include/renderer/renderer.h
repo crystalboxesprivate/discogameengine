@@ -13,5 +13,7 @@ struct Renderer {
   void draw_quad();
 
   void draw_light_pass();
+  void draw_skybox();
+
 };
 } // namespace renderer

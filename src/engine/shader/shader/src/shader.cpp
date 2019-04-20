@@ -87,7 +87,6 @@ Shader &load(const String &filename, ShaderStage stage, const String &entry) {
     }
 
     String shader_code = out_sources[0];
-
     for (compiler::ReflectionData::UniformBuffer &buffer_refl : out.reflection_data.uniform_buffers) {
       shader.uniform_buffers.resize(shader.uniform_buffers.size() + 1);
       UniformBufferDescription &buffer_desc = shader.uniform_buffers.back();

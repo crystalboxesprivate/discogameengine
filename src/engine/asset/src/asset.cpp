@@ -17,9 +17,10 @@
 
 namespace asset {
 Asset *get_default_asset(Type asset_type) {
-  //DEBUG_LOG(Assets, Error, "not implemented initialization of default assets");
+  // DEBUG_LOG(Assets, Error, "not implemented initialization of default assets");
   return nullptr;
-  Asset *asset = app::get().get_asset_registry().default_assets[asset_type].get();;
+  Asset *asset = app::get().get_asset_registry().default_assets[asset_type].get();
+  ;
   return asset;
 }
 
@@ -129,7 +130,7 @@ struct AssetThread {
     assets_to_load.enqueue(asset);
     if (!is_running) {
       std::thread t1(AssetThread::process_assets, this);
-      t1.detach();  
+      t1.detach();
     }
   }
 
@@ -168,9 +169,13 @@ void load_to_ram(AssetRef asset, bool force_rebuild, bool load_immediately) {
 void load_to_ram(Asset &asset, bool force_rebuild, bool load_immediately) {
   if (asset.is_loaded_to_ram || asset.is_loading)
     return;
-  asset_thread.add({&asset, force_rebuild});
+  #if ENGINE_FORCE_SYNC_ASSET_LOADING
+  load_immediately = true;
+  #endif
   if (load_immediately) {
     AssetThread::load(asset, force_rebuild);
+  } else {
+    asset_thread.add({&asset, force_rebuild});
   }
 }
 

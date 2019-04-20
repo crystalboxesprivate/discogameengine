@@ -67,6 +67,15 @@ struct Texture2D {
   virtual PixelFormat get_pixel_format() = 0;
 };
 
+struct TextureCube {
+  virtual ~TextureCube() {
+  }
+  virtual void *get_native_ptr() = 0;
+  virtual u16 get_width() = 0;
+  virtual u16 get_height() = 0;
+  virtual PixelFormat get_pixel_format() = 0;
+};
+
 struct ShaderResourceView {
   virtual void *get_native_ptr() = 0;
 };
@@ -86,14 +95,18 @@ typedef SharedPtr<RenderTargetView> RenderTargetViewRef;
 typedef SharedPtr<DepthStencilView> DepthStencilViewRef;
 typedef SharedPtr<ShaderResourceView> ShaderResourceViewRef;
 typedef SharedPtr<Texture2D> Texture2DRef;
+typedef SharedPtr<TextureCube> TextureCubeRef;
 typedef SharedPtr<SamplerState> SamplerStateRef;
 
 RenderTargetViewRef get_main_render_target_view();
 DepthStencilViewRef get_main_depth_stencil_view();
 
 SamplerStateRef create_sampler_state();
-Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void* data = nullptr, bool generate_mips = false);
+TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, void *data);
+Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void *data = nullptr,
+                              bool generate_mips = false);
 ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d);
+ShaderResourceViewRef create_shader_resource_view(TextureCubeRef texture2d);
 RenderTargetViewRef create_render_target_view(Texture2DRef texture2d);
 
 void set_render_targets(i32 num_render_targets, RenderTargetViewRef *render_targets,

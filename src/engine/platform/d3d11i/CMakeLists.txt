@@ -10,6 +10,7 @@ add_library(
   src/rendering.cpp
   src/debug.cpp
   src/blending_state.cpp
+  src/texturecube.cpp
 )
 
 target_include_directories(d3d11i PUBLIC include)

@@ -3,9 +3,11 @@ add_library(
   STATIC
   include/renderer/mesh_render_data.h
   include/renderer/resource.h
-  src/renderer.cpp
   include/renderer/rendercore.h
+  include/renderer/procedural_geo.h
+  src/renderer.cpp
   src/rendercore.cpp
+  src/procedural_geo.cpp
 )
 target_include_directories(renderer PUBLIC include)
 target_link_libraries(renderer PUBLIC core asset graphicsinterface app)
