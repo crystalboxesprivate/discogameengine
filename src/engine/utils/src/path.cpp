@@ -16,10 +16,16 @@ bool exists(const String &path) {
 
 String filename(const String &in_path, bool keep_extension) {
   usize found = in_path.find_last_of("/\\");
-  return in_path.substr(found + 1);
+  String filename = in_path.substr(found + 1);
+  if (!keep_extension) {
+    String out_file, out_ext;
+    splitext(filename, out_file, out_ext);
+    return out_file;
+  }
+  return filename;
 }
 
- String parent(const String &in_path) {
+String parent(const String &in_path) {
   usize found = in_path.find_last_of("/\\");
   return in_path.substr(0, found);
 }

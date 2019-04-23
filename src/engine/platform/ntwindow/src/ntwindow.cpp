@@ -38,7 +38,7 @@ void NtWindow::set_window_title(const String &new_title) {
 }
 
 double NtWindow::get_time() {
-  return timer.get_total_time();
+  return max(0.f, timer.get_total_time());
 }
 
 void NtWindow::set_resize_callback(ResizeCallback callback) {

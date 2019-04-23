@@ -102,7 +102,7 @@ void FirstPersonCamera::update_movement() {
   float factor = deltaTime * (is_left_clicked ? movement_settings.run_multiplier : 1.f);
 
   factor *= movement_settings.forward_speed;
-  factor *= 0.13f;
+  factor *= 0.07f;
 
   glm::vec3 translation(0);
 

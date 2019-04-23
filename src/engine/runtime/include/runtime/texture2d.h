@@ -23,6 +23,10 @@ struct Texture2D : public Texture, public asset::Asset {
     return size_y;
   }
 
+  virtual graphicsinterface::PixelFormat get_pixel_format() const override {
+    return pixel_format;
+  }
+
   Texture2DResource *get_resource();
 
   Blob texture_data;

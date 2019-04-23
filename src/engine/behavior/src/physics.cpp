@@ -879,7 +879,7 @@ void PhysicsBehavior::start() {
 
     assert(xfrom_ptr);
     sRigidBodyDef def;
-    def.Orientation = eulerAngles(xfrom_ptr->rotation);
+    def.quatOrientation = xfrom_ptr->rotation;
     def.Position = xfrom_ptr->position;
     def.GameObjectName = utils::string::sprintf("object_%d", x);
 
@@ -916,7 +916,8 @@ void PhysicsBehavior::start() {
 
 void PhysicsBehavior::update(double delta_time) {
   // update transforms
-  world->Update(1 / 60.f);
+  //world->Update(1 / 60.f);
+  world->Update(delta_time );
 
   auto &rigid_bodies = component::get_array_of_components<game::RigidBodyComponent>();
 

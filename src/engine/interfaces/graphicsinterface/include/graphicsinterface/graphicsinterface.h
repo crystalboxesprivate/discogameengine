@@ -67,8 +67,8 @@ struct Texture2D {
   virtual PixelFormat get_pixel_format() = 0;
 };
 
-struct TextureCube {
-  virtual ~TextureCube() {
+struct EnvironmentMap {
+  virtual ~EnvironmentMap() {
   }
   virtual void *get_native_ptr() = 0;
   virtual u16 get_width() = 0;
@@ -95,16 +95,23 @@ typedef SharedPtr<RenderTargetView> RenderTargetViewRef;
 typedef SharedPtr<DepthStencilView> DepthStencilViewRef;
 typedef SharedPtr<ShaderResourceView> ShaderResourceViewRef;
 typedef SharedPtr<Texture2D> Texture2DRef;
-typedef SharedPtr<TextureCube> TextureCubeRef;
+typedef SharedPtr<EnvironmentMap> TextureCubeRef;
 typedef SharedPtr<SamplerState> SamplerStateRef;
 
 RenderTargetViewRef get_main_render_target_view();
 DepthStencilViewRef get_main_depth_stencil_view();
 
-SamplerStateRef create_sampler_state();
+// Sampler constants
+extern const int FILTER_MIN_MAG_LINEAR_MIP_POINT;
+extern const int FILTER_MIN_MAG_MIP_LINEAR;
+extern const int FILTER_ANISOTROPIC;
+
+SamplerStateRef create_sampler_state(i32 filter = FILTER_MIN_MAG_MIP_LINEAR);
 TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, void *data);
-TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, i32 num_mips,
-                                   void *data = nullptr, const char *debug_name = 0);
+TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, i32 num_mips, const char *debug_name = 0);
+
+void update_subresource(TextureCubeRef texcube, i32 slice, i32 miplevel, i32 width, void* data);
+
 RenderTargetViewRef create_cubemap_rendertarget(TextureCubeRef, i32 side, i32 mip_level, const char* debug_name = 0);
 Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void *data = nullptr,
                               bool generate_mips = false);
@@ -132,6 +139,7 @@ void set_z_buffer(bool enabled);
 
 struct BlendState {};
 typedef SharedPtr<BlendState> BlendStateRef;
+
 
 //
 // Blending constants

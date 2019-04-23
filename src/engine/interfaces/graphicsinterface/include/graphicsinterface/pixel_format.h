@@ -1,5 +1,7 @@
 #pragma once
+
 #include <engine>
+
 namespace graphicsinterface {
 enum class PixelFormat : u8 {
   R8G8B8A8F,
@@ -9,6 +11,11 @@ enum class PixelFormat : u8 {
 
   Unknown
 };
+
+inline Archive &operator<<(Archive &archive, PixelFormat &px) {
+  archive.serialize(&px, sizeof(PixelFormat));
+  return archive;
+}
 
 static u8 get_byte_count_from_pixelformat(PixelFormat pixel_format) {
   switch (pixel_format) {

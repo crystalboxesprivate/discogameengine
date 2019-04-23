@@ -64,11 +64,15 @@ struct D3D11SamplerState : public SamplerState {
   }
 };
 
-SamplerStateRef create_sampler_state() {
+const int FILTER_MIN_MAG_LINEAR_MIP_POINT = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
+const int FILTER_MIN_MAG_MIP_LINEAR = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+const int FILTER_ANISOTROPIC = D3D11_FILTER_ANISOTROPIC;
+
+SamplerStateRef create_sampler_state(int filter_type) {
   D3D11_SAMPLER_DESC samplerDesc;
   auto sampler_state = new D3D11SamplerState;
   // Create a texture sampler state description.
-  samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+  samplerDesc.Filter = (D3D11_FILTER) filter_type;
   samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
   samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
   samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;

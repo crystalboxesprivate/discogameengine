@@ -5,7 +5,7 @@ extern ID3D11Device *device;
 extern ID3D11DeviceContext *device_context;
 
 // https://stackoverflow.com/a/34325668
-struct D3D11TextureCube : public TextureCube {
+struct D3D11TextureCube : public EnvironmentMap {
   ComPtr<ID3D11Texture2D> view;
   D3D11TextureCube(u16 in_width, u16 in_height, PixelFormat in_pixel_format)
       : width(in_width)
@@ -44,9 +44,14 @@ i32 count_mip_maps(i32 width, i32 height) {
   return i;
 }
 
-TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, i32 num_mips, void *data,
+TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, i32 num_mips,
                                    const char *debug_name) {
+  if (num_mips == 0)
+    num_mips = 1;
 
+  if (num_mips == -1) {
+    num_mips = count_mip_maps((i32)width, (i32)height);
+  }
   D3D11TextureCube *texture_cube = new D3D11TextureCube((u16)width, (u16)height, pixelformat);
   {
     texture_cube->width = (u16)width;
@@ -55,31 +60,43 @@ TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelf
   }
   auto dxgi_format = d3d_pixel_formats[(u8)pixelformat];
 
-  D3D11_TEXTURE2D_DESC texArrayDesc;
-  texArrayDesc.Width = width;
-  texArrayDesc.Height = height;
-  texArrayDesc.MipLevels = num_mips == 1 ? 0 : count_mip_maps(width, height);
-  texArrayDesc.ArraySize = 6;
-  texArrayDesc.Format = dxgi_format;
-  texArrayDesc.SampleDesc.Count = 1;
-  texArrayDesc.SampleDesc.Quality = 0;
-  texArrayDesc.Usage = D3D11_USAGE_DEFAULT;
-  texArrayDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-  texArrayDesc.CPUAccessFlags = 0;
-  texArrayDesc.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
+  D3D11_TEXTURE2D_DESC tex_array_description;
+  tex_array_description.Width = (u32)width;
+  tex_array_description.Height = (u32)height;
+  tex_array_description.MipLevels = num_mips;
+  tex_array_description.ArraySize = 6;
+  tex_array_description.Format = dxgi_format;
+  tex_array_description.SampleDesc.Count = 1;
+  tex_array_description.SampleDesc.Quality = 0;
+  tex_array_description.Usage = D3D11_USAGE_DEFAULT;
+  tex_array_description.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+  tex_array_description.CPUAccessFlags = 0;
+  tex_array_description.MiscFlags = D3D11_RESOURCE_MISC_TEXTURECUBE;
 
-  // ID3D11Texture2D *texArray = 0;
-  if (FAILED(device->CreateTexture2D(&texArrayDesc, 0, &texture_cube->view))) {
+  if (FAILED(device->CreateTexture2D(&tex_array_description, 0, &texture_cube->view))) {
     assert(false);
     return nullptr;
   }
-  texture_cube->texArrayDesc = texArrayDesc;
+  texture_cube->texArrayDesc = tex_array_description;
 
   if (debug_name) {
     texture_cube->view.Get()->SetPrivateData(WKPDID_D3DDebugObjectName, (u32)strlen(debug_name), debug_name);
   }
 
   return TextureCubeRef(texture_cube);
+}
+
+void update_subresource(TextureCubeRef texcube, i32 slice, i32 miplevel, i32 width, void *data) {
+  assert(data);
+  auto resource = (ID3D11Texture2D *)texcube->get_native_ptr();
+  //auto width = texcube->get_width();
+  i32 bytes_per_pixel = get_byte_count_from_pixelformat(texcube->get_pixel_format());
+  i32 row_pitch = (u32)width * bytes_per_pixel;
+
+  D3D11_TEXTURE2D_DESC desc;
+  resource->GetDesc(&desc);
+  i32 subresource = D3D11CalcSubresource(miplevel, slice, desc.MipLevels);
+  device_context->UpdateSubresource(resource, subresource, NULL, (u8 *)data, row_pitch, 0);
 }
 
 RenderTargetViewRef create_cubemap_rendertarget(TextureCubeRef texcube, i32 side, i32 mip_level,
@@ -222,7 +239,7 @@ ShaderResourceViewRef create_shader_resource_view(TextureCubeRef tex) {
   viewDesc.Format = texturecube->texArrayDesc.Format;
   viewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURECUBE;
   viewDesc.TextureCube.MostDetailedMip = 0;
-  viewDesc.TextureCube.MipLevels = -1; //texturecube->texArrayDesc.MipLevels;
+  viewDesc.TextureCube.MipLevels = -1; // texturecube->texArrayDesc.MipLevels;
 
   if (FAILED(device->CreateShaderResourceView(texturecube->view.Get(), &viewDesc, &srv->view))) {
     assert(false);

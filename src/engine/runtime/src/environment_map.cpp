@@ -1,30 +1,30 @@
-#include <runtime/texturecube.h>
+#include <runtime/environment_map.h>
 #include <renderer/resource.h>
-#include <runtime/texturecube_resource.h>
+#include <runtime/environment_map_resource.h>
 
 using namespace runtime;
 
-void TextureCube::serialize(Archive &archive) {
+void EnvironmentMap::serialize(Archive &archive) {
   Asset::serialize(archive);
   archive << texture_data;
 }
 
-renderer::Resource *TextureCube::create_resource() {
-  return new TextureCubeResource(this);
+renderer::Resource *EnvironmentMap::create_resource() {
+  return new EnvironmentMapResource(this);
 }
 
-void TextureCube::init_resource() {
+void EnvironmentMap::init_resource() {
   assert(is_valid() || get_size_x() > 0);
   if (is_valid()) {
     if (!is_loaded_to_ram)
       asset::load_to_ram(*this, false, false); 
-    resource = (TextureCubeResource *)create_resource();
+    resource = (EnvironmentMapResource *)create_resource();
     return;
   }
   DEBUG_LOG(Rendering, Warning, "Runtime textures aren't supported");
 }
 
-TextureCubeResource *TextureCube::get_resource() {
+EnvironmentMapResource *EnvironmentMap::get_resource() {
   if (!resource) {
     update_resource();
     return nullptr;
@@ -37,15 +37,15 @@ TextureCubeResource *TextureCube::get_resource() {
   return resource;
 }
 
-void TextureCube::update_resource() {
+void EnvironmentMap::update_resource() {
   DEBUG_LOG(System, Log, "update_resource was called");
   release_resource();
   init_resource();
 }
 
-void TextureCube::release_resource() {
+void EnvironmentMap::release_resource() {
   if (resource)
     delete resource;
   resource = nullptr;
 }
-implement_asset_type(TextureCube);
+implement_asset_type(EnvironmentMap);

@@ -33,5 +33,16 @@ bool load_file_to_buffer(const String &filename, Vector<u8> &data) {
     DEBUG_LOG(System, Error, "Couldn't open %s.", filename.c_str());
   return false;
 }
+
+bool save_binary_file(const String &filename, usize size, void *data) {
+  assert(size);
+  assert(data);
+  FILE *write_ptr;
+  write_ptr = fopen(filename.c_str(), "wb");
+  assert(write_ptr);
+  fwrite(data, 1, size, write_ptr);
+  fclose(write_ptr);
+  return true;
+}
 } // namespace fs
 } // namespace utils

@@ -15,6 +15,10 @@
 #include <string>
 #include <iostream>
 
+#include <runtime/environment_map_data.h>
+#include <utils/path.h>
+#include <utils/fs.h>
+
 class Shader {
 public:
   unsigned int id;
@@ -83,11 +87,11 @@ using namespace glm;
 
 mat4 capture_projection = perspective(radians(90.0f), 1.0f, 0.1f, 10.0f);
 mat4 capture_views[] = {lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
-                       lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
-                       lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)),
-                       lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f)),
-                       lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f)),
-                       lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f))};
+                        lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(-1.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f)),
+                        lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 1.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f)),
+                        lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, -1.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f)),
+                        lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, 1.0f), vec3(0.0f, -1.0f, 0.0f)),
+                        lookAt(vec3(0.0f, 0.0f, 0.0f), vec3(0.0f, 0.0f, -1.0f), vec3(0.0f, -1.0f, 0.0f))};
 
 #define PATH FileSystem::getPath
 
@@ -148,7 +152,7 @@ void CubemapBuilder::render_passes() {
       environment_map = envCubemap;
       glBindTexture(GL_TEXTURE_CUBE_MAP, environment_map);
       for (unsigned int i = 0; i < 6; ++i) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, CUBEMAP_RES, CUBEMAP_RES, 0, GL_RGB, GL_FLOAT,
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, CUBEMAP_RES, CUBEMAP_RES, 0, GL_RGBA, GL_FLOAT,
                      nullptr);
       }
       glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -194,7 +198,7 @@ void CubemapBuilder::render_passes() {
     irradiance_map = irradianceMap;
     glBindTexture(GL_TEXTURE_CUBE_MAP, irradiance_map);
     for (unsigned int i = 0; i < 6; ++i) {
-      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, IRRADIANCE_RES, IRRADIANCE_RES, 0, GL_RGB,
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, IRRADIANCE_RES, IRRADIANCE_RES, 0, GL_RGBA,
                    GL_FLOAT, nullptr);
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -238,7 +242,7 @@ void CubemapBuilder::render_passes() {
     prefilter_map = prefilterMap;
     glBindTexture(GL_TEXTURE_CUBE_MAP, prefilter_map);
     for (unsigned int i = 0; i < 6; ++i) {
-      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, PREFILTER_RES, PREFILTER_RES, 0, GL_RGB, GL_FLOAT,
+      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA16F, PREFILTER_RES, PREFILTER_RES, 0, GL_RGBA, GL_FLOAT,
                    nullptr);
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -292,16 +296,26 @@ using std::pow;
 using std::string;
 using std::vector;
 
+using runtime::EnvironmentMapData;
+using runtime::environment_map::ImageData;
+
 // set mode
 // bake to hdr
 void CubemapBuilder::save_to_disk() {
+  EnvironmentMapData env;
+
+  env.color_size = CUBEMAP_RES;
+  env.irradiance_size = IRRADIANCE_RES;
+  env.prefilter_size = PREFILTER_RES;
+  env.prefilter_num_mips = PREFILTER_MIP_LEVELS;
+
   struct Image {
     int32_t byte_count = 0;
     int32_t width = 0;
     vector<uint8_t> data;
   };
   // save cubemap
-  vector<Image> images;
+  // vector<Image> images;
 
   for (int x = 0; x < 6; x++) {
     glBindTexture(GL_TEXTURE_CUBE_MAP, environment_map);
@@ -312,13 +326,14 @@ void CubemapBuilder::save_to_disk() {
       glGetTexLevelParameteriv(target, 0, GL_TEXTURE_WIDTH, ints);
       width = ints[0];
     }
-    images.push_back(Image());
-    auto &image = images.back();
-    image.byte_count = width * width * 12;
-    image.width = width;
-    image.data.resize(image.byte_count);
+    env.color_map.push_back(ImageData());
+    auto &image = env.color_map.back();
+    usize byte_count = width * width * 16;
+    image.size = width;
+    image.pixel_format = graphicsinterface::PixelFormat::FloatRGBA;
+    image.data.resize(byte_count);
     glFlush();
-    glGetTexImage(target, 0, GL_RGB, GL_FLOAT, &image.data[0]);
+    glGetTexImage(target, 0, GL_RGBA, GL_FLOAT, &image.data[0]);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   }
 
@@ -331,17 +346,21 @@ void CubemapBuilder::save_to_disk() {
       glGetTexLevelParameteriv(target, 0, GL_TEXTURE_WIDTH, ints);
       width = ints[0];
     }
-    images.push_back(Image());
-    auto &image = images.back();
-    image.byte_count = width * width * 12;
-    image.width = width;
-    image.data.resize(image.byte_count);
+    env.irradiance_map.push_back(ImageData());
+    auto &image = env.irradiance_map.back();
+    i32 byte_count = width * width * 16;
+    image.size = width;
+    image.pixel_format = graphicsinterface::PixelFormat::FloatRGBA;
+    image.data.resize(byte_count);
     glFlush();
-    glGetTexImage(target, 0, GL_RGB, GL_FLOAT, &image.data[0]);
+    glGetTexImage(target, 0, GL_RGBA, GL_FLOAT, &image.data[0]);
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   }
 
   for (uint32_t mip = 0; mip < PREFILTER_MIP_LEVELS; ++mip) {
+    env.prefilter_map.push_back(Vector<ImageData>());
+    auto &images = env.prefilter_map.back();
+
     glBindTexture(GL_TEXTURE_CUBE_MAP, prefilter_map);
     for (int x = 0; x < 6; x++) {
       int32_t target = GL_TEXTURE_CUBE_MAP_POSITIVE_X + x;
@@ -351,22 +370,28 @@ void CubemapBuilder::save_to_disk() {
         glGetTexLevelParameteriv(target, mip, GL_TEXTURE_WIDTH, ints);
         width = ints[0];
       }
-      images.push_back(Image());
+      images.push_back(ImageData());
       auto &image = images.back();
-      image.byte_count = width * width * 12;
-      image.width = width;
-      image.data.resize(image.byte_count);
+      i32 byte_count = width * width * 16;
+      image.pixel_format = graphicsinterface::PixelFormat::FloatRGBA;
+      image.size = width;
+      image.data.resize(byte_count);
       glFlush();
-      glGetTexImage(target, mip, GL_RGB, GL_FLOAT, &image.data[0]);
+      glGetTexImage(target, mip, GL_RGBA, GL_FLOAT, &image.data[0]);
     }
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
   }
 
-  for (int x = 0; x < images.size(); x++) {
-    auto &image = images[x];
-    string filename = "cubemap_" + std::to_string(x) + ".hdr";
-    stbi_write_hdr(filename.c_str(), image.width, image.width, 3, (float *)&image.data[0]);
-  }
+  Archive archive;
+  archive << env;
+  usize archive_size = archive.get_size();
+
+  archive = Archive(archive_size);
+  archive << env;
+  archive.data();
+
+  String out_filename = utils::path::filename(filename, false) + ".iblarchive";
+  utils::fs::save_binary_file(out_filename, archive.get_size(), archive.data());
 }
 
 void render_brdf_lut(uint16_t image_size) {

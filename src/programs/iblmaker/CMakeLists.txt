@@ -9,8 +9,8 @@ set(sources
 
 include_directories(include)
 add_executable(iblmaker ${sources})
-target_link_libraries(iblmaker glfw glad stb glm)
 target_include_directories(iblmaker PRIVATE include)
+target_link_libraries(iblmaker glfw glad stb glm runtime)
 
 set_target_properties(iblmaker PROPERTIES OUTPUT_NAME iblmaker
   RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARY_DIR})

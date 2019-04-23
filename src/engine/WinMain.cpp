@@ -22,7 +22,7 @@
 void setup() {
   app::get().add_task(new task::TransformTask);
   app::get().add_behavior(new behavior::FirstPersonCamera);
-  //app::get().add_behavior(new behavior::PhysicsBehavior);
+  app::get().add_behavior(new behavior::PhysicsBehavior);
 
   app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/UserTest.hlslinc").get();
   //app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/Default.hlslinc").get();
@@ -35,8 +35,8 @@ void post_scene_setup() {
   auto &rb = component::add_and_get<game::RigidBodyComponent>(entity_id);
   rb.type = game::RigidBodyType::Sphere;
   rb.position_simulation_weight = (0.f);
-  rb.radius = 14.f;
-  rb.mass = 40.f;
+  rb.radius = 1.0f;
+  rb.mass = 35.f;
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
