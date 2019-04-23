@@ -3,8 +3,6 @@ add_executable(
   WinMain.cpp
 )
 
-add_executable(compiler_test main.cpp)
-
 # set(ENGINE_GRAPHICS_INTERFACE opengli)
 # set(ENGINE_SHADER_TARGET_LANG Glsl)
 
@@ -40,12 +38,6 @@ target_link_libraries(engine PRIVATE task behavior ntwindow component game rende
 set_target_properties(engine PROPERTIES OUTPUT_NAME disco-engine
   RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARY_DIR})
   
-target_link_libraries(compiler_test PUBLIC config core app legacy utils shader asset)
-set_target_properties(compiler_test PROPERTIES OUTPUT_NAME compiler_test
-  RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARY_DIR})
-target_link_libraries(compiler_test PRIVATE task behavior ntwindow component game preprocessor)
-
-
 add_custom_command(
   TARGET engine
   POST_BUILD
@@ -54,4 +46,6 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/freetype/lib/freetype271MT.dll" "$<TARGET_FILE_DIR:engine>"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/ShaderConductor/lib/dxcompiler.dll" "$<TARGET_FILE_DIR:engine>"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/ShaderConductor/lib/ShaderConductor.dll" "$<TARGET_FILE_DIR:engine>"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/libtiff/bin/tiff.dll" "$<TARGET_FILE_DIR:engine>"
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/libtiff/bin/tiffxx.dll" "$<TARGET_FILE_DIR:engine>"
 )

@@ -33,6 +33,8 @@ struct TextureCube : public Texture, public asset::Asset {
   u16 size_x = 0;
   u16 size_y = 0;
 
+  bool is_loaded_from_hdri = false;
+
   graphicsinterface::PixelFormat pixel_format = graphicsinterface::PixelFormat::Unknown;
 
 private:

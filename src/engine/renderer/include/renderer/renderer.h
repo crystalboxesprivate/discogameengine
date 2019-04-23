@@ -2,6 +2,7 @@
 
 namespace renderer {
 struct Renderer {
+
   void initialize();
 
   void load_shaders();
@@ -14,6 +15,10 @@ struct Renderer {
 
   void draw_light_pass();
   void draw_skybox();
+
+private:
+  void create_skybox();
+  void create_default_texture();
 
 };
 } // namespace renderer

@@ -50,9 +50,9 @@ mat4 FirstPersonCamera::view_matrix() {
 }
 
 mat4 FirstPersonCamera::projection_matrix(const float aspect) {
-  const float fov = 0.4f * 3.14f;
-  const float far = 1000.f;
-  const float near = .01f;
+  const float fov = radians(current->field_of_view);//0.4f * 3.14f;
+  const float far = current->clipping_plane_far;//1000.f;
+  const float near = current->clipping_plane_near;
   return perspective(fov, aspect, near, far);
 }
 
@@ -102,6 +102,7 @@ void FirstPersonCamera::update_movement() {
   float factor = deltaTime * (is_left_clicked ? movement_settings.run_multiplier : 1.f);
 
   factor *= movement_settings.forward_speed;
+  factor *= 0.13f;
 
   glm::vec3 translation(0);
 

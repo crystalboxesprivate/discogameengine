@@ -5,8 +5,7 @@
 namespace game {
 using namespace component;
 struct MetadataComponent {
-  String friendly_name;
-  bool is_updated_by_physics = false;
+  String name;
 };
 } // namespace game
 declare_component(game::MetadataComponent)

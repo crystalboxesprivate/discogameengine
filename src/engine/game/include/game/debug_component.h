@@ -2,7 +2,7 @@
 #include <component/component.h>
 namespace game {
 using namespace component;
-struct DebugComponent /*: public Component*/ {
+struct DebugComponent {
   bool is_debug_object = false;
 };
 } // namespace game

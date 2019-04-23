@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 
 namespace graphicsinterface {
-  IndexBufferRef create_index_buffer(usize count, void *initial_data) {
+  IndexBufferRef create_index_buffer(usize count, void *initial_data, const char *debug_name) {
     GlIndexBuffer &buffer = *new GlIndexBuffer();
     buffer.count = count;
     glGenBuffers(1, &buffer.vbo);
@@ -12,7 +12,7 @@ namespace graphicsinterface {
     return IndexBufferRef(&buffer);
   }
 
-  VertexBufferRef create_vertex_buffer(usize count, usize element_size, PixelFormat pixel_format, void *initial_data) {
+  VertexBufferRef create_vertex_buffer(usize count, usize element_size, PixelFormat pixel_format, void *initial_data, const char *debug_name) {
     GlVertexBuffer &buffer = *new GlVertexBuffer();
     buffer.count = count;
     buffer.stride = element_size;

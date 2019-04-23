@@ -80,18 +80,17 @@ bool load_json_scene(const char *filename) {
       auto meta_handle = component::add<MetadataComponent>(entity);
       auto &meta = *component::get_mut<MetadataComponent>(meta_handle);
 
-      meta.friendly_name = go["Name"].GetString();
-      meta.is_updated_by_physics = go["Use_Physics"].GetBool();
+      meta.name = go["Name"].GetString();
 
       auto transform_handle = component::add<TransformComponent>(entity);
       auto &transform = *component::get_mut<TransformComponent>(transform_handle);
 
       transform.position = get_vec<vec3>(go["Position"]);
-      transform.orient = quat(radians(get_vec<vec3>(go["Rotation"])));
-      transform.scale3d = get_vec<vec3>(go["Scale"]);
+      transform.rotation = quat(radians(get_vec<vec3>(go["Rotation"])));
+      transform.scale = get_vec<vec3>(go["Scale"]);
 
-      auto material_handle = component::add<MaterialParameterComponent>(entity);
-      auto &material = *component::get_mut<MaterialParameterComponent>(material_handle);
+      auto material_handle = component::add<MaterialComponent>(entity);
+      auto &material = *component::get_mut<MaterialComponent>(material_handle);
       material.material_diffuse = get_vec<vec4>(go["DiffuseRGB_Alpha"]);
       material.material_specular = get_vec<vec4>(go["SpecularRGB_Alpha"]);
 
@@ -236,9 +235,9 @@ bool load_json_scene(const char *filename) {
 
       String type_string = light_json["Type"].GetString();
       if (type_string == "POINT_LIGHT")
-        light_component.type = LightComponent::LightType::Point;
+        light_component.type = LightType::Point;
       if (type_string == "SPOT_LIGHT")
-        light_component.type = LightComponent::LightType::Spot;
+        light_component.type = LightType::Spot;
     }
   }
 

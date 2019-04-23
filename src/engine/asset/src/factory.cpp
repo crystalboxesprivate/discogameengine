@@ -7,7 +7,7 @@
 #include <asset/texture2d_factory.h>
 #include <asset/static_mesh_factory.h>
 #include <asset/shader_factory.h>
-#include <asset/texturecube_factory.h>
+#include <asset/environment_map_factory.h>
 
 #include <config/config.h>
 
@@ -93,6 +93,6 @@ Factory *find_factory(const String &filename) {
 }
 } // namespace asset
 implement_asset_factory(Texture2DFactory);
-implement_asset_factory(TextureCubeFactory);
+implement_asset_factory(EnvironmentMapFactory);
 implement_asset_factory(StaticMeshFactory);
 implement_asset_factory(ShaderFactory);

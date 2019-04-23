@@ -69,9 +69,9 @@ struct Quad {
   gi::VertexBufferRef vertices;
   gi::VertexStream stream;
 };
+Quad quad;
 
 GBuffer gbuffer;
-Quad quad;
 shader::Shader *quad_vertex;
 shader::Shader *quad_pixel;
 shader::Shader *light_pass_ps;
@@ -96,23 +96,47 @@ struct SkyBox {
   Shader *vertex_shader;
   Shader *pixel_shader;
 };
-
 SkyBox test_skybox;
+
+struct DefaultTexture {
+  gi::Texture2DRef texture;
+  gi::ShaderResourceViewRef srv;
+
+  gi::Texture2DRef normal;
+  gi::ShaderResourceViewRef srv_normal;
+
+  gi::SamplerStateRef sampler;
+};
+
+struct PBS {
+  Shader *ibl_pass;
+};
+
+PBS pbs;
+
+DefaultTexture default_texture;
 shader::UniformBufferDescription *camera_uniform_buf = nullptr;
 
-void Renderer::initialize() {
-  using namespace utils::path;
-  load_shaders();
-  init_gbuffer();
-  // Cubemap
+void Renderer::create_default_texture() {
+  u8 one_pixel[] = {255, 255, 255, 255};
+  default_texture.texture = gi::create_texture2d(1, 1, gi::PixelFormat::R8G8B8A8F, one_pixel);
+  default_texture.srv = gi::create_shader_resource_view(default_texture.texture);
+  default_texture.sampler = gi::create_sampler_state();
+
+  u8 one_pixel_normal[] = {128, 128, 255, 255};
+  default_texture.normal = gi::create_texture2d(1, 1, gi::PixelFormat::R8G8B8A8F, one_pixel_normal);
+  default_texture.srv_normal = gi::create_shader_resource_view(default_texture.normal);
+}
+
+void Renderer::create_skybox() {
   String cubepath = utils::path::join(
-      config::CONTENT_DIR, "textures/ExportedCubemaps/Hilton_Head_Beach_Club/Hilton_Head_Beach_Club.png.cubemapjson");
+      config::CONTENT_DIR,
+      "textures/ExportedCubemaps/road_in_tenerife_mountain/road_in_tenerife_mountain.hdr.cubemapjson");
   test_skybox.asset = asset::add<TextureCube>(cubepath);
   test_skybox.defaultTextureCube = test_skybox.asset.get();
   {
     Vector<glm::vec3> positions;
     Vector<i32> indices;
-    // CreateSphere(10, 10, indices, positions);
 
     sphere_geometry(indices, positions, 512.f, 32, 32);
 
@@ -125,7 +149,15 @@ void Renderer::initialize() {
     test_skybox.stream.add({0, gi::SemanticName::Position, gi::PixelFormat::R32G32B32F, 0, 0});
     test_skybox.stream.add_buffer(test_skybox.vertices.get());
   }
-  DEBUG_LOG(Rendering, Log, "Renderer initialized");
+}
+
+void Renderer::initialize() {
+  using namespace utils::path;
+  load_shaders();
+  init_gbuffer();
+  // Cubemap
+  create_skybox();
+  create_default_texture();
 }
 
 void load_camera_params() {
@@ -175,6 +207,8 @@ void Renderer::load_shaders() {
 
   gbuffer_vertex = &shader::load("/Shaders/main.hlsl", graphicsinterface::ShaderStage::Vertex, "VS");
   gbuffer_pixel = &shader::load("/Shaders/main.hlsl", graphicsinterface::ShaderStage::Pixel, "PS");
+
+  pbs.ibl_pass = &shader::load("/Shaders/IBLPass.hlsl", gi::ShaderStage::Pixel, "PS");
 }
 
 void Renderer::init_gbuffer() {
@@ -243,57 +277,88 @@ void Renderer::draw_skybox() {
   gi::set_shader_resource_view(srv_parameter, nullptr, test_skybox.pixel_shader->compiled);
 }
 
+void set_gbuffer(bool state, gi::ShaderRef pixel_shader) {
+  gi::set_sampler_state({0}, gbuffer.sampler_state, pixel_shader);
+  gi::set_shader_resource_view({0}, state ? gbuffer.world_pos.srv : nullptr, pixel_shader);
+  gi::set_shader_resource_view({1}, state ? gbuffer.material_attributes.srv : nullptr, pixel_shader);
+  gi::set_shader_resource_view({2}, state ? gbuffer.color.srv : nullptr, pixel_shader);
+  gi::set_shader_resource_view({3}, state ? gbuffer.world_normal.srv : nullptr, pixel_shader);
+}
+
 void Renderer::draw_light_pass() {
   gi::DebugState gbuffer_debug_state("Light pass start");
 
   gi::set_render_targets(1, &color_intermediate_buffer.render_target_view, nullptr);
   gi::clear_render_target_view(color_intermediate_buffer.render_target_view, glm::vec4(0));
-
   draw_skybox();
 
-  constexpr usize id = utils::string::hash_code("LightPassParams");
-  auto uniform_buf = app::get().get_shader_cache().uniform_buffer_map[id];
+  vec3 view_position, view_direction;
+  {
+    auto &cameras = component::get_vector_of_components<CameraComponent>();
+    assert(cameras.slots.size());
+    u32 camera_entity_id = component::get_entity_id<CameraComponent>(0);
+    const game::TransformComponent &transform_component =
+        *component::find_and_get<TransformComponent>(camera_entity_id);
+    view_position = transform_component.position;
+    view_direction = vec3(0, 0, 1) * transform_component.rotation;
+  }
 
-  gi::PipelineState state;
-
-  state.bound_shaders.vertex = quad_vertex->compiled;
-  state.bound_shaders.pixel = light_pass_ps->compiled;
-
-  state.primitive_type = gi::PrimitiveTopology::TriangleStrip;
+  gi::PipelineState pipeline_state;
+  pipeline_state.bound_shaders.vertex = quad_vertex->compiled;
+  pipeline_state.primitive_type = gi::PrimitiveTopology::TriangleStrip;
   gi::set_vertex_stream(quad.stream, quad_vertex->compiled);
 
-  if (uniform_buf)
+  ///////////////////////////////////////////////////////////////////////////////////////////
+  // IBL
+  ///////////////////////////////////////////////////////////////////////////////////////////
+
+  auto res = test_skybox.defaultTextureCube->get_resource();
+  if (res) {
+    gi::ShaderRef ibl = pbs.ibl_pass->compiled;
+    // First pass needs to draw the opaque geometry,
+    // the rest of the lights will be drawn additively
+    gi::set_blend_state(blend_state_skybox);
+    pipeline_state.bound_shaders.pixel = ibl;
+    gi::set_pipeline_state(pipeline_state);
+    set_gbuffer(true, ibl);
+    gi::set_shader_resource_view({4}, res->srv_irradiance, ibl);
+    gi::set_shader_resource_view({5}, res->srv_color, ibl);
+
+    gi::draw((u32)quad.vertices->count, 0);
+
+    gi::set_shader_resource_view({4}, nullptr, ibl);
+    gi::set_shader_resource_view({5}, nullptr, ibl);
+    set_gbuffer(false, ibl);
+  }
+  ///////////////////////////////////////////////////////////////////////////////////////////
+  gi::set_blend_state(nullptr);
+  return;
+
+  // Draw lights
+  pipeline_state.bound_shaders.pixel = light_pass_ps->compiled;
+  set_gbuffer(true, light_pass_ps->compiled);
+
+  constexpr usize id = utils::string::hash_code("LightPassParams");
+  shader::UniformBufferDescription *uniform_buf = app::get().get_shader_cache().uniform_buffer_map[id];
+
+  if (uniform_buf) {
+    uniform_buf->set_raw_parameter("viewPos", (void *)&view_position[0], sizeof(vec3));
     gi::bind_uniform_buffer(0, gi::ShaderStage::Pixel, uniform_buf->get_resource());
+  }
 
-  gi::set_shader_resource_view({0}, gbuffer.world_pos.srv, light_pass_ps->compiled);
-  gi::set_shader_resource_view({1}, gbuffer.material_attributes.srv, light_pass_ps->compiled);
-  gi::set_shader_resource_view({2}, gbuffer.color.srv, light_pass_ps->compiled);
-  gi::set_shader_resource_view({3}, gbuffer.world_normal.srv, light_pass_ps->compiled);
+  gi::set_pipeline_state(pipeline_state);
+  gi::set_blend_state(blend_state);
 
-  gi::set_sampler_state({0}, gbuffer.sampler_state, quad_pixel->compiled);
-  gi::set_pipeline_state(state);
-
-  auto &cameras = component::get_vector_of_components<CameraComponent>();
-  assert(cameras.slots.size());
-  auto camera_entity_id = component::get_entity_id<CameraComponent>(0);
-  auto &xf = *component::find_and_get<TransformComponent>(camera_entity_id);
-  if (uniform_buf)
-    uniform_buf->set_raw_parameter("viewPos", (void *)&xf.position[0], sizeof(vec3));
-
-  // gi::set_alpha_blending(true);
   auto &lights = component::get_array_of_components<LightComponent>();
-
-  gi::set_blend_state(blend_state_skybox);
   for (int linear_index = 0; linear_index < lights.size(); linear_index++) {
-    if (linear_index == 1) {
-      gi::set_blend_state(blend_state);
-    }
-    auto &light = lights[linear_index];
-    auto entity_id = component::get_entity_id<LightComponent>(linear_index);
-    auto &transform = *component::find_and_get<TransformComponent>(entity_id);
+    game::LightComponent &light = lights[linear_index];
+    u32 entity_id = component::get_entity_id<LightComponent>(linear_index);
+    const game::TransformComponent &transform = *component::find_and_get<TransformComponent>(entity_id);
 
     if (uniform_buf) {
       vec4 light_params = vec4(0.7, 1.8, 2000.f, 1.f);
+      vec3 forward = vec3(0, 0, 1) * transform.rotation;
+      uniform_buf->set_raw_parameter("lightDirection", (void *)&forward[0], sizeof(vec3));
       uniform_buf->set_raw_parameter("lightPosition", (void *)&transform.position[0], sizeof(vec3));
       uniform_buf->set_raw_parameter("lightColor", (void *)&light.diffuse_alpha[0], sizeof(vec3));
       uniform_buf->set_raw_parameter("lightParameters", (void *)&light_params[0], sizeof(vec4));
@@ -302,11 +367,7 @@ void Renderer::draw_light_pass() {
     gi::draw((u32)quad.vertices->count, 0);
   }
   gi::set_blend_state(nullptr);
-
-  gi::set_shader_resource_view({0}, nullptr, light_pass_ps->compiled);
-  gi::set_shader_resource_view({1}, nullptr, light_pass_ps->compiled);
-  gi::set_shader_resource_view({2}, nullptr, light_pass_ps->compiled);
-  gi::set_shader_resource_view({3}, nullptr, light_pass_ps->compiled);
+  set_gbuffer(false, light_pass_ps->compiled);
 }
 
 void Renderer::draw_quad() {
@@ -322,6 +383,7 @@ void Renderer::draw_quad() {
   state.primitive_type = gi::PrimitiveTopology::TriangleStrip;
 
   gi::ShaderParameter srv_parameter;
+  // gi::set_shader_resource_view(srv_parameter, gbuffer.world_normal.srv, quad_pixel->compiled);
   gi::set_shader_resource_view(srv_parameter, color_intermediate_buffer.srv, quad_pixel->compiled);
   gi::set_sampler_state(srv_parameter, gbuffer.sampler_state, quad_pixel->compiled);
   gi::set_pipeline_state(state);
@@ -329,6 +391,18 @@ void Renderer::draw_quad() {
   gi::draw((u32)quad.vertices->count, 0);
 
   gi::set_shader_resource_view(srv_parameter, nullptr, quad_pixel->compiled);
+}
+
+gi::ShaderResourceViewRef get_texture(asset::AssetHandle<runtime::Texture2D> &handle, bool normal = false) {
+  runtime::Texture2D *texture_asset = handle.get();
+  if (!texture_asset)
+    return normal ? default_texture.srv_normal : default_texture.srv;
+  runtime::Texture2DResource *resource = texture_asset->get_resource();
+  if (!resource)
+    return normal ? default_texture.srv_normal : default_texture.srv;
+  if (!resource->srv)
+    return normal ? default_texture.srv_normal : default_texture.srv;
+  return resource->srv;
 }
 
 void Renderer::draw_static_mesh_gbuffer() {
@@ -389,20 +463,12 @@ void Renderer::draw_static_mesh_gbuffer() {
     StaticMeshResource &resource = *resource_ptr;
     StaticMeshRenderData &render_data = resource.lod_resources[0];
     {
-      using game::MaterialParameterComponent;
-      MaterialParameterComponent &material = *component::find_and_get_mut<MaterialParameterComponent>(entity_id);
-      for (i32 index = 0; index < material.textures.size(); index++) {
-        // for (auto &texture : material.textures) {
-        auto texture = material.textures[index].get();
-        auto res = texture->get_resource();
-        if (!res) {
-          continue;
-        }
-        if (res->srv) {
-          gi::set_shader_resource_view({index}, res->srv, state.bound_shaders.pixel);
-          gi::set_sampler_state({index}, res->sampler_state, state.bound_shaders.pixel);
-        }
-      }
+      using game::MaterialComponent;
+      MaterialComponent &material = *component::find_and_get_mut<MaterialComponent>(entity_id);
+      gi::set_sampler_state({0}, default_texture.sampler, state.bound_shaders.pixel);
+      gi::set_shader_resource_view({0}, get_texture(material.albedo_texture), state.bound_shaders.pixel);
+      gi::set_shader_resource_view({1}, get_texture(material.mask_texture), state.bound_shaders.pixel);
+      gi::set_shader_resource_view({2}, get_texture(material.normal_texture), state.bound_shaders.pixel);
     }
     gi::set_vertex_stream(resource.vertex_stream, gbuffer_vertex->compiled);
     gi::draw_indexed(render_data.indices, gi::PrimitiveTopology::TriangleList, (u32)render_data.indices->get_count(), 0,

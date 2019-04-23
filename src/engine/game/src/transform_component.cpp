@@ -5,7 +5,7 @@ using namespace glm;
 // void TransformComponent::serialize(Archive &archive) {
 //   Super::serialize(archive);
 //   archive << position;
-//   archive << scale3d;
+//   archive << scale;
 //   archive << orient;
 // }
 

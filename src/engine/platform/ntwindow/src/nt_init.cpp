@@ -257,6 +257,10 @@ Window *Window::create(const char *title, i32 width, i32 height, i32 bits, bool 
   // Adjust Window To True Requested Size
   AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 
+  SetProcessDPIAware();
+
+  i32 win_offset = 200;
+
   // Create The Window
   if (!(hWnd = CreateWindowEx(dwExStyle,                          // Extended Style For The Window
                               "disco_engine",                     // Class Name
@@ -264,7 +268,7 @@ Window *Window::create(const char *title, i32 width, i32 height, i32 bits, bool 
                               dwStyle |                           // Defined Window Style
                                   WS_CLIPSIBLINGS |               // Required Window Style
                                   WS_CLIPCHILDREN,                // Required Window Style
-                              0, 0,                               // Window Position
+                              win_offset, win_offset,             // Window Position
                               WindowRect.right - WindowRect.left, // Calculate Window Width
                               WindowRect.bottom - WindowRect.top, // Calculate Window Height
                               NULL,                               // No Parent Window

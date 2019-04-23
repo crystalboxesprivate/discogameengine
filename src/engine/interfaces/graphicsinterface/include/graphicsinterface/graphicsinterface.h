@@ -103,6 +103,9 @@ DepthStencilViewRef get_main_depth_stencil_view();
 
 SamplerStateRef create_sampler_state();
 TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, void *data);
+TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, i32 num_mips,
+                                   void *data = nullptr, const char *debug_name = 0);
+RenderTargetViewRef create_cubemap_rendertarget(TextureCubeRef, i32 side, i32 mip_level, const char* debug_name = 0);
 Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void *data = nullptr,
                               bool generate_mips = false);
 ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d);
@@ -170,9 +173,9 @@ void clear_render_target_view(RenderTargetViewRef view, const glm::vec4 &clear_c
 void clear_depth_stencil_view(DepthStencilViewRef view, u32 clear_flags, float depth = 1.f, float stencil = 0.f);
 void set_viewport(u32 x, u32 y, usize width, usize height);
 
-IndexBufferRef create_index_buffer(usize count, void *initial_data = nullptr);
+IndexBufferRef create_index_buffer(usize count, void *initial_data = nullptr, const char *debug_name = 0);
 VertexBufferRef create_vertex_buffer(usize count, usize element_size, PixelFormat pixel_format,
-                                     void *initial_data = nullptr);
+                                     void *initial_data = nullptr, const char *debug_name = 0);
 void set_index_buffer_data(void *data, usize byte_count, IndexBufferRef buffer);
 void set_vertex_buffer_data(void *data, usize byte_count, VertexBufferRef buffer);
 void set_uniform_buffer_data(void *data, usize byte_count, UniformBufferRef buffer);

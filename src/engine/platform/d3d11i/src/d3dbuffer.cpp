@@ -1,5 +1,8 @@
 #include <d3d11i/d3d11i.h>
 
+// for debug names
+#pragma comment(lib, "dxguid.lib")
+
 namespace graphicsinterface {
 HRESULT Result;
 extern ID3D11Device *device;
@@ -7,6 +10,7 @@ extern ID3D11DeviceContext *device_context;
 // TODO merge buffer creation code
 
 UniformBufferRef create_uniform_buffer(usize size, void *initial_data) {
+  size = max(size, 16);
   D3DUniformBuffer &buffer = *new D3DUniformBuffer();
   buffer.size = size;
 
@@ -24,7 +28,8 @@ UniformBufferRef create_uniform_buffer(usize size, void *initial_data) {
   return UniformBufferRef(&buffer);
 }
 
-IndexBufferRef create_index_buffer(usize count, void *initial_data) {
+IndexBufferRef create_index_buffer(usize count, void *initial_data, const char *debug_name) {
+
   D3DIndexBuffer *buffer = new D3DIndexBuffer();
   buffer->count = count;
 
@@ -39,10 +44,15 @@ IndexBufferRef create_index_buffer(usize count, void *initial_data) {
   if (FAILED(Result))
     assert(false && "Buffer creation failed");
 
+  if (debug_name) {
+    buffer->buffer.Get()->SetPrivateData(WKPDID_D3DDebugObjectName, (u32)strlen(debug_name), debug_name);
+  }
   return IndexBufferRef(buffer);
 }
 
-VertexBufferRef create_vertex_buffer(usize count, usize element_size, PixelFormat pixel_format, void *initial_data) {
+VertexBufferRef create_vertex_buffer(usize count, usize element_size, PixelFormat pixel_format, void *initial_data,
+                                     const char *debug_name) {
+
   D3DVertexBuffer &buffer = *new D3DVertexBuffer();
   buffer.count = count;
   buffer.stride = element_size;
@@ -59,6 +69,9 @@ VertexBufferRef create_vertex_buffer(usize count, usize element_size, PixelForma
   if (FAILED(Result))
     assert(false && "Buffer creation failed");
 
+  if (debug_name) {
+    buffer.buffer.Get()->SetPrivateData(WKPDID_D3DDebugObjectName, (u32)strlen(debug_name), debug_name);
+  }
   return VertexBufferRef(&buffer);
 }
 

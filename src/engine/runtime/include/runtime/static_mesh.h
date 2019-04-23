@@ -36,6 +36,8 @@ struct StaticMesh : public asset::Asset {
   Vector<LodInfo> lod_info;
   math::Box bounds;
 
+  float import_scale_factor = 1.f;
+
 private:
   SharedPtr<StaticMeshResource> render_data;
 };

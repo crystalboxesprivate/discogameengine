@@ -2,7 +2,7 @@
 #include <asset/factory.h>
 #include <runtime/texturecube.h>
 
-struct TextureCubeFactory : public asset::Factory {
+struct EnvironmentMapFactory : public asset::Factory {
   virtual const char *get_filename_extensions() override {
     return "cubemapjson";
   }

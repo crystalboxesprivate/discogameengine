@@ -4,8 +4,8 @@
 
 namespace game {
 using namespace component;
-struct LightComponent /*: public Component*/ {
-  enum class LightType : u8 { Point, Spot, Directional };
+enum class LightType : u8 { Point, Spot, Directional };
+struct LightComponent {
   LightComponent()
       : type(LightType::Point)
       , diffuse_alpha(0.92f, 0.43f, 0.10f, 1.0f)
@@ -13,6 +13,9 @@ struct LightComponent /*: public Component*/ {
       , is_on(true) {
   }
   LightType type;
+  glm::vec4 color;
+  float intensity;
+
   glm::vec4 attenuation;
   glm::vec4 diffuse_alpha;
   bool is_on;

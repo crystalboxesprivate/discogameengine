@@ -63,7 +63,7 @@ void StaticMeshFactory::load_asset_data(asset::Asset &asset) {
   }
   // todo optimize
   for (u32 x = 0; x < ai_mesh.mNumVertices; x++) {
-    auto vertex = ai_mesh.mVertices[x];
+    auto vertex = ai_mesh.mVertices[x] * mesh.import_scale_factor;
     {
       if (vertex.x < mesh.bounds.min.x) {
         mesh.bounds.min.x = vertex.x;

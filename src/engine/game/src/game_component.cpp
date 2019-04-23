@@ -37,7 +37,7 @@ using namespace game;
 
 // }
 
-// void MaterialParameterComponent::serialize(Archive &archive) {
+// void MaterialComponent::serialize(Archive &archive) {
 //   Super::serialize(archive);
 //   archive << material_diffuse;
 //   archive << material_specular;
@@ -46,8 +46,8 @@ using namespace game;
 
 // void MetadataComponent::serialize(Archive &archive) {
 //   Super::serialize(archive);
-//   archive << friendly_name;
-//   archive << is_updated_by_physics;
+//   archive << name
+;
 // }
 
 // void PlayerComponent::serialize(Archive &archive) {
@@ -73,7 +73,7 @@ using namespace game;
 //implement_component(PrimitiveComponent);
 //implement_component(PlayerComponent);
 //implement_component(MetadataComponent);
-//implement_component(MaterialParameterComponent);
+//implement_component(MaterialComponent);
 //implement_component(LightComponent);
 //implement_component(DebugComponent);
 //implement_component(CameraComponent);

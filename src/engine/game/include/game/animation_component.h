@@ -2,8 +2,7 @@
 #include <component/component.h>
 namespace game {
 using namespace component;
-struct AnimationComponent /*: public Component*/ {
-};
+struct AnimationComponent {};
 } // namespace game
 
 declare_component(game::AnimationComponent)

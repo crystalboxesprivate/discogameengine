@@ -1,6 +1,153 @@
 #include <renderer/procedural_geo.h>
 
 namespace renderer {
+
+void build_plane(i32 &numberOfVertices, Vector<i32> &indices, Vector<glm::vec3> &vertices, Vector<glm::vec3> &normals,
+                 Vector<glm::vec2> &uvs, i32 u, i32 v, i32 w, i32 udir, i32 vdir, f32 width, f32 height, f32 depth,
+                 i32 gridX, i32 gridY, i32 materialIndex) {
+  using namespace glm;
+
+  f32 segmentWidth = width / (f32)gridX;
+  f32 segmentHeight = height / (f32)gridY;
+
+  f32 widthHalf = width / 2.f;
+  f32 heightHalf = height / 2.f;
+  f32 depthHalf = depth / 2.f;
+  auto gridX1 = gridX + 1;
+  auto gridY1 = gridY + 1;
+
+  auto vertexCounter = 0;
+  auto groupCount = 0;
+
+  i32 ix, iy;
+
+  vec3 vector;
+
+  // generate vertices, normals and uvs
+  for (iy = 0; iy < gridY1; iy++) {
+    f32 y = iy * segmentHeight - heightHalf;
+
+    for (ix = 0; ix < gridX1; ix++) {
+      f32 x = ix * segmentWidth - widthHalf;
+
+      // set values to correct vector component
+      vector[u] = x * udir;
+      vector[v] = y * vdir;
+      vector[w] = depthHalf;
+
+      // now apply vector to vertex buffer
+      vertices.push_back(vector);
+
+      // set values to correct vector component
+      vector[u] = 0;
+      vector[v] = 0;
+      vector[w] = depth > 0 ? 1.f : -1.f;
+
+      // now apply vector to normal buffer
+      normals.push_back(vector);
+
+      // uvs
+      uvs.push_back(vec2(ix / (f32)gridX, 1 - (iy / (f32)gridY)));
+
+      // counters
+      numberOfVertices += 1;
+    }
+  }
+  // indices
+
+  // 1. you need three indices to draw a single face
+  // 2. a single segment consists of two faces
+  // 3. so we need to generate six (2*3) indices per segment
+
+  for (iy = 0; iy < gridY; iy++) {
+    for (ix = 0; ix < gridX; ix++) {
+
+      auto a = numberOfVertices + ix + gridX1 * iy;
+      auto b = numberOfVertices + ix + gridX1 * (iy + 1);
+      auto c = numberOfVertices + (ix + 1) + gridX1 * (iy + 1);
+      auto d = numberOfVertices + (ix + 1) + gridX1 * iy;
+
+      // faces
+      indices.push_back(a);
+      indices.push_back(b);
+      indices.push_back(d);
+
+      indices.push_back(b);
+      indices.push_back(c);
+      indices.push_back(d);
+    }
+  }
+}
+
+void box_geometry(Vector<float> &vertices) {
+  #if 0
+  vertices = {1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f,
+              -1.0f, 1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,
+              -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f,
+              1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+              1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,
+              -1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  1.0f,
+              -1.0f, 1.0f,  1.0f,  -1.0f, -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+              -1.0f, -1.0f, 1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  -1.0f};
+  #else
+  vertices = {
+      1.0f,  -1.0f, 1.0f,  // 0
+      -1.0f, -1.0f, 1.0f,  // 1
+      -1.0f, 1.0f,  1.0f,  // 2
+      -1.0f, -1.0f, -1.0f, // 3
+      1.0f,  -1.0f, -1.0f, // 4
+      1.0f,  1.0f,  -1.0f, // 5
+      -1.0f, 1.0f,  -1.0f, // 6
+      1.0f,  1.0f,  -1.0f, // 7
+      1.0f,  1.0f,  1.0f,  // 8
+      1.0f,  -1.0f, -1.0f, // 9
+      -1.0f, -1.0f, -1.0f, // 10
+      -1.0f, -1.0f, 1.0f,  //
+      1.0f,  -1.0f, -1.0f, //
+      1.0f,  -1.0f, 1.0f,  //
+      1.0f,  1.0f,  1.0f,  //
+      -1.0f, -1.0f, 1.0f,  //
+      -1.0f, -1.0f, -1.0f, //
+      -1.0f, 1.0f,  -1.0f, //
+      -1.0f, 1.0f,  -1.0f, //
+      -1.0f, 1.0f,  1.0f,  //
+      -1.0f, -1.0f, 1.0f,  //
+      1.0f,  1.0f,  1.0f,  //
+      1.0f,  1.0f,  -1.0f, //
+      1.0f,  -1.0f, -1.0f, //
+      -1.0f, -1.0f, 1.0f,  //
+      1.0f,  -1.0f, 1.0f,  //
+      1.0f,  -1.0f, -1.0f, //
+      1.0f,  1.0f,  1.0f,  //
+      -1.0f, 1.0f,  1.0f,  //
+      -1.0f, 1.0f,  -1.0f, //
+      1.0f,  1.0f,  -1.0f, //
+      -1.0f, 1.0f,  -1.0f, //
+      -1.0f, -1.0f, -1.0f, //
+      -1.0f, 1.0f,  1.0f,  //
+      1.0f,  1.0f,  1.0f,  //
+      1.0f,  -1.0f, 1.0f   //
+  };
+#endif
+  // i32 numberOfVertices = 0;
+  // build_plane(numberOfVertices, indices, vertices, normals, uvs, 2, 1, 0, -1, -1, depth, height, width,
+  // depthSegments,
+  //             heightSegments, 0); // px
+  // build_plane(numberOfVertices, indices, vertices, normals, uvs, 2, 1, 0, 1, -1, depth, height, -width,
+  // depthSegments,
+  //             heightSegments, 1); // nx
+  // build_plane(numberOfVertices, indices, vertices, normals, uvs, 0, 2, 1, 1, 1, width, depth, height, widthSegments,
+  //             depthSegments, 2); // py
+  // build_plane(numberOfVertices, indices, vertices, normals, uvs, 0, 2, 1, 1, -1, width, depth, -height,
+  // widthSegments,
+  //             depthSegments, 3); // ny
+  // build_plane(numberOfVertices, indices, vertices, normals, uvs, 0, 1, 2, 1, -1, width, height, depth, widthSegments,
+  //             heightSegments, 4); // pz
+  // build_plane(numberOfVertices, indices, vertices, normals, uvs, 0, 1, 2, -1, -1, width, height, -depth,
+  // widthSegments,
+  //             heightSegments, 5); // nz
+} // namespace renderer
+
 // https://github.com/mrdoob/three.js/blob/master/src/geometries/SphereGeometry.js
 void sphere_geometry(Vector<i32> &indices, Vector<glm::vec3> &vertices, f32 radius, i32 widthSegments,
                      i32 heightSegments, f32 phiStart, f32 phiLength, f32 thetaStart, f32 thetaLength) {
@@ -16,11 +163,11 @@ void sphere_geometry(Vector<i32> &indices, Vector<glm::vec3> &vertices, f32 radi
 
   for (iy = 0; iy <= heightSegments; iy++) {
     Vector<i32> verticesRow;
-    f32 v = iy / (f32) heightSegments;
+    f32 v = iy / (f32)heightSegments;
     // special case for the poles
-    f32 uOffset = (iy == 0) ? 0.5f / (f32) widthSegments : ((iy == heightSegments) ? -0.5f / (f32)widthSegments : 0);
+    f32 uOffset = (iy == 0) ? 0.5f / (f32)widthSegments : ((iy == heightSegments) ? -0.5f / (f32)widthSegments : 0);
     for (ix = 0; ix <= widthSegments; ix++) {
-      f32 u = ix / (f32) widthSegments;
+      f32 u = ix / (f32)widthSegments;
       // vertex
       vertex.x = -radius * cos(phiStart + u * phiLength) * sin(thetaStart + v * thetaLength);
       vertex.y = radius * cos(thetaStart + v * thetaLength);
@@ -44,7 +191,7 @@ void sphere_geometry(Vector<i32> &indices, Vector<glm::vec3> &vertices, f32 radi
         indices.push_back(a);
         indices.push_back(d);
       }
-      if (iy != (heightSegments - 1 ) || thetaEnd < MATH_PI) {
+      if (iy != (heightSegments - 1) || thetaEnd < MATH_PI) {
         indices.push_back(b);
         indices.push_back(c);
         indices.push_back(d);

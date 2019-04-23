@@ -1,5 +1,5 @@
 #include <config/config.h>
-#include <legacy/sceneloader.h>
+// #include <legacy/sceneloader.h>
 #include <utils/path.h>
 #include <window/window.h>
 #include <app/app.h>
@@ -14,15 +14,18 @@
 #include <game/camera_component.h>
 #include <game/rigid_body_component.h>
 
+#include <legacy/sceneloader2.h>
+
 #include <renderer/rendercore.h>
 #include <shader/cache.h>
 
 void setup() {
   app::get().add_task(new task::TransformTask);
   app::get().add_behavior(new behavior::FirstPersonCamera);
-  app::get().add_behavior(new behavior::PhysicsBehavior);
+  //app::get().add_behavior(new behavior::PhysicsBehavior);
 
   app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/UserTest.hlslinc").get();
+  //app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/Default.hlslinc").get();
   app::get().get_shader_cache().compiler.compile();
 }
 
@@ -41,7 +44,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
   logging::Logger logger(join(join(config::CONTENT_DIR, "logs"), "log.txt"));
   using namespace window;
-  Window *main_ptr = Window::create("Test", 640, 480, 16, false);
+  Window *main_ptr = Window::create("Test", 1920, 1080, 16, false);
   if (!main_ptr) {
     DEBUG_LOG(System, Error, "Window creation failed");
     return 1;
@@ -53,8 +56,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   app.init(main_ptr);
   setup();
 
-  auto scenes_folder = join(join(config::CONTENT_DIR, "scenes"), "physics.json");
-  legacy::load_json_scene(scenes_folder.c_str());
+  auto scenes_folder = join(join(config::CONTENT_DIR, "scenes"), "teapots.json");
+  legacy::load(scenes_folder.c_str());
   post_scene_setup();
 
   app.game_state_init();

@@ -4,7 +4,7 @@
 
 struct Texture2DFactory : public asset::Factory {
   virtual const char *get_filename_extensions() override {
-    return "bmp;png;tga;jpg";
+    return "bmp;png;tga;jpg;tif";
   }
 
   virtual asset::AssetRef create(const String &filename) override {

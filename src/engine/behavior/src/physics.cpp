@@ -879,11 +879,11 @@ void PhysicsBehavior::start() {
 
     assert(xfrom_ptr);
     sRigidBodyDef def;
-    def.Orientation = eulerAngles(xfrom_ptr->orient);
+    def.Orientation = eulerAngles(xfrom_ptr->rotation);
     def.Position = xfrom_ptr->position;
     def.GameObjectName = utils::string::sprintf("object_%d", x);
 
-    def.Mass = 40.f; // rb.mass;
+    def.Mass = rb.mass;
     iRigidBody *new_body = nullptr;
     iShape *new_shape = nullptr;
     switch (rb.type) {
@@ -934,7 +934,7 @@ void PhysicsBehavior::update(double delta_time) {
     }
 
     xfrom_ptr->position = result_position;
-    xfrom_ptr->orient = glm::mat4(physics_object_ptr->GetMatRotation());
+    xfrom_ptr->rotation = glm::mat4(physics_object_ptr->GetMatRotation());
   }
 }
 

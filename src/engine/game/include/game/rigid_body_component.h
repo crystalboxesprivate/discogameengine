@@ -13,30 +13,11 @@ inline Archive &operator<<(Archive &archive, RigidBodyType &type) {
   return archive;
 }
 struct RigidBodyComponent {
-  // virtual void serialize(Archive &archive) override {
-  //   Super::serialize(archive);
-
-  //   archive << type;
-
-  //   archive << plane_constant;
-  //   archive << plane_normal;
-  //   archive << half_extents;
-  //   archive << pivot;
-  //   archive << pivot_b;
-  //   archive << axis;
-  //   archive << offset;
-  //   archive << axis_id;
-  //   archive << mass;
-  //   archive << inverse_mass;
-  //   archive << radius;
-
-  //   archive << transform;
-  // }
-
   RigidBodyType type;
+  glm::vec3 half_extents;
+
   float plane_constant;
   glm::vec3 plane_normal;
-  glm::vec3 half_extents;
   glm::vec3 pivot;
   glm::vec3 pivot_b;
   glm::vec3 axis;

@@ -1,10 +1,10 @@
-#include <asset/texturecube_factory.h>
+#include <asset/environment_map_factory.h>
 #include <stb/stb_image.h>
 #include <rapidjson/document.h>
 #include <utils/fs.h>
 
 using namespace runtime;
-void TextureCubeFactory::load_asset_data(asset::Asset &asset) {
+void EnvironmentMapFactory::load_asset_data(asset::Asset &asset) {
   TextureCube &texcube = *static_cast<TextureCube *>(&asset);
   String json_path = texcube.source_filename;
   String cubemap_dir = utils::path::parent(json_path);
@@ -47,7 +47,7 @@ void TextureCubeFactory::load_asset_data(asset::Asset &asset) {
   i32 bytes_per_pixel = is_hdr ? 16 : 4;
   i32 bytes_per_image = 0;
   constexpr i32 IMAGE_COUNT = 12; // 6 for color, 6 for irradiance map
-  assert(!is_hdr);
+  //assert(!is_hdr);
 
   // Load the first image separately to determine its dimensions
   {
@@ -101,7 +101,7 @@ void TextureCubeFactory::load_asset_data(asset::Asset &asset) {
 
   {
     using namespace graphicsinterface;
-    texcube.pixel_format = is_hdr ? PixelFormat::R32G32B32F : PixelFormat::R8G8B8A8F;
+    texcube.pixel_format = is_hdr ? PixelFormat::FloatRGBA : PixelFormat::R8G8B8A8F;
   }
 
   texcube.size_x = cubemap_width;

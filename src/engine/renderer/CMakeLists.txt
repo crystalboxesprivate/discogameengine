@@ -4,6 +4,7 @@ add_library(
   include/renderer/mesh_render_data.h
   include/renderer/resource.h
   include/renderer/rendercore.h
+  include/renderer/renderer.h
   include/renderer/procedural_geo.h
   src/renderer.cpp
   src/rendercore.cpp
