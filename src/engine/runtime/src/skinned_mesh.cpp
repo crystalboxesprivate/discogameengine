@@ -60,7 +60,7 @@ SkinnedMeshResource *SkinnedMesh::get_render_resource() {
 }
 
 float SkinnedMesh::get_duration_seconds(String animationName) {
-  std::map<String , runtime::animation::Animation>::iterator itAnimation =
+  std::map<String, runtime::animation::Animation>::iterator itAnimation =
       this->animation_name_to_pscene.find(animationName);
 
   // Found it?
@@ -72,15 +72,12 @@ float SkinnedMesh::get_duration_seconds(String animationName) {
   return (float)itAnimation->second.duration / (float)itAnimation->second.ticks_per_second;
 }
 
-
-void SkinnedMesh::bone_transform(float time_in_seconds,
-                                 String animation_name, // Now we can pick the animation
+void SkinnedMesh::bone_transform(float time_in_seconds, String animation_name,
                                  std::vector<glm::mat4> &final_transformation, std::vector<glm::mat4> &globals,
                                  std::vector<glm::mat4> &offsets) {
-  glm::mat4 ident(1.0f);
-  float time_in_ticks = time_in_seconds * ticks_per_second;
+  float time_in_ticks = time_in_seconds * (float) ticks_per_second;
   float animation_time = fmod(time_in_ticks, find_animation_total_time(animation_name));
-
+  glm::mat4 ident(1.0f);
   this->read_node_hierarchy(animation_time, animation_name, hierarchy, ident);
 
   final_transformation.resize(this->number_of_bones);
@@ -89,8 +86,8 @@ void SkinnedMesh::bone_transform(float time_in_seconds,
 
   for (u32 bone_index = 0; bone_index < this->number_of_bones; bone_index++) {
     final_transformation[bone_index] = glm::transpose(this->bone_info[bone_index].final_transformation);
-    globals[bone_index] = this->bone_info[bone_index].ObjectBoneTransformation;
-    offsets[bone_index] = this->bone_info[bone_index].BoneOffset;
+    globals[bone_index] = this->bone_info[bone_index].object_bone_transformation;
+    offsets[bone_index] = this->bone_info[bone_index].bone_offset;
   }
 }
 // Looks in the animation map and returns the total time
@@ -142,14 +139,15 @@ void SkinnedMesh::calculate_glm_interpolated_scaling(float animation_time, const
   return;
 }
 
-void SkinnedMesh::read_node_hierarchy(float animation_time, String animation_name, const runtime::animation::Node &pNode,
-                                      const glm::mat4 &ParentTransformMatrix) {
+void SkinnedMesh::read_node_hierarchy(float animation_time, String animation_name,
+                                      const runtime::animation::Node &pNode, const glm::mat4 &ParentTransformMatrix) {
 
-  const auto& node_name = pNode.name;
+  const auto &node_name = pNode.name;
 
-  //auto scene = (const aiScene *)this->pScene;
+  // auto scene = (const aiScene *)this->pScene;
   runtime::animation::Animation *pAnimation = nullptr;
-  Map<String, runtime::animation::Animation>::iterator itAnimation = this->animation_name_to_pscene.find(animation_name); // Animations
+  Map<String, runtime::animation::Animation>::iterator itAnimation =
+      this->animation_name_to_pscene.find(animation_name); // Animations
 
   // Did we find it?
   if (itAnimation != this->animation_name_to_pscene.end()) {
@@ -184,9 +182,9 @@ void SkinnedMesh::read_node_hierarchy(float animation_time, String animation_nam
   std::map<String, u32>::iterator it = this->bone_name_to_bone_index.find(node_name);
   if (it != this->bone_name_to_bone_index.end()) {
     u32 BoneIndex = it->second;
-    this->bone_info[BoneIndex].ObjectBoneTransformation = object_bone_transform;
+    this->bone_info[BoneIndex].object_bone_transformation = object_bone_transform;
     this->bone_info[BoneIndex].final_transformation =
-        this->global_inverse_transformation * object_bone_transform * this->bone_info[BoneIndex].BoneOffset;
+        this->global_inverse_transformation * object_bone_transform * this->bone_info[BoneIndex].bone_offset;
 
   } else {
     int breakpoint = 0;

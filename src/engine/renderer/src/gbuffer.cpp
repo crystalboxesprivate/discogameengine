@@ -225,7 +225,7 @@ void update_skinned_meshes() {
     auto &sm = *skinned_mesh_asset;
     {
       sm.state.active_animation.total_time = sm.get_duration_seconds(sm.state.active_animation.name);
-      sm.state.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 2.0;
+      sm.state.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 2.0f;
 
       sm.state.active_animation.increment_time();
 

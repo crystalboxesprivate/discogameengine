@@ -11,6 +11,7 @@
 namespace renderer {
 struct Resource;
 }
+
 struct aiAnimation;
 struct aiNodeAnim;
 struct aiNode;
@@ -24,13 +25,13 @@ struct VertexBoneData {
   std::array<float, MAX_BONES_PER_VERTEX> ids;
   std::array<float, MAX_BONES_PER_VERTEX> weights;
 
-  void AddBoneData(u32 BoneID, float Weight);
+  void add_bone_data(u32 BoneID, float Weight);
 };
 
-struct sBoneInfo {
-  glm::mat4 BoneOffset;
+struct BoneInfo {
+  glm::mat4 bone_offset;
   glm::mat4 final_transformation;
-  glm::mat4 ObjectBoneTransformation;
+  glm::mat4 object_bone_transformation;
 };
 
 struct SkinnedMeshVertex {
@@ -124,12 +125,6 @@ struct SkinnedMesh : public asset::Asset {
       }
     };
 
-    struct TempStuff {
-      String current_animation;
-      String previous_animation;
-    };
-    TempStuff temp;
-
     // Extent Values for skinned mesh
     glm::vec3 minXYZ_from_SM_Bones;
     glm::vec3 maxXYZ_from_SM_Bones;
@@ -140,10 +135,6 @@ struct SkinnedMesh : public asset::Asset {
     StateDetails default_animation;
   };
 
-  AnimationState state;
-  //runtime::animation::Scene animation_scene;
-  double ticks_per_second;
-  runtime::animation::Node hierarchy;
 
   float get_duration_seconds(String animation_name);
   float find_animation_total_time(String animation_name);
@@ -154,7 +145,6 @@ struct SkinnedMesh : public asset::Asset {
                            const glm::mat4 &ParentTransformMatrix);
   const runtime::animation::Channel *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation *pAnimation, const String &boneName);
 
-  Map<String, animation::Animation> animation_name_to_pscene; 
 
   void calculate_glm_interpolated_position(float animation_time, const runtime::animation::Channel *node_anim, glm::vec3 &out);
   void calculate_glm_interpolated_rotation(float animation_time, const runtime::animation::Channel *node_anim, glm::quat &out);
@@ -164,11 +154,16 @@ struct SkinnedMesh : public asset::Asset {
   u32 find_position(float animation_time, const runtime::animation::Channel *node_anim);
   u32 find_scaling(float animation_time, const runtime::animation::Channel *node_anim);
 
+  String default_animation;
+  AnimationState state;
+  runtime::animation::Node hierarchy;
+  double ticks_per_second;
+
+  Map<String, animation::Animation> animation_name_to_pscene; 
+
   glm::mat4 global_inverse_transformation;
-  i32 number_of_vertices = 0;
-  Vector<VertexBoneData> vertex_bone_data;
   Map<String, u32> bone_name_to_bone_index;
-  Vector<sBoneInfo> bone_info;
+  Vector<BoneInfo> bone_info;
   u32 number_of_bones = 0;
 
 

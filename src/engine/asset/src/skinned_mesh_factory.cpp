@@ -21,7 +21,7 @@ mat4 ai_matrix_to_gl_matrix(const aiMatrix4x4 &mat) {
 }
 
 namespace runtime {
-void VertexBoneData::AddBoneData(u32 BoneID, float Weight) {
+void VertexBoneData::add_bone_data(u32 BoneID, float Weight) {
   for (i32 Index = 0; Index < sizeof(this->ids) / sizeof(this->ids[0]); Index++) {
     if (this->weights[Index] == 0.0f) {
       this->ids[Index] = (float)BoneID;
@@ -42,10 +42,10 @@ void SkinnedMeshFactory::load_bones(aiMesh *Mesh, Vector<runtime::VertexBoneData
     if (it == mesh_sm.bone_name_to_bone_index.end()) {
       BoneIndex = mesh_sm.number_of_bones;
       mesh_sm.number_of_bones++;
-      runtime::sBoneInfo bi;
+      runtime::BoneInfo bi;
       mesh_sm.bone_info.push_back(bi);
 
-      mesh_sm.bone_info[BoneIndex].BoneOffset = ai_matrix_to_gl_matrix(Mesh->mBones[boneIndex]->mOffsetMatrix);
+      mesh_sm.bone_info[BoneIndex].bone_offset = ai_matrix_to_gl_matrix(Mesh->mBones[boneIndex]->mOffsetMatrix);
       mesh_sm.bone_name_to_bone_index[BoneName] = BoneIndex;
     } else {
       BoneIndex = it->second;
@@ -55,7 +55,7 @@ void SkinnedMeshFactory::load_bones(aiMesh *Mesh, Vector<runtime::VertexBoneData
       i32 VertexID =
           /*mMeshEntries[MeshIndex].BaseVertex +*/ Mesh->mBones[boneIndex]->mWeights[WeightIndex].mVertexId;
       float Weight = Mesh->mBones[boneIndex]->mWeights[WeightIndex].mWeight;
-      vertexBoneData[VertexID].AddBoneData(BoneIndex, Weight);
+      vertexBoneData[VertexID].add_bone_data(BoneIndex, Weight);
     }
   }
 }
@@ -64,7 +64,7 @@ inline String import_path(const String &raw_path) {
   return utils::path::join(config::CONTENT_DIR, raw_path);
 }
 
-void make_hierarchy(runtime::animation::Node&node, aiNode*ai_node) {
+void make_hierarchy(runtime::animation::Node &node, aiNode *ai_node) {
   node.name = ai_node->mName.C_Str();
   node.transform = ai_matrix_to_gl_matrix(ai_node->mTransformation);
   node.children.resize(ai_node->mNumChildren);
@@ -152,6 +152,7 @@ bool SkinnedMeshFactory::load_mesh_animation(const String &friendly_name, const 
 
   mesh.animation_name_to_pscene[friendly_name] = runtime::animation::Animation();
   load_animation(mesh.animation_name_to_pscene[friendly_name], ai_scene->mAnimations[0]);
+  mesh.ticks_per_second = mesh.animation_name_to_pscene[friendly_name].ticks_per_second;
 
   return true;
 }
@@ -167,8 +168,10 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     String filename;
   };
 
-  mesh.number_of_vertices = 0;
-  utils::free_vector(mesh.vertex_bone_data);
+  //mesh.number_of_vertices = 0;
+  Vector<runtime::VertexBoneData> vertex_bone_data;
+
+  utils::free_vector(vertex_bone_data);
 
   String mesh_filename;
   Vector<AnimationNameFilename> animation_filenames;
@@ -197,16 +200,15 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
   mesh.global_inverse_transformation = ai_matrix_to_gl_matrix(p_scene->mRootNode->mTransformation);
   mesh.global_inverse_transformation = inverse(mesh.global_inverse_transformation);
 
-  mesh.number_of_vertices = p_scene->mMeshes[0]->mNumVertices;
-  // This is the vertex information for JUST the bone stuff
-  mesh.vertex_bone_data.resize(mesh.number_of_vertices);
+  // mesh.number_of_vertices = p_scene->mMeshes[0]->mNumVertices;
+  vertex_bone_data.resize(p_scene->mMeshes[0]->mNumVertices);
 
-  this->load_bones(this->p_scene->mMeshes[0], mesh.vertex_bone_data, mesh);
-  String default_anim = "runForward";
+  this->load_bones(this->p_scene->mMeshes[0], vertex_bone_data, mesh);
+  mesh.default_animation = "runForward";
 
   for (auto &animation : animation_filenames) {
-    if (default_anim == "")
-      default_anim = animation.name;
+    if (mesh.default_animation == "")
+      mesh.default_animation = animation.name;
     load_mesh_animation(animation.name, animation.filename, mesh);
   }
 
@@ -251,25 +253,25 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
       // TODO: add additional texture coordinates (mTextureCoords[1], etc.)
 
       // 4Bones: ids and weights
-      mesh.vertices[vert_index].bone_id[0] = mesh.vertex_bone_data[vert_index].ids[0];
-      mesh.vertices[vert_index].bone_id[1] = mesh.vertex_bone_data[vert_index].ids[1];
-      mesh.vertices[vert_index].bone_id[2] = mesh.vertex_bone_data[vert_index].ids[2];
-      mesh.vertices[vert_index].bone_id[3] = mesh.vertex_bone_data[vert_index].ids[3];
+      mesh.vertices[vert_index].bone_id[0] = vertex_bone_data[vert_index].ids[0];
+      mesh.vertices[vert_index].bone_id[1] = vertex_bone_data[vert_index].ids[1];
+      mesh.vertices[vert_index].bone_id[2] = vertex_bone_data[vert_index].ids[2];
+      mesh.vertices[vert_index].bone_id[3] = vertex_bone_data[vert_index].ids[3];
 
-      mesh.vertices[vert_index].bone_weights[0] = mesh.vertex_bone_data[vert_index].weights[0];
-      mesh.vertices[vert_index].bone_weights[1] = mesh.vertex_bone_data[vert_index].weights[1];
-      mesh.vertices[vert_index].bone_weights[2] = mesh.vertex_bone_data[vert_index].weights[2];
-      mesh.vertices[vert_index].bone_weights[3] = mesh.vertex_bone_data[vert_index].weights[3];
+      mesh.vertices[vert_index].bone_weights[0] = vertex_bone_data[vert_index].weights[0];
+      mesh.vertices[vert_index].bone_weights[1] = vertex_bone_data[vert_index].weights[1];
+      mesh.vertices[vert_index].bone_weights[2] = vertex_bone_data[vert_index].weights[2];
+      mesh.vertices[vert_index].bone_weights[3] = vertex_bone_data[vert_index].weights[3];
     }
 
     mesh.indices.resize(number_of_indices);
 
-    i32 numTriangles = p_scene->mMeshes[0]->mNumFaces;
-    i32 triIndex = 0;    // Steps through the triangles.
-    i32 index_index = 0; // Setps through the indices (index buffer)
+    i32 num_triangles = p_scene->mMeshes[0]->mNumFaces;
+    i32 tri_index = 0;
+    i32 index_index = 0;
 
-    for (; triIndex != number_of_triangles; triIndex++, index_index += 3) { // Note, every 1 triangle = 3 index steps
-      aiFace *p_ai_face = &(p_scene->mMeshes[0]->mFaces[triIndex]);
+    for (; tri_index != number_of_triangles; tri_index++, index_index += 3) {
+      aiFace *p_ai_face = &(p_scene->mMeshes[0]->mFaces[tri_index]);
 
       mesh.indices[index_index + 0] = p_ai_face->mIndices[0];
       mesh.indices[index_index + 1] = p_ai_face->mIndices[1];
@@ -330,11 +332,8 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     mesh.bounds.max = max_xyz;
     mesh.bounds.min = min_xyz;
 
-    mesh.state.default_animation.name = default_anim;
-    mesh.state.active_animation.name = default_anim;
-    mesh.state.temp.current_animation = default_anim;
+    mesh.state.default_animation.name = mesh.default_animation;
+    mesh.state.active_animation.name = mesh.default_animation;
   }
   make_hierarchy(mesh.hierarchy, p_scene->mRootNode);
-  mesh.ticks_per_second  = p_scene->mAnimations[0]->mTicksPerSecond;
-  
 }

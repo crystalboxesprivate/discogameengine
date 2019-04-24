@@ -30,7 +30,7 @@ struct QuatKey {
 struct MeshKey {
   double time;
   u32 value;
-  
+
   inline friend Archive &operator<<(Archive &archive, MeshKey &mesh_key) {
     archive << mesh_key.time;
     archive << mesh_key.value;
@@ -63,7 +63,7 @@ struct Channel {
 struct MeshChannel {
   String name;
   Vector<MeshKey> keys;
-  
+
   inline friend Archive &operator<<(Archive &archive, MeshChannel &mesh_channel) {
     archive << mesh_channel.name;
     archive << mesh_channel.keys;
@@ -92,11 +92,14 @@ struct Node {
   String name;
   glm::mat4 transform;
   Vector<Node> children;
+
+  inline friend Archive &operator<<(Archive &archive, Node &node) {
+    archive << node.name;
+    archive.serialize(&node.transform, sizeof(glm::mat4));
+    archive << node.children;
+    return archive;
+  }
 };
 
-struct Scene {
-  Node root_node;
-  double ticks_per_second;
-};
 } // namespace animation
 } // namespace runtime
