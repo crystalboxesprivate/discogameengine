@@ -20,4 +20,4 @@ add_library(
 )
 target_include_directories(runtime PUBLIC include)
 target_link_libraries(runtime PUBLIC core asset renderer)
-target_link_libraries(runtime PRIVATE graphicsinterface assimp)
+target_link_libraries(runtime PRIVATE graphicsinterface)

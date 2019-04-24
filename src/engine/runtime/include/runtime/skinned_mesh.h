@@ -17,14 +17,6 @@ struct aiNode;
 
 namespace runtime {
 static const i32 NUMBEROFBONES = 4;
-struct AnimationInfo {
-  //String friendly_name;
-  //String filename;
-  //float duration;
-  //bool has_exit_time;
-  animation::Animation animation;
-  //void *ai_scene;
-};
 
 static const int MAX_BONES_PER_VERTEX = 4;
 struct VertexBoneData {
@@ -149,24 +141,28 @@ struct SkinnedMesh : public asset::Asset {
   };
 
   AnimationState state;
-  void *pScene = nullptr;
+  //runtime::animation::Scene animation_scene;
+  double ticks_per_second;
+  runtime::animation::Node hierarchy;
 
   float get_duration_seconds(String animation_name);
   float find_animation_total_time(String animation_name);
   void bone_transform(float time_in_seconds, String animation_name, Vector<glm::mat4> &final_transformation,
                       Vector<glm::mat4> &globals, Vector<glm::mat4> &offsets);
 
-  void read_node_hierarchy(float animation_time, String animation_name, const aiNode *pNode,
+  void read_node_hierarchy(float animation_time, String animation_name, const runtime::animation::Node &pNode,
                            const glm::mat4 &ParentTransformMatrix);
-  const aiNodeAnim *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation *pAnimation, const String &boneName);
+  const runtime::animation::Channel *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation *pAnimation, const String &boneName);
 
-  void calculate_glm_interpolated_scaling(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out);
-  Map<String, AnimationInfo> animation_name_to_pscene; 
-  void calculate_glm_interpolated_rotation(float animation_time, const aiNodeAnim *node_anim, glm::quat &out);
-  void calculate_glm_interpolated_position(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out);
-  u32 find_rotation(float animation_time, const aiNodeAnim *node_anim);
-  u32 find_position(float animation_time, const aiNodeAnim *node_anim);
-  u32 find_scaling(float animation_time, const aiNodeAnim *node_anim);
+  Map<String, animation::Animation> animation_name_to_pscene; 
+
+  void calculate_glm_interpolated_position(float animation_time, const runtime::animation::Channel *node_anim, glm::vec3 &out);
+  void calculate_glm_interpolated_rotation(float animation_time, const runtime::animation::Channel *node_anim, glm::quat &out);
+  void calculate_glm_interpolated_scaling(float animation_time, const runtime::animation::Channel *node_anim, glm::vec3 &out);
+
+  u32 find_rotation(float animation_time, const runtime::animation::Channel *node_anim);
+  u32 find_position(float animation_time, const runtime::animation::Channel *node_anim);
+  u32 find_scaling(float animation_time, const runtime::animation::Channel *node_anim);
 
   glm::mat4 global_inverse_transformation;
   i32 number_of_vertices = 0;
@@ -174,6 +170,7 @@ struct SkinnedMesh : public asset::Asset {
   Map<String, u32> bone_name_to_bone_index;
   Vector<sBoneInfo> bone_info;
   u32 number_of_bones = 0;
+
 
 private:
   SharedPtr<SkinnedMeshResource> render_data;

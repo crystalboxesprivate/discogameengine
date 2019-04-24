@@ -87,5 +87,16 @@ struct Animation {
     return archive;
   }
 };
+
+struct Node {
+  String name;
+  glm::mat4 transform;
+  Vector<Node> children;
+};
+
+struct Scene {
+  Node root_node;
+  double ticks_per_second;
+};
 } // namespace animation
 } // namespace runtime

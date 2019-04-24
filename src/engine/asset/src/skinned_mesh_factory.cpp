@@ -12,7 +12,6 @@
 
 using runtime::SkinnedMesh;
 using namespace glm;
-using runtime::AnimationInfo;
 
 using runtime::SkinnedMeshVertex;
 
@@ -32,6 +31,7 @@ void VertexBoneData::AddBoneData(u32 BoneID, float Weight) {
   }
 }
 } // namespace runtime
+
 void SkinnedMeshFactory::load_bones(aiMesh *Mesh, Vector<runtime::VertexBoneData> &vertexBoneData,
                                     runtime::SkinnedMesh &mesh_sm) {
   for (i32 boneIndex = 0; boneIndex != Mesh->mNumBones; boneIndex++) {
@@ -62,6 +62,16 @@ void SkinnedMeshFactory::load_bones(aiMesh *Mesh, Vector<runtime::VertexBoneData
 
 inline String import_path(const String &raw_path) {
   return utils::path::join(config::CONTENT_DIR, raw_path);
+}
+
+void make_hierarchy(runtime::animation::Node&node, aiNode*ai_node) {
+  node.name = ai_node->mName.C_Str();
+  node.transform = ai_matrix_to_gl_matrix(ai_node->mTransformation);
+  node.children.resize(ai_node->mNumChildren);
+  for (int x = 0; x < node.children.size(); x++) {
+    auto &child = node.children[x];
+    make_hierarchy(child, ai_node->mChildren[x]);
+  }
 }
 
 void load_animation(runtime::animation::Animation &animation, aiAnimation *ai_animation) {
@@ -125,7 +135,7 @@ void load_animation(runtime::animation::Animation &animation, aiAnimation *ai_an
 bool SkinnedMeshFactory::load_mesh_animation(const String &friendly_name, const String &filename,
                                              runtime::SkinnedMesh &mesh, bool has_exit_time) // Only want animations
 {
-  Map<String, AnimationInfo>::iterator it_animation = mesh.animation_name_to_pscene.find(friendly_name);
+  Map<String, runtime::animation::Animation>::iterator it_animation = mesh.animation_name_to_pscene.find(friendly_name);
 
   if (it_animation != mesh.animation_name_to_pscene.end()) {
     return false;
@@ -135,20 +145,14 @@ bool SkinnedMeshFactory::load_mesh_animation(const String &friendly_name, const 
       aiProcess_Triangulate | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_JoinIdenticalVertices;
 
   Assimp::Importer *importer = new Assimp::Importer();
-  AnimationInfo anim_info;
-  //anim_info.friendly_name = friendly_name;
-  //anim_info.filename = filename;
   const aiScene *ai_scene = importer->ReadFile(filename.c_str(), flags);
-  //anim_info.has_exit_time = has_exit_time;
 
   if (!ai_scene)
     return false;
 
-  load_animation(anim_info.animation, ai_scene->mAnimations[0]);
+  mesh.animation_name_to_pscene[friendly_name] = runtime::animation::Animation();
+  load_animation(mesh.animation_name_to_pscene[friendly_name], ai_scene->mAnimations[0]);
 
-  //anim_info.ai_animation = ai_scene->mAnimations[0];
-  //anim_info.duration = (float)(anim_info.ai_animation->mDuration / anim_info.ai_animation->mTicksPerSecond);
-  //mesh.animation_name_to_pscene[anim_info.friendly_name] = anim_info;
   return true;
 }
 
@@ -267,15 +271,10 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     for (; triIndex != number_of_triangles; triIndex++, index_index += 3) { // Note, every 1 triangle = 3 index steps
       aiFace *p_ai_face = &(p_scene->mMeshes[0]->mFaces[triIndex]);
 
-      mesh.indices[index_index + 0] // Offset by 0 (zero)
-          = p_ai_face->mIndices[0]; // vertex 0
-
-      mesh.indices[index_index + 1] // Offset by 1
-          = p_ai_face->mIndices[1]; // vertex 1
-
-      mesh.indices[index_index + 2] // Offset by 2
-          = p_ai_face->mIndices[2]; // vertex 1
-    }                               // for ( ; triIndex != numVertices;
+      mesh.indices[index_index + 0] = p_ai_face->mIndices[0];
+      mesh.indices[index_index + 1] = p_ai_face->mIndices[1];
+      mesh.indices[index_index + 2] = p_ai_face->mIndices[2];
+    }
 
     vec3 min_xyz, max_xyz, max_extent_xyz = vec3(0);
     float max_extent = 0.0;
@@ -335,5 +334,7 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     mesh.state.active_animation.name = default_anim;
     mesh.state.temp.current_animation = default_anim;
   }
-  mesh.pScene = (void *)p_scene;
+  make_hierarchy(mesh.hierarchy, p_scene->mRootNode);
+  mesh.ticks_per_second  = p_scene->mAnimations[0]->mTicksPerSecond;
+  
 }
