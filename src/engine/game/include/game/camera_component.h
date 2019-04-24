@@ -12,6 +12,7 @@ struct CameraComponent {
   float speed = 100.f;
   // gets recalculated
   glm::mat4 view_matrix;
+  glm::mat4 view_matrix_previous;
   glm::mat4 projection_matrix;
 };
 } // namespace game

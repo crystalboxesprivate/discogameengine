@@ -917,7 +917,7 @@ void PhysicsBehavior::start() {
 void PhysicsBehavior::update(double delta_time) {
   // update transforms
   //world->Update(1 / 60.f);
-  world->Update(delta_time );
+  world->Update((float) delta_time );
 
   auto &rigid_bodies = component::get_array_of_components<game::RigidBodyComponent>();
 

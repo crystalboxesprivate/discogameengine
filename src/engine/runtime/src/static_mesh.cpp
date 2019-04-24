@@ -108,6 +108,7 @@ StaticMeshResource *StaticMesh::get_render_resource() {
 }
 
 void StaticMesh::serialize(Archive &archive) {
+  Asset::serialize(archive);
   archive << lod_info;
   archive << bulk_data;
 }

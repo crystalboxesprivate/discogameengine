@@ -8,11 +8,13 @@ add_library(
   include/renderer/post_processing.h
   include/renderer/procedural_geo.h
   include/renderer/screen_space_quad.h
+  include/renderer/gbuffer.h
   src/renderer.cpp
   src/rendercore.cpp
   src/procedural_geo.cpp
   src/post_processing.cpp
   src/screen_space_quad.cpp
+  src/gbuffer.cpp
 )
 target_include_directories(renderer PUBLIC include)
 target_link_libraries(renderer PUBLIC core asset graphicsinterface app)

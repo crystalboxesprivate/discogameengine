@@ -10,8 +10,6 @@ struct Renderer {
 
 private:
   void load_shaders();
-  void init_gbuffer();
-  void draw_static_mesh_gbuffer();
   void draw_quad();
 
   void draw_light_pass();

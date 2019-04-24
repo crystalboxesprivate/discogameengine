@@ -13,11 +13,15 @@
 #include <component/component.h>
 #include <game/camera_component.h>
 #include <game/rigid_body_component.h>
+#include <game/transform_component.h>
+#include <game/skinned_mesh_component.h>
 
 #include <legacy/sceneloader2.h>
 
 #include <renderer/rendercore.h>
 #include <shader/cache.h>
+
+#include <runtime/skinned_mesh.h>
 
 void setup() {
   app::get().add_task(new task::TransformTask);
@@ -25,11 +29,28 @@ void setup() {
   app::get().add_behavior(new behavior::PhysicsBehavior);
 
   app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/UserTest.hlslinc").get();
-  //app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/Default.hlslinc").get();
+  // app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/Default.hlslinc").get();
   app::get().get_shader_cache().compiler.compile();
 }
 
+void setup_static_mesh() {
+  auto sm_asset = asset::add(utils::path::join(config::CONTENT_DIR, "skinned_mesh/chan.skinnedmeshjson"));
+
+  // Add transform component first
+  asset::load_to_ram(sm_asset, false, true);
+  auto entity = component::allocate_entity();
+  auto &transform = component::add_and_get<game::TransformComponent>(entity);
+
+  transform.position = glm::vec3(0);
+  transform.scale = glm::vec3(1);
+
+  auto &skinned_mesh_component = component::add_and_get<game::SkinnedMeshComponent>(entity);
+  skinned_mesh_component.skinned_mesh = asset::AssetHandle<runtime::SkinnedMesh>(sm_asset);
+}
+
 void post_scene_setup() {
+  setup_static_mesh();
+  //
   // find camera  attach rigid body set position weight
   u32 entity_id = component::get_entity_id<game::CameraComponent>(0);
   auto &rb = component::add_and_get<game::RigidBodyComponent>(entity_id);

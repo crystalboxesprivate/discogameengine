@@ -8,6 +8,7 @@
 #include <asset/static_mesh_factory.h>
 #include <asset/shader_factory.h>
 #include <asset/environment_map_factory.h>
+#include <asset/skinned_mesh_factory.h>
 
 #include <config/config.h>
 
@@ -65,7 +66,6 @@ void register_factory(factory::AssetFactory *factory) {
 void init_factories() {
   for (int z = 0; z < asset::factory::AssetFactory::current_size; z++) {
     Factory &factory = *asset::factory::AssetFactory::factories[z]->get();
-
     const char *extensions = factory.get_filename_extensions();
     char buf[24];
     usize len = strlen(extensions);
@@ -92,7 +92,9 @@ Factory *find_factory(const String &filename) {
   return *factory;
 }
 } // namespace asset
+
 implement_asset_factory(Texture2DFactory);
 implement_asset_factory(EnvironmentMapFactory);
 implement_asset_factory(StaticMeshFactory);
+implement_asset_factory(SkinnedMeshFactory);
 implement_asset_factory(ShaderFactory);

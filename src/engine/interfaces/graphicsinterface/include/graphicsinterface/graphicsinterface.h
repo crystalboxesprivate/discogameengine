@@ -106,7 +106,13 @@ extern const int FILTER_MIN_MAG_LINEAR_MIP_POINT;
 extern const int FILTER_MIN_MAG_MIP_LINEAR;
 extern const int FILTER_ANISOTROPIC;
 
-SamplerStateRef create_sampler_state(i32 filter = FILTER_MIN_MAG_MIP_LINEAR);
+extern const int TEXTURE_ADDRESS_WRAP;
+extern const int TEXTURE_ADDRESS_MIRROR;
+extern const int TEXTURE_ADDRESS_CLAMP;
+extern const int TEXTURE_ADDRESS_BORDER;
+extern const int TEXTURE_ADDRESS_MIRROR_ONCE;
+
+SamplerStateRef create_sampler_state(i32 filter = FILTER_MIN_MAG_MIP_LINEAR, i32 texture_address_mode = TEXTURE_ADDRESS_WRAP);
 TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, void *data);
 TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, i32 num_mips, const char *debug_name = 0);
 

@@ -15,7 +15,6 @@ namespace behavior {
 CameraComponent *current = nullptr;
 ComponentHandle2<TransformComponent> transform;
 
-
 void FirstPersonCamera::start() {
   yaw = 90.f;
 }
@@ -39,19 +38,30 @@ void FirstPersonCamera::update(double delta_time) {
   update_rotation();
   update_movement();
 
+  current->view_matrix_previous = current->view_matrix;
   current->view_matrix = view_matrix();
   current->projection_matrix = projection_matrix(app::get().get_window().get_aspect_ratio());
 
   component::get_mut(transform)->position = position;
 }
-
+vec3 pos_prev, cam_front_prev, cam_up_prev;
 mat4 FirstPersonCamera::view_matrix() {
+  float mix_factor = 0.75;
+  //position = mix(position, pos_prev, mix_factor);
+  camera_front = mix(camera_front, cam_front_prev, mix_factor);
+  camera_up = mix(camera_up, cam_up_prev, mix_factor);
+  pos_prev = position;
+  cam_front_prev = camera_front;
+  cam_up_prev = camera_up;
+
+  //, cam_front_prev, cam_up_prev;
+
   return lookAt(position, position + camera_front, camera_up);
 }
 
 mat4 FirstPersonCamera::projection_matrix(const float aspect) {
-  const float fov = radians(current->field_of_view);//0.4f * 3.14f;
-  const float far = current->clipping_plane_far;//1000.f;
+  const float fov = radians(current->field_of_view); // 0.4f * 3.14f;
+  const float far = current->clipping_plane_far;     // 1000.f;
   const float near = current->clipping_plane_near;
   return perspective(fov, aspect, near, far);
 }
@@ -59,7 +69,7 @@ mat4 FirstPersonCamera::projection_matrix(const float aspect) {
 vec2 mouse_prev;
 vec2 mouse;
 
-static const float MOUSE_MOVE_THRESHOLD = 0.0001f;
+static const float MOUSE_MOVE_THRESHOLD = 0.0000001f;
 
 void FirstPersonCamera::update_rotation() {
   mouse = input::mouse::get_position();
@@ -102,7 +112,7 @@ void FirstPersonCamera::update_movement() {
   float factor = deltaTime * (is_left_clicked ? movement_settings.run_multiplier : 1.f);
 
   factor *= movement_settings.forward_speed;
-  factor *= 0.07f;
+  factor *= 0.17f;
 
   glm::vec3 translation(0);
 

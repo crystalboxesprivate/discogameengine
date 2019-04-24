@@ -33,7 +33,7 @@ add_subdirectory(shader)
 add_subdirectory(behavior)
 
 target_link_libraries(engine PUBLIC config core app legacy utils)
-target_link_libraries(engine PRIVATE task behavior ntwindow component game renderer shader)
+target_link_libraries(engine PRIVATE task behavior ntwindow component game renderer shader runtime)
 
 set_target_properties(engine PROPERTIES OUTPUT_NAME disco-engine
   RUNTIME_OUTPUT_DIRECTORY ${ENGINE_BINARY_DIR})

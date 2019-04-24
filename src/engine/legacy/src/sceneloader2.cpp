@@ -91,9 +91,9 @@ void load(const String &filename) {
     if (entity.HasMember("StaticMeshComponent")) {
       auto &static_mesh_component = entity["StaticMeshComponent"];
       auto &static_mesh = *component::get_mut(component::add<StaticMeshComponent>(entity_id));
-      static_mesh.static_mesh =
+      static_mesh.mesh =
           AssetHandle<StaticMesh>(asset::add(get_path(static_mesh_component["filename"].GetString())));
-      auto &sm = *static_mesh.static_mesh.get();
+      auto &sm = *static_mesh.mesh.get();
       sm.import_scale_factor = static_mesh_component["importScaleFactor"].GetFloat();
     }
 

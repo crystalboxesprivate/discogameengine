@@ -131,7 +131,7 @@ bool load_json_scene(const char *filename) {
         if (!new_asset) {
           DEBUG_LOG(Assets, Error, "Asset %s is invalid", filename.c_str());
         } else {
-          static_mesh_component.static_mesh = AssetHandle<StaticMesh>(new_asset);
+          static_mesh_component.mesh = AssetHandle<StaticMesh>(new_asset);
         }
       }
 
