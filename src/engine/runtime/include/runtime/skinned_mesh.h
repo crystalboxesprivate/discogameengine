@@ -6,6 +6,8 @@
 #include <utils/helpers.h>
 #include <array>
 
+#include <runtime/animation.h>
+
 namespace renderer {
 struct Resource;
 }
@@ -16,11 +18,11 @@ struct aiNode;
 namespace runtime {
 static const i32 NUMBEROFBONES = 4;
 struct AnimationInfo {
-  String friendly_name;
-  String filename;
-  float duration;
-  bool has_exit_time;
-  aiAnimation* ai_animation;
+  //String friendly_name;
+  //String filename;
+  //float duration;
+  //bool has_exit_time;
+  animation::Animation animation;
   //void *ai_scene;
 };
 
@@ -156,7 +158,7 @@ struct SkinnedMesh : public asset::Asset {
 
   void read_node_hierarchy(float animation_time, String animation_name, const aiNode *pNode,
                            const glm::mat4 &ParentTransformMatrix);
-  const aiNodeAnim *SkinnedMesh::find_node_animation_channel(const aiAnimation *pAnimation, const String &boneName);
+  const aiNodeAnim *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation *pAnimation, const String &boneName);
 
   void calculate_glm_interpolated_scaling(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out);
   Map<String, AnimationInfo> animation_name_to_pscene; 

@@ -34,7 +34,6 @@ SkinnedMeshResource *SkinnedMesh::get_render_resource() {
   }
 
   if (!render_data->index_buffer) {
-    // init loading stuff
     if (!is_loading) {
       asset::load_to_ram(*this, false, false);
     }
@@ -72,7 +71,7 @@ float SkinnedMesh::get_duration_seconds(String animationName) {
   }
 
   // This is scaling the animation from 0 to 1
-  return (float)itAnimation->second.ai_animation->mDuration / (float)itAnimation->second.ai_animation->mTicksPerSecond;
+  return (float)itAnimation->second.animation.duration / (float)itAnimation->second.animation.ticks_per_second;
 }
 
 void SkinnedMesh::bone_transform(float time_in_seconds,
@@ -111,7 +110,7 @@ float SkinnedMesh::find_animation_total_time(String animation_name) {
     return 0.0f;
   }
   // This is scaling the animation from 0 to 1
-  return (float)itAnimation->second.ai_animation->mDuration;
+  return (float)itAnimation->second.animation.duration;
 }
 
 glm::mat4 ai_matrix_to_glm_matrix(const aiMatrix4x4 &mat) {
@@ -123,7 +122,7 @@ glm::mat4 ai_matrix_to_glm_matrix(const aiMatrix4x4 &mat) {
   );
 }
 
-const aiNodeAnim *SkinnedMesh::find_node_animation_channel(const aiAnimation *pAnimation, const String &boneName) {
+const aiNodeAnim *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation *pAnimation, const String &boneName) {
   for (u32 ChannelIndex = 0; ChannelIndex != pAnimation->mNumChannels; ChannelIndex++) {
     if (pAnimation->mChannels[ChannelIndex]->mNodeName == aiString(boneName)) {
       return pAnimation->mChannels[ChannelIndex];
@@ -168,14 +167,15 @@ void SkinnedMesh::read_node_hierarchy(float animation_time, String animation_nam
 
   auto scene = (const aiScene *)this->pScene;
   // Original version picked the "main scene" animation...
-  const aiAnimation *pAnimation = scene->mAnimations[0];
+  //const aiAnimation *pAnimation = scene->mAnimations[0];
+  runtime::animation::Animation *pAnimation = nullptr;
   Map<String, AnimationInfo>::iterator itAnimation = this->animation_name_to_pscene.find(animation_name); // Animations
 
   // Did we find it?
   if (itAnimation != this->animation_name_to_pscene.end()) {
     // const aiAnimation* ascene = (const aiAnimation *)itAnimation->second.ai_animation;
     // pAnimation = reinterpret_cast<const aiAnimation *>(ascene);
-    pAnimation = itAnimation->second.ai_animation;
+    pAnimation =& itAnimation->second.animation;
   }
 
   // Transformation of the node in bind pose

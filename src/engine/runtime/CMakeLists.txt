@@ -10,6 +10,7 @@ add_library(
   include/runtime/texture2d_resource.h
   include/runtime/environment_map_resource.h
   include/runtime/environment_map.h
+  include/runtime/animation.h
   src/texture2d.cpp
   src/texture2d_resource.cpp
   src/environment_map_resource.cpp

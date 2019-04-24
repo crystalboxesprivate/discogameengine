@@ -18,12 +18,12 @@ struct SkinnedMeshFactory : public asset::Factory {
 
 protected:
   virtual void load_asset_data(asset::Asset &asset);
-  void LoadBones(aiMesh *Mesh, Vector<runtime::VertexBoneData> &vertexBoneData, runtime::SkinnedMesh& mesh_sm) ;
-  bool LoadMeshAnimation(const std::string &friendlyName, const std::string &filename, runtime::SkinnedMesh&mesh,
+  void load_bones(aiMesh *Mesh, Vector<runtime::VertexBoneData> &vertexBoneData, runtime::SkinnedMesh& mesh_sm) ;
+  bool load_mesh_animation(const std::string &friendlyName, const std::string &filename, runtime::SkinnedMesh&mesh,
                          bool hasExitTime = false); // lodaing only Animation
 
 private:
-  const aiScene *pScene = nullptr;
+  const aiScene *p_scene = nullptr;
 
 
 };

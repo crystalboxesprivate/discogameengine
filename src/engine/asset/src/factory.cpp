@@ -20,6 +20,7 @@ void Factory::load(Asset &asset, bool force_rebuild) {
   assert(asset.is_valid());
   String cache_path;
   asset::get_asset_cache_path(cache_path, asset.hash);
+
 #if CACHE_TO_DISK
   bool is_cached = utils::path::exists(cache_path);
   if (is_cached && !force_rebuild) {
@@ -28,6 +29,7 @@ void Factory::load(Asset &asset, bool force_rebuild) {
     return;
   }
 #endif
+
   load_asset_data(asset);
   resave_to_disk(asset);
 }
@@ -49,15 +51,14 @@ u32 str_hash(const String &str) {
   for (int x = 0; x < str.size(); x++) {
     hash = ((hash << 5) + hash) + str[x];
   }
-
   return hash;
 }
+
 namespace factory {
 AssetFactory *AssetFactory::factories[128];
 usize AssetFactory::current_size = 0;
 } // namespace factory
-  // static AssetFactory *factories[128];
-  // static usize current_size;
+
 void register_factory(factory::AssetFactory *factory) {
   asset::factory::AssetFactory::factories[asset::factory::AssetFactory::current_size++] = factory;
   // auto &registry = app::get().get_asset_registry();
@@ -87,6 +88,7 @@ Factory *find_factory(const String &filename) {
 
   auto ext = utils::path::get_extension(filename);
   auto factory = helpers::find<u32, Factory *>(factories, str_hash(ext));
+
   if (!factory)
     return nullptr;
   return *factory;

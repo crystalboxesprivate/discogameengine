@@ -110,12 +110,14 @@ void get_shaders(u32 vertex_type_id, gi::PipelineState::BoundShaders &bound_shad
 
 void get_transform(u32 entity_id, component::ComponentHandle2<TransformComponent> &handle,
                    shader::UniformBufferDescription *model_uniform_buf) {
+
   auto transform = component::get_mut(handle);
   if (!transform) {
     // cache transform
     handle = component::find<TransformComponent>(entity_id);
     transform = component::get_mut(handle);
   }
+
   assert(transform);
   auto &transform_cast = *transform;
   mat4 model = transpose(transform_cast.transform_matrix);
