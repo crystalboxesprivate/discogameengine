@@ -47,4 +47,6 @@ void MotionBlurEffect::execute(gi::ShaderResourceViewRef src, gi::RenderTargetVi
   gi::set_sampler_state({0}, clamp_sampler, shader->compiled);
   gi::set_shader_resource_view({1}, gbuffer->motion_vectors.srv, shader->compiled);
   blit(src, dst, shader);
+  gi::set_shader_resource_view({1}, nullptr, shader->compiled);
+
 }

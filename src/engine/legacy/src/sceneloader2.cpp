@@ -55,7 +55,7 @@ void load(const String &filename) {
   content_dir = document["contentDirectory"].GetString();
   assert(content_dir.size());
   auto &entities = document["entities"];
-  for (usize x = 0; x < entities.Size(); x++) {
+  for (SizeType x = 0; x < entities.Size(); x++) {
     auto &entity = entities[x]["components"];
 
     auto entity_id = component::allocate_entity();

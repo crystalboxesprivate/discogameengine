@@ -21,7 +21,7 @@
   }
 
 namespace asset {
-enum class Type : u8 { Texture2D, StaticMesh, Custom, Unknown };
+enum class Type : u8 { Texture2D, StaticMesh, SkinnedMesh, Custom, Unknown };
 struct AssetTypeBase;
 struct Factory;
 struct Asset {

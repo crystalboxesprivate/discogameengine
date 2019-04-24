@@ -36,6 +36,8 @@ struct GBuffer {
   graphicsinterface::SamplerStateRef sampler_state;
 
   void initialize();
+
+  void clear();
   void draw_static_meshes();
   void draw_skinned_meshes();
 

@@ -113,7 +113,7 @@ void set_render_targets(i32 num_render_targets, RenderTargetViewRef *render_targ
                                      depth_stencil_view ? (ID3D11DepthStencilView *)depth_stencil_view->get_native_ptr() : nullptr);
 }
 
-const char *semantic_names[] = {"POSITION", "TEXCOORD", "NORMAL", "TANGENT", "COLOR"};
+const char *semantic_names[] = {"POSITION", "TEXCOORD", "NORMAL", "TANGENT", "BINORMAL", "COLOR"};
 
 namespace VertexBufferResources {
 ID3D11Buffer *vertex_buffers[D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT];

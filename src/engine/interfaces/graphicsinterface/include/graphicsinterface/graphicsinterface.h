@@ -29,7 +29,7 @@ struct PipelineState {
   PrimitiveTopology primitive_type;
   BoundShaders bound_shaders;
 };
-enum class SemanticName : u8 { Position, TexCoord, Normal, Tangent, Color };
+enum class SemanticName : u8 { Position, TexCoord, Normal, Tangent, Binormal, Color };
 struct VertexAttribute {
   u8 buffer_slot;
   SemanticName semantic_name;

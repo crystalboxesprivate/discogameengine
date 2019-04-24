@@ -56,6 +56,15 @@ DefaultTexture default_texture;
 
 shader::UniformBufferDescription *model_uniform_buf = nullptr;
 
+static const i32 MAXNUMBEROFBONES = 100;
+
+struct MatrixBuffer {
+  mat4x4 bones[MAXNUMBEROFBONES];
+  mat4x4 bones_previous[MAXNUMBEROFBONES];
+  //vec4 numBonesUsed;
+};
+
+gi::UniformBufferRef matrices;
 void GBuffer::initialize() {
   i32 width, height;
   app::get().get_window().get_dimensions(width, height);
@@ -77,12 +86,13 @@ void GBuffer::initialize() {
   rts[4] = motion_vectors.render_target_view;
 #endif
 
+  matrices = gi::create_uniform_buffer(sizeof(MatrixBuffer), nullptr);
+
   model_uniform_buf = app::get().get_shader_cache().uniform_buffer_map[utils::string::hash_code("ModelParameters")];
   default_texture.initialize();
 }
 
 void get_shaders(u32 vertex_type_id, gi::PipelineState::BoundShaders &bound_shaders) {
-
   if (!material_shader)
     material_shader = app::get().get_shader_cache().default_shader;
   auto &gbuf_shader_pair = material_shader->compiled_shaders[vertex_type_id];
@@ -132,14 +142,9 @@ void GBuffer::pass_start(graphicsinterface::PipelineState &state, u32 vertex_typ
 
 #if MAKE_MOTION_VECTOR_PASS
   gi::set_render_targets(5, rts, gi::get_main_depth_stencil_view());
-  gi::clear_render_target_view(motion_vectors.render_target_view, glm::vec4(0));
 #else
   gi::set_render_targets(4, rts, gi::get_main_depth_stencil_view());
 #endif
-  gi::clear_render_target_view(world_pos.render_target_view, glm::vec4(0));
-  gi::clear_render_target_view(material_attributes.render_target_view, glm::vec4(0));
-  gi::clear_render_target_view(color.render_target_view, glm::vec4(0));
-  gi::clear_render_target_view(world_normal.render_target_view, glm::vec4(0));
 
   // Get components of type.
   get_shaders(vertex_type, state.bound_shaders);
@@ -150,16 +155,31 @@ void GBuffer::pass_start(graphicsinterface::PipelineState &state, u32 vertex_typ
   gi::bind_uniform_buffer(1, gi::ShaderStage::Vertex, model_uniform_buf->get_resource());
 }
 
-void GBuffer::set_material_parameters(game::MaterialComponent *material_ptr, graphicsinterface::PipelineState &state) {
-  if (!material_ptr)
-    return;
-  auto material = *material_ptr;
-  gi::set_sampler_state({0}, default_texture.sampler, state.bound_shaders.pixel);
-  gi::set_shader_resource_view({0}, get_texture(material.albedo_texture), state.bound_shaders.pixel);
-  gi::set_shader_resource_view({1}, get_texture(material.mask_texture), state.bound_shaders.pixel);
-  gi::set_shader_resource_view({2}, get_texture(material.normal_texture, true), state.bound_shaders.pixel);
+void GBuffer::clear() {
+  gi::clear_render_target_view(world_pos.render_target_view, glm::vec4(0));
+  gi::clear_render_target_view(material_attributes.render_target_view, glm::vec4(0));
+  gi::clear_render_target_view(color.render_target_view, glm::vec4(0));
+  gi::clear_render_target_view(world_normal.render_target_view, glm::vec4(0));
+#if MAKE_MOTION_VECTOR_PASS
+  gi::clear_render_target_view(motion_vectors.render_target_view, glm::vec4(0));
+#endif
 }
 
+void GBuffer::set_material_parameters(game::MaterialComponent *material_ptr, graphicsinterface::PipelineState &state) {
+  if (!material_ptr) {
+    // bind default textures
+    gi::set_sampler_state({0}, default_texture.sampler, state.bound_shaders.pixel);
+    gi::set_shader_resource_view({0}, default_texture.srv, state.bound_shaders.pixel);
+    gi::set_shader_resource_view({1}, default_texture.srv, state.bound_shaders.pixel);
+    gi::set_shader_resource_view({2}, default_texture.srv_normal, state.bound_shaders.pixel);
+  } else {
+    auto material = *material_ptr;
+    gi::set_sampler_state({0}, default_texture.sampler, state.bound_shaders.pixel);
+    gi::set_shader_resource_view({0}, get_texture(material.albedo_texture), state.bound_shaders.pixel);
+    gi::set_shader_resource_view({1}, get_texture(material.mask_texture), state.bound_shaders.pixel);
+    gi::set_shader_resource_view({2}, get_texture(material.normal_texture, true), state.bound_shaders.pixel);
+  }
+}
 void GBuffer::draw_static_meshes() {
   gi::DebugState gbuffer_debug_state("Static mesh gbuffer start");
   gi::PipelineState state;
@@ -168,7 +188,7 @@ void GBuffer::draw_static_meshes() {
   Vector<StaticMeshComponent> &static_meshes = component::get_array_of_components<StaticMeshComponent>();
   for (int x = 0; x < static_meshes.size(); x++) {
     StaticMeshComponent &static_mesh_component = static_meshes[x];
-    runtime::StaticMesh* static_mesh_asset = static_mesh_component.mesh.get();
+    runtime::StaticMesh *static_mesh_asset = static_mesh_component.mesh.get();
     if (!static_mesh_asset)
       continue;
 
@@ -191,5 +211,88 @@ void GBuffer::draw_static_meshes() {
   }
 }
 
+MatrixBuffer matrix_buffer;
+
+void update_skinned_meshes() {
+  Vector<SkinnedMeshComponent> &skinned_meshes = component::get_array_of_components<SkinnedMeshComponent>();
+  for (int x = 0; x < skinned_meshes.size(); x++) {
+    SkinnedMeshComponent &skinned_mesh_component = skinned_meshes[x];
+    runtime::SkinnedMesh *skinned_mesh_asset = skinned_mesh_component.mesh.get();
+    if (!skinned_mesh_asset)
+      continue;
+
+    auto &sm = *skinned_mesh_asset;
+    {
+      std::string CurAnim = sm.state.active_animation.name;
+      std::string current_animation = CurAnim;
+      sm.state.active_animation.name = CurAnim;
+
+   /*   if (CurAnim != sm.state.temp.previous_animation)
+        sm.state.active_animation.current_time = 0.0f;*/
+
+      sm.state.active_animation.total_time = sm.get_duration_seconds(CurAnim);
+      sm.state.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 3.0;
+
+      sm.state.active_animation.increment_time();
+      float current_animation_time = 0.0;
+      current_animation_time = sm.state.active_animation.current_time;
+
+      // It ++IS++ skinned mesh
+      Vector<glm::mat4x4> vecFinalTransformation;
+      Vector<glm::mat4x4> vecOffsets;
+
+      sm.bone_transform(current_animation_time, current_animation, skinned_mesh_component.bone_transforms,
+                        skinned_mesh_component.object_to_bone_transforms, vecOffsets);
+
+      skinned_mesh_component.number_of_bones_used = static_cast<uint32>(skinned_mesh_component.bone_transforms.size());
+
+      //matrix_buffer.bones_previous = matrix_buffer.bones;
+
+      memcpy(&matrix_buffer.bones_previous[0], &matrix_buffer.bones[0], sizeof(mat4x4) * MAXNUMBEROFBONES);
+      memcpy(&matrix_buffer.bones[0], &skinned_mesh_component.bone_transforms[0], sizeof(mat4x4) * skinned_mesh_component.bone_transforms.size());
+      //matrix_buffer.numBonesUsed.x = (float) skinned_mesh_component.number_of_bones_used;
+
+
+      gi::set_uniform_buffer_data(&matrix_buffer.bones[0], sizeof(MatrixBuffer), matrices);
+    
+    }
+  }
+}
+
+
 void GBuffer::draw_skinned_meshes() {
+  update_skinned_meshes();
+  gi::DebugState gbuffer_debug_state("Skinned meshes");
+  gi::PipelineState state;
+  pass_start(state, SkinnedMeshVertexType::guid());
+
+  Vector<SkinnedMeshComponent> &skinned_meshes = component::get_array_of_components<SkinnedMeshComponent>();
+  for (int x = 0; x < skinned_meshes.size(); x++) {
+    SkinnedMeshComponent &skinned_mesh_component = skinned_meshes[x];
+    runtime::SkinnedMesh *skinned_mesh_asset = skinned_mesh_component.mesh.get();
+    if (!skinned_mesh_asset)
+      continue;
+
+    runtime::SkinnedMeshResource *resource_ptr = skinned_mesh_asset->get_render_resource();
+    if (!resource_ptr) {
+      continue;
+    }
+
+    gi::DebugState draw_mesh_debug("Draw skinned mesh");
+    auto entity_id = component::get_entity_id<SkinnedMeshComponent>(x);
+    get_transform(entity_id, skinned_mesh_component.cached_transform_component, model_uniform_buf);
+    set_material_parameters(component::find_and_get_mut<game::MaterialComponent>(entity_id), state);
+
+    {
+      // set matrices
+      gi::bind_uniform_buffer(2, gi::ShaderStage::Vertex, matrices);
+    
+    }
+
+    runtime::SkinnedMeshResource &resource = *resource_ptr;
+    gi::set_vertex_stream(resource.vertex_stream, state.bound_shaders.vertex);
+
+    gi::draw_indexed(resource.index_buffer, gi::PrimitiveTopology::TriangleList,
+                     (u32)resource.index_buffer->get_count(), 0, 0);
+  }
 }

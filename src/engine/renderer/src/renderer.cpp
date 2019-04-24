@@ -282,6 +282,7 @@ void Renderer::draw_light_pass() {
   ///////////////////////////////////////////////////////////////////////////////////////////
   gi::set_blend_state(nullptr);
 
+
 #if 0
   // Draw lights
   pipeline_state.bound_shaders.pixel = light_pass_ps->compiled;
@@ -328,6 +329,7 @@ void Renderer::draw_quad() {
   // gi::set_shader_resource_view(srv_parameter, gbuffer.world_normal.srv, quad.pixel->compiled);
   // gi::set_shader_resource_view(srv_parameter, gbuffer.motion_vectors.srv, quad.pixel->compiled);
   gi::set_shader_resource_view(srv_parameter, color_output->srv, quad.pixel->compiled);
+
   gi::set_sampler_state(srv_parameter, gbuffer.sampler_state, quad.pixel->compiled);
   gi::set_pipeline_state(state);
   gi::set_vertex_stream(quad.stream, quad.vertex->compiled);
@@ -343,9 +345,9 @@ void Renderer::draw_image() {
   load_camera_params();
 
   // draw skybox
+  gbuffer.clear();
   gbuffer.draw_static_meshes();
   gbuffer.draw_skinned_meshes();
-
 
   gi::set_z_buffer(false);
 

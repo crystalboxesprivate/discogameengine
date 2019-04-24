@@ -12,87 +12,42 @@
 
 using runtime::SkinnedMesh;
 using namespace glm;
+using runtime::sAnimationInfo;
 
-mat4 AIMatrixToGLMMatrix(const aiMatrix4x4 &mat) {
+using runtime::sVertex_xyz_rgba_n_uv2_bt_4Bones;
+
+mat4 AIMatrixToGLMMatrix2(const aiMatrix4x4 &mat) {
   return mat4(mat.a1, mat.b1, mat.c1, mat.d1, mat.a2, mat.b2, mat.c2, mat.d2, mat.a3, mat.b3, mat.c3, mat.d3, mat.a4,
               mat.b4, mat.c4, mat.d4);
 }
 
-static const i32 NUMBEROFBONES = 4;
-struct sVertex_xyz_rgba_n_uv2_bt_4Bones {
-  sVertex_xyz_rgba_n_uv2_bt_4Bones()
-      : x(0.0f)
-      , y(0.0f)
-      , z(0.0f)
-      , w(1.0f)
-      , r(0.0f)
-      , g(0.0f)
-      , b(0.0f)
-      , a(1.0f)
-      , // Note alpha is 1.0
-      nx(0.0f)
-      , ny(0.0f)
-      , nz(0.0f)
-      , nw(1.0f)
-      , u0(0.0f)
-      , v0(0.0f)
-      , u1(0.0f)
-      , v1(0.0f)
-      , tx(0.0f)
-      , ty(0.0f)
-      , tz(0.0f)
-      , tw(1.0f)
-      , bx(0.0f)
-      , by(0.0f)
-      , bz(0.0f)
-      , bw(1.0f) {
-    //#ifdef _DEBUG
-    memset(this->boneID, 0, sizeof(u32) * NUMBEROFBONES);
-    memset(this->boneWeights, 0, sizeof(float) * NUMBEROFBONES);
-    // So these are essentially this:
-    //		unsigned int boneID[4];
-    //		float boneWeights[4];
-    //#endif // DEBUG
-  };
-  // Destructor isn't really needed here
-  //~sVertex_xyz_rgba_n_uv2_bt_skinnedMesh();
-
-  float x, y, z, w;     // 16
-  float r, g, b, a;     // 32
-  float nx, ny, nz, nw; // 48
-  float u0, v0, u1, v1; // 60
-  float tx, ty, tz, tw; // tangent				//
-  float bx, by, bz, bw; // bi-normal			//
-  // For the 4 bone skinned mesh information
-  float boneID[NUMBEROFBONES];      // New		//
-  float boneWeights[NUMBEROFBONES]; // New		//
-};
-
+namespace runtime {
 void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight) {
   for (unsigned int Index = 0; Index < sizeof(this->ids) / sizeof(this->ids[0]); Index++) {
     if (this->weights[Index] == 0.0f) {
       this->ids[Index] = (float)BoneID;
       this->weights[Index] = Weight;
+			return;
     }
   }
 }
-
-void SkinnedMeshFactory::LoadBones(aiMesh *Mesh, Vector<VertexBoneData> &vertexBoneData) {
+} // namespace runtime
+void SkinnedMeshFactory::LoadBones(aiMesh *Mesh, Vector<runtime::VertexBoneData> &vertexBoneData, runtime::SkinnedMesh& mesh_sm) {
   for (unsigned int boneIndex = 0; boneIndex != Mesh->mNumBones; boneIndex++) {
     unsigned int BoneIndex = 0;
     std::string BoneName(Mesh->mBones[boneIndex]->mName.data);
     //	std::map<std::string /*BoneName*/, unsigned int /*BoneIndex*/> mMapping;
     // 	std::vector<sBoneInfo> mInfo;
 
-    std::map<std::string, unsigned int>::iterator it = this->m_mapBoneNameToBoneIndex.find(BoneName);
-    if (it == this->m_mapBoneNameToBoneIndex.end()) {
-      BoneIndex = this->mNumBones;
-      this->mNumBones++;
-      sBoneInfo bi;
-      this->mBoneInfo.push_back(bi);
+    std::map<std::string, unsigned int>::iterator it = mesh_sm.m_mapBoneNameToBoneIndex.find(BoneName);
+    if (it == mesh_sm.m_mapBoneNameToBoneIndex.end()) {
+      BoneIndex = mesh_sm.mNumBones;
+      mesh_sm.mNumBones++;
+      runtime::sBoneInfo bi;
+      mesh_sm.mBoneInfo.push_back(bi);
 
-      this->mBoneInfo[BoneIndex].BoneOffset = AIMatrixToGLMMatrix(Mesh->mBones[boneIndex]->mOffsetMatrix);
-      this->m_mapBoneNameToBoneIndex[BoneName] = BoneIndex;
+      mesh_sm.mBoneInfo[BoneIndex].BoneOffset = AIMatrixToGLMMatrix2(Mesh->mBones[boneIndex]->mOffsetMatrix);
+      mesh_sm.m_mapBoneNameToBoneIndex[BoneName] = BoneIndex;
     } else {
       BoneIndex = it->second;
     }
@@ -111,19 +66,14 @@ inline String import_path(const String &raw_path) {
 }
 
 bool SkinnedMeshFactory::LoadMeshAnimation(const std::string &friendlyName, const std::string &filename,
-                                           bool hasExitTime) // Only want animations
+                                           runtime::SkinnedMesh &mesh, bool hasExitTime) // Only want animations
 {
-  // Already loaded this?
   std::map<std::string /*animation FRIENDLY name*/, sAnimationInfo>::iterator itAnimation =
-      this->mapAnimationFriendlyNameTo_pScene.find(friendlyName);
+      mesh.mapAnimationFriendlyNameTo_pScene.find(friendlyName);
 
-  // Found it?
-  if (itAnimation != this->mapAnimationFriendlyNameTo_pScene.end()) { // Yup. So we already loaded it.
+  if (itAnimation != mesh.mapAnimationFriendlyNameTo_pScene.end()) {
     return false;
   }
-
-  //	std::map< std::string /*animationfile*/,
-  //		      const aiScene* > mapAnimationNameTo_pScene;		// Animations
 
   unsigned int Flags =
       aiProcess_Triangulate | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_JoinIdenticalVertices;
@@ -132,32 +82,33 @@ bool SkinnedMeshFactory::LoadMeshAnimation(const std::string &friendlyName, cons
   sAnimationInfo animInfo;
   animInfo.friendlyName = friendlyName;
   animInfo.fileName = filename;
-  animInfo.pAIScene = pImporter->ReadFile(animInfo.fileName.c_str(), Flags);
+  const aiScene *pAIScene = pImporter->ReadFile(animInfo.fileName.c_str(), Flags);
   animInfo.bHasExitTime = hasExitTime;
 
+  animInfo.pAIScene = (void *)pAIScene;
   // Get duration is seconds
-  animInfo.duration =
-      (float)(animInfo.pAIScene->mAnimations[0]->mDuration / animInfo.pAIScene->mAnimations[0]->mTicksPerSecond);
+  animInfo.duration = (float)(pAIScene->mAnimations[0]->mDuration / pAIScene->mAnimations[0]->mTicksPerSecond);
 
   if (!animInfo.pAIScene) {
     return false;
   }
-  
-  // Animation scene is loaded (we assume)
-  // Add it to the map
-  // this->mapAnimationNameTo_pScene[filename] = animInfo;
-  this->mapAnimationFriendlyNameTo_pScene[animInfo.friendlyName] = animInfo;
+
+  mesh.mapAnimationFriendlyNameTo_pScene[animInfo.friendlyName] = animInfo;
 
   return true;
 }
 
 void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
+  SkinnedMesh &mesh = *reinterpret_cast<SkinnedMesh *>(&asset);
   unsigned int Flags = aiProcess_Triangulate | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph |
                        aiProcess_JoinIdenticalVertices | aiProcess_GenNormals | aiProcess_CalcTangentSpace;
   struct AnimationNameFilename {
     String name;
     String filename;
   };
+
+  mesh.m_numberOfVertices = 0;
+  utils::free_vector(mesh.vecVertexBoneData);
 
   String mesh_filename;
   Vector<AnimationNameFilename> animation_filenames;
@@ -179,28 +130,30 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
   }
 
   assert(mesh_filename.size());
-  //Assimp::Importer mImporter;
-  //pScene = mImporter.ReadFile(mesh_filename.c_str(), Flags);
+  // Assimp::Importer mImporter;
+  // pScene = mImporter.ReadFile(mesh_filename.c_str(), Flags);
   pScene = aiImportFile(mesh_filename.c_str(), Flags);
-
 
   assert(pScene);
 
-  mGlobalInverseTransformation = AIMatrixToGLMMatrix(pScene->mRootNode->mTransformation);
-  mGlobalInverseTransformation = inverse(mGlobalInverseTransformation);
+  mesh.mGlobalInverseTransformation = AIMatrixToGLMMatrix2(pScene->mRootNode->mTransformation);
+  mesh.mGlobalInverseTransformation = inverse(mesh.mGlobalInverseTransformation);
 
-  m_numberOfVertices = pScene->mMeshes[0]->mNumVertices;
+  mesh.m_numberOfVertices = pScene->mMeshes[0]->mNumVertices;
   // This is the vertex information for JUST the bone stuff
-  vecVertexBoneData.resize(m_numberOfVertices);
+  mesh.vecVertexBoneData.resize(mesh.m_numberOfVertices);
 
-  this->LoadBones(this->pScene->mMeshes[0], this->vecVertexBoneData);
+  this->LoadBones(this->pScene->mMeshes[0], mesh.vecVertexBoneData, mesh);
+  String default_anim = "runForward";
 
   for (auto &animation : animation_filenames) {
-    LoadMeshAnimation(animation.name, animation.filename);
+    if (default_anim == "")
+      default_anim = animation.name;
+    LoadMeshAnimation(animation.name, animation.filename, mesh);
   }
 
-  Vector<sVertex_xyz_rgba_n_uv2_bt_4Bones> pVertices;
-  Vector<i32> pIndices;
+  // Vector<sVertex_xyz_rgba_n_uv2_bt_4Bones> mesh.vertices;
+  // Vector<i32> mesh.indices;
   {
 
     // sModelDrawInfo theSMDrawInfo;
@@ -219,50 +172,50 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     // Allocate the vertex array (it's a c-style array)
     // theSMDrawInfo.pMeshData = new cMesh();
 
-    pVertices.resize(numberOfVertices);
+    mesh.vertices.resize(numberOfVertices);
 
     // Danger Will Robinson!
     // You don't really need to do this, but at least it will clear it to zero.
     // (compiler will complain that it's 'not safe', etc.)
 
-    // memset(pVertices.data(), 0,
+    // memset(mesh.vertices.data(), 0,
     //        sizeof(sVertex_xyz_rgba_n_uv2_bt_4Bones) * numberOfVertices);
 
     for (unsigned int vertIndex = 0; vertIndex != numberOfVertices; vertIndex++) {
-      pVertices[vertIndex].x = pScene->mMeshes[0]->mVertices[vertIndex].x;
-      pVertices[vertIndex].y = pScene->mMeshes[0]->mVertices[vertIndex].y;
-      pVertices[vertIndex].z = pScene->mMeshes[0]->mVertices[vertIndex].z;
+      mesh.vertices[vertIndex].x = pScene->mMeshes[0]->mVertices[vertIndex].x;
+      mesh.vertices[vertIndex].y = pScene->mMeshes[0]->mVertices[vertIndex].y;
+      mesh.vertices[vertIndex].z = pScene->mMeshes[0]->mVertices[vertIndex].z;
 
       // Normals...
-      pVertices[vertIndex].nx = pScene->mMeshes[0]->mNormals[vertIndex].x;
-      pVertices[vertIndex].ny = pScene->mMeshes[0]->mNormals[vertIndex].y;
-      pVertices[vertIndex].nz = pScene->mMeshes[0]->mNormals[vertIndex].z;
+      mesh.vertices[vertIndex].nx = pScene->mMeshes[0]->mNormals[vertIndex].x;
+      mesh.vertices[vertIndex].ny = pScene->mMeshes[0]->mNormals[vertIndex].y;
+      mesh.vertices[vertIndex].nz = pScene->mMeshes[0]->mNormals[vertIndex].z;
 
-      // Colours...
-      // (If there are no colours, make it hit pink)
-      // Note: the method is because you could have more than one set of
-      //	vertex colours in the model (Why? Who the heck knows?)
-      if (pScene->mMeshes[0]->HasVertexColors(0)) {
-        pVertices[vertIndex].r = pScene->mMeshes[0]->mColors[vertIndex]->r;
-        pVertices[vertIndex].g = pScene->mMeshes[0]->mColors[vertIndex]->g;
-        pVertices[vertIndex].b = pScene->mMeshes[0]->mColors[vertIndex]->b;
-        pVertices[vertIndex].a = pScene->mMeshes[0]->mColors[vertIndex]->a;
-      } else { // hotpink	#FF69B4	rgb(255,105,180)
-        pVertices[vertIndex].r = 1.f;
-        pVertices[vertIndex].g = 105.f / 255.f;
-        pVertices[vertIndex].b = 180.f / 255.f;
-        pVertices[vertIndex].a = 1.f;
-      }
+      //// Colours...
+      //// (If there are no colours, make it hit pink)
+      //// Note: the method is because you could have more than one set of
+      ////	vertex colours in the model (Why? Who the heck knows?)
+      // if (pScene->mMeshes[0]->HasVertexColors(0)) {
+      //  mesh.vertices[vertIndex].r = pScene->mMeshes[0]->mColors[vertIndex]->r;
+      //  mesh.vertices[vertIndex].g = pScene->mMeshes[0]->mColors[vertIndex]->g;
+      //  mesh.vertices[vertIndex].b = pScene->mMeshes[0]->mColors[vertIndex]->b;
+      //  mesh.vertices[vertIndex].a = pScene->mMeshes[0]->mColors[vertIndex]->a;
+      //} else { // hotpink	#FF69B4	rgb(255,105,180)
+      //  mesh.vertices[vertIndex].r = 1.f;
+      //  mesh.vertices[vertIndex].g = 105.f / 255.f;
+      //  mesh.vertices[vertIndex].b = 180.f / 255.f;
+      //  mesh.vertices[vertIndex].a = 1.f;
+      //}
 
       // bi-normal  (or bi-tangent)
-      pVertices[vertIndex].bx = pScene->mMeshes[0]->mBitangents[vertIndex].x;
-      pVertices[vertIndex].by = pScene->mMeshes[0]->mBitangents[vertIndex].y;
-      pVertices[vertIndex].bz = pScene->mMeshes[0]->mBitangents[vertIndex].z;
+      mesh.vertices[vertIndex].bx = pScene->mMeshes[0]->mBitangents[vertIndex].x;
+      mesh.vertices[vertIndex].by = pScene->mMeshes[0]->mBitangents[vertIndex].y;
+      mesh.vertices[vertIndex].bz = pScene->mMeshes[0]->mBitangents[vertIndex].z;
 
       // Tangent
-      pVertices[vertIndex].tx = pScene->mMeshes[0]->mTangents[vertIndex].x;
-      pVertices[vertIndex].ty = pScene->mMeshes[0]->mTangents[vertIndex].y;
-      pVertices[vertIndex].tz = pScene->mMeshes[0]->mTangents[vertIndex].z;
+      mesh.vertices[vertIndex].tx = pScene->mMeshes[0]->mTangents[vertIndex].x;
+      mesh.vertices[vertIndex].ty = pScene->mMeshes[0]->mTangents[vertIndex].y;
+      mesh.vertices[vertIndex].tz = pScene->mMeshes[0]->mTangents[vertIndex].z;
 
       // uv2 (which are odd in assimp)
       // Note that there is an array of texture coordinates,
@@ -270,26 +223,26 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
       if (pScene->mMeshes[0]->HasTextureCoords(0)) // 1st UV coords
       {
         // Assume there's 1... (at least)
-        pVertices[vertIndex].u0 = pScene->mMeshes[0]->mTextureCoords[0][vertIndex].x;
-        pVertices[vertIndex].v0 = pScene->mMeshes[0]->mTextureCoords[0][vertIndex].y;
+        mesh.vertices[vertIndex].u0 = pScene->mMeshes[0]->mTextureCoords[0][vertIndex].x;
+        mesh.vertices[vertIndex].v0 = pScene->mMeshes[0]->mTextureCoords[0][vertIndex].y;
       }
       if (pScene->mMeshes[0]->HasTextureCoords(1)) // 2nd UV coords
       {
-        pVertices[vertIndex].u0 = pScene->mMeshes[0]->mTextureCoords[1][vertIndex].x;
-        pVertices[vertIndex].v0 = pScene->mMeshes[0]->mTextureCoords[1][vertIndex].y;
+        mesh.vertices[vertIndex].u0 = pScene->mMeshes[0]->mTextureCoords[1][vertIndex].x;
+        mesh.vertices[vertIndex].v0 = pScene->mMeshes[0]->mTextureCoords[1][vertIndex].y;
       }
       // TODO: add additional texture coordinates (mTextureCoords[1], etc.)
 
       // 4Bones: ids and weights
-      pVertices[vertIndex].boneID[0] = vecVertexBoneData[vertIndex].ids[0];
-      pVertices[vertIndex].boneID[1] = vecVertexBoneData[vertIndex].ids[1];
-      pVertices[vertIndex].boneID[2] = vecVertexBoneData[vertIndex].ids[2];
-      pVertices[vertIndex].boneID[3] = vecVertexBoneData[vertIndex].ids[3];
+      mesh.vertices[vertIndex].boneID[0] = mesh.vecVertexBoneData[vertIndex].ids[0];
+      mesh.vertices[vertIndex].boneID[1] = mesh.vecVertexBoneData[vertIndex].ids[1];
+      mesh.vertices[vertIndex].boneID[2] = mesh.vecVertexBoneData[vertIndex].ids[2];
+      mesh.vertices[vertIndex].boneID[3] = mesh.vecVertexBoneData[vertIndex].ids[3];
 
-      pVertices[vertIndex].boneWeights[0] = vecVertexBoneData[vertIndex].weights[0];
-      pVertices[vertIndex].boneWeights[1] = vecVertexBoneData[vertIndex].weights[1];
-      pVertices[vertIndex].boneWeights[2] = vecVertexBoneData[vertIndex].weights[2];
-      pVertices[vertIndex].boneWeights[3] = vecVertexBoneData[vertIndex].weights[3];
+      mesh.vertices[vertIndex].boneWeights[0] = mesh.vecVertexBoneData[vertIndex].weights[0];
+      mesh.vertices[vertIndex].boneWeights[1] = mesh.vecVertexBoneData[vertIndex].weights[1];
+      mesh.vertices[vertIndex].boneWeights[2] = mesh.vecVertexBoneData[vertIndex].weights[2];
+      mesh.vertices[vertIndex].boneWeights[3] = mesh.vecVertexBoneData[vertIndex].weights[3];
 
     } // for ( unsigned int vertIndex = 0;
 
@@ -298,12 +251,12 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     // Allocate the array to hold the indices (triangle) info
 
     // Allocate the array for that (indices NOT triangles)
-    pIndices.resize(numberOfIndices);
+    mesh.indices.resize(numberOfIndices);
 
     // Danger Will Robinson!
     // You don't really need to do this, but at least it will clear it to zero.
     // (compiler will complain that it's 'not safe', etc.)
-    // memset(pIndices, 0, sizeof(unsigned int) * theSMDrawInfo.numberOfIndices);
+    // memset(mesh.indices, 0, sizeof(unsigned int) * theSMDrawInfo.numberOfIndices);
 
     unsigned int numTriangles = pScene->mMeshes[0]->mNumFaces;
     unsigned int triIndex = 0;                                         // Steps through the triangles.
@@ -313,15 +266,15 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
       // Get the triangle at this triangle index...
       aiFace *pAIFace = &(pScene->mMeshes[0]->mFaces[triIndex]);
 
-      pIndices[indexIndex + 0]    // Offset by 0 (zero)
-          = pAIFace->mIndices[0]; // vertex 0
+      mesh.indices[indexIndex + 0] // Offset by 0 (zero)
+          = pAIFace->mIndices[0];  // vertex 0
 
-      pIndices[indexIndex + 1]    // Offset by 1
-          = pAIFace->mIndices[1]; // vertex 1
+      mesh.indices[indexIndex + 1] // Offset by 1
+          = pAIFace->mIndices[1];  // vertex 1
 
-      pIndices[indexIndex + 2]    // Offset by 2
-          = pAIFace->mIndices[2]; // vertex 1
-    }                             // for ( ; triIndex != numVertices;
+      mesh.indices[indexIndex + 2] // Offset by 2
+          = pAIFace->mIndices[2];  // vertex 1
+    }                              // for ( ; triIndex != numVertices;
 
     // Calculate the extents on the mesh
     // (Note, because I'm a bone head, this is dupicated...)
@@ -335,33 +288,33 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     float scaleForUnitBBox = 1.0;
     {
       // Assume 1st vertex is both max and min
-      minXYZ.x = pVertices[0].x;
-      minXYZ.y = pVertices[0].y;
-      minXYZ.z = pVertices[0].z;
-      maxXYZ.x = pVertices[0].x;
-      maxXYZ.y = pVertices[0].y;
-      maxXYZ.z = pVertices[0].z;
+      minXYZ.x = mesh.vertices[0].x;
+      minXYZ.y = mesh.vertices[0].y;
+      minXYZ.z = mesh.vertices[0].z;
+      maxXYZ.x = mesh.vertices[0].x;
+      maxXYZ.y = mesh.vertices[0].y;
+      maxXYZ.z = mesh.vertices[0].z;
 
       for (int index = 0; index != numberOfVertices; index++) {
-        if (pVertices[index].x < minXYZ.x) {
-          minXYZ.x = pVertices[index].x;
+        if (mesh.vertices[index].x < minXYZ.x) {
+          minXYZ.x = mesh.vertices[index].x;
         }
-        if (pVertices[index].x > maxXYZ.x) {
-          maxXYZ.x = pVertices[index].x;
+        if (mesh.vertices[index].x > maxXYZ.x) {
+          maxXYZ.x = mesh.vertices[index].x;
         }
         // y...
-        if (pVertices[index].y < minXYZ.y) {
-          minXYZ.y = pVertices[index].y;
+        if (mesh.vertices[index].y < minXYZ.y) {
+          minXYZ.y = mesh.vertices[index].y;
         }
-        if (pVertices[index].y > maxXYZ.y) {
-          maxXYZ.y = pVertices[index].y;
+        if (mesh.vertices[index].y > maxXYZ.y) {
+          maxXYZ.y = mesh.vertices[index].y;
         }
         // z...
-        if (pVertices[index].z < minXYZ.z) {
-          minXYZ.z = pVertices[index].z;
+        if (mesh.vertices[index].z < minXYZ.z) {
+          minXYZ.z = mesh.vertices[index].z;
         }
-        if (pVertices[index].z > maxXYZ.z) {
-          maxXYZ.z = pVertices[index].z;
+        if (mesh.vertices[index].z > maxXYZ.z) {
+          maxXYZ.z = mesh.vertices[index].z;
         }
 
       } // for ( int index...
@@ -379,9 +332,15 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
       }
       //
       scaleForUnitBBox = 1.0f / maxExtent;
-
     }
-  }
 
-  aiReleaseImport(pScene);
+    mesh.bounds.max = maxXYZ;
+    mesh.bounds.min = minXYZ;
+
+    mesh.state.default_animation.name = default_anim;
+    mesh.state.active_animation.name = default_anim;
+    mesh.state.temp.current_animation = default_anim;
+  }
+  mesh.pScene = (void *)pScene;
+  // aiReleaseImport(pScene);
 }

@@ -42,10 +42,10 @@ void setup_static_mesh() {
   auto &transform = component::add_and_get<game::TransformComponent>(entity);
 
   transform.position = glm::vec3(0);
-  transform.scale = glm::vec3(1);
+  transform.scale = glm::vec3(0.01);
 
   auto &skinned_mesh_component = component::add_and_get<game::SkinnedMeshComponent>(entity);
-  skinned_mesh_component.skinned_mesh = asset::AssetHandle<runtime::SkinnedMesh>(sm_asset);
+  skinned_mesh_component.mesh = asset::AssetHandle<runtime::SkinnedMesh>(sm_asset);
 }
 
 void post_scene_setup() {
