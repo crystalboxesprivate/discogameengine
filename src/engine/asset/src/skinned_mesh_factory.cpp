@@ -12,9 +12,9 @@
 
 using runtime::SkinnedMesh;
 using namespace glm;
-using runtime::sAnimationInfo;
+using runtime::AnimationInfo;
 
-using runtime::sVertex_xyz_rgba_n_uv2_bt_4Bones;
+using runtime::SkinnedMeshVertex;
 
 mat4 AIMatrixToGLMMatrix2(const aiMatrix4x4 &mat) {
   return mat4(mat.a1, mat.b1, mat.c1, mat.d1, mat.a2, mat.b2, mat.c2, mat.d2, mat.a3, mat.b3, mat.c3, mat.d3, mat.a4,
@@ -39,15 +39,15 @@ void SkinnedMeshFactory::LoadBones(aiMesh *Mesh, Vector<runtime::VertexBoneData>
     //	std::map<std::string /*BoneName*/, unsigned int /*BoneIndex*/> mMapping;
     // 	std::vector<sBoneInfo> mInfo;
 
-    std::map<std::string, unsigned int>::iterator it = mesh_sm.m_mapBoneNameToBoneIndex.find(BoneName);
-    if (it == mesh_sm.m_mapBoneNameToBoneIndex.end()) {
+    std::map<std::string, unsigned int>::iterator it = mesh_sm.bone_name_to_bone_index.find(BoneName);
+    if (it == mesh_sm.bone_name_to_bone_index.end()) {
       BoneIndex = mesh_sm.number_of_bones;
       mesh_sm.number_of_bones++;
       runtime::sBoneInfo bi;
       mesh_sm.bone_info.push_back(bi);
 
       mesh_sm.bone_info[BoneIndex].BoneOffset = AIMatrixToGLMMatrix2(Mesh->mBones[boneIndex]->mOffsetMatrix);
-      mesh_sm.m_mapBoneNameToBoneIndex[BoneName] = BoneIndex;
+      mesh_sm.bone_name_to_bone_index[BoneName] = BoneIndex;
     } else {
       BoneIndex = it->second;
     }
@@ -68,10 +68,10 @@ inline String import_path(const String &raw_path) {
 bool SkinnedMeshFactory::LoadMeshAnimation(const std::string &friendlyName, const std::string &filename,
                                            runtime::SkinnedMesh &mesh, bool hasExitTime) // Only want animations
 {
-  std::map<std::string /*animation FRIENDLY name*/, sAnimationInfo>::iterator itAnimation =
-      mesh.mapAnimationFriendlyNameTo_pScene.find(friendlyName);
+  std::map<std::string /*animation FRIENDLY name*/, AnimationInfo>::iterator itAnimation =
+      mesh.animation_name_to_pscene.find(friendlyName);
 
-  if (itAnimation != mesh.mapAnimationFriendlyNameTo_pScene.end()) {
+  if (itAnimation != mesh.animation_name_to_pscene.end()) {
     return false;
   }
 
@@ -79,21 +79,21 @@ bool SkinnedMeshFactory::LoadMeshAnimation(const std::string &friendlyName, cons
       aiProcess_Triangulate | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_JoinIdenticalVertices;
 
   Assimp::Importer *pImporter = new Assimp::Importer();
-  sAnimationInfo animInfo;
-  animInfo.friendlyName = friendlyName;
-  animInfo.fileName = filename;
-  const aiScene *pAIScene = pImporter->ReadFile(animInfo.fileName.c_str(), Flags);
-  animInfo.bHasExitTime = hasExitTime;
+  AnimationInfo animInfo;
+  animInfo.friendly_name = friendlyName;
+  animInfo.filename = filename;
+  const aiScene *pAIScene = pImporter->ReadFile(animInfo.filename.c_str(), Flags);
+  animInfo.has_exit_time = hasExitTime;
 
-  animInfo.pAIScene = (void *)pAIScene;
+  animInfo.ai_scene = (void *)pAIScene;
   // Get duration is seconds
   animInfo.duration = (float)(pAIScene->mAnimations[0]->mDuration / pAIScene->mAnimations[0]->mTicksPerSecond);
 
-  if (!animInfo.pAIScene) {
+  if (!animInfo.ai_scene) {
     return false;
   }
 
-  mesh.mapAnimationFriendlyNameTo_pScene[animInfo.friendlyName] = animInfo;
+  mesh.animation_name_to_pscene[animInfo.friendly_name] = animInfo;
 
   return true;
 }
@@ -107,8 +107,8 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     String filename;
   };
 
-  mesh.m_numberOfVertices = 0;
-  utils::free_vector(mesh.vecVertexBoneData);
+  mesh.number_of_vertices = 0;
+  utils::free_vector(mesh.vertex_bone_data);
 
   String mesh_filename;
   Vector<AnimationNameFilename> animation_filenames;
@@ -136,14 +136,14 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
 
   assert(pScene);
 
-  mesh.mGlobalInverseTransformation = AIMatrixToGLMMatrix2(pScene->mRootNode->mTransformation);
-  mesh.mGlobalInverseTransformation = inverse(mesh.mGlobalInverseTransformation);
+  mesh.global_inverse_transformation = AIMatrixToGLMMatrix2(pScene->mRootNode->mTransformation);
+  mesh.global_inverse_transformation = inverse(mesh.global_inverse_transformation);
 
-  mesh.m_numberOfVertices = pScene->mMeshes[0]->mNumVertices;
+  mesh.number_of_vertices = pScene->mMeshes[0]->mNumVertices;
   // This is the vertex information for JUST the bone stuff
-  mesh.vecVertexBoneData.resize(mesh.m_numberOfVertices);
+  mesh.vertex_bone_data.resize(mesh.number_of_vertices);
 
-  this->LoadBones(this->pScene->mMeshes[0], mesh.vecVertexBoneData, mesh);
+  this->LoadBones(this->pScene->mMeshes[0], mesh.vertex_bone_data, mesh);
   String default_anim = "runForward";
 
   for (auto &animation : animation_filenames) {
@@ -234,15 +234,15 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
       // TODO: add additional texture coordinates (mTextureCoords[1], etc.)
 
       // 4Bones: ids and weights
-      mesh.vertices[vertIndex].boneID[0] = mesh.vecVertexBoneData[vertIndex].ids[0];
-      mesh.vertices[vertIndex].boneID[1] = mesh.vecVertexBoneData[vertIndex].ids[1];
-      mesh.vertices[vertIndex].boneID[2] = mesh.vecVertexBoneData[vertIndex].ids[2];
-      mesh.vertices[vertIndex].boneID[3] = mesh.vecVertexBoneData[vertIndex].ids[3];
+      mesh.vertices[vertIndex].bone_id[0] = mesh.vertex_bone_data[vertIndex].ids[0];
+      mesh.vertices[vertIndex].bone_id[1] = mesh.vertex_bone_data[vertIndex].ids[1];
+      mesh.vertices[vertIndex].bone_id[2] = mesh.vertex_bone_data[vertIndex].ids[2];
+      mesh.vertices[vertIndex].bone_id[3] = mesh.vertex_bone_data[vertIndex].ids[3];
 
-      mesh.vertices[vertIndex].boneWeights[0] = mesh.vecVertexBoneData[vertIndex].weights[0];
-      mesh.vertices[vertIndex].boneWeights[1] = mesh.vecVertexBoneData[vertIndex].weights[1];
-      mesh.vertices[vertIndex].boneWeights[2] = mesh.vecVertexBoneData[vertIndex].weights[2];
-      mesh.vertices[vertIndex].boneWeights[3] = mesh.vecVertexBoneData[vertIndex].weights[3];
+      mesh.vertices[vertIndex].bone_weights[0] = mesh.vertex_bone_data[vertIndex].weights[0];
+      mesh.vertices[vertIndex].bone_weights[1] = mesh.vertex_bone_data[vertIndex].weights[1];
+      mesh.vertices[vertIndex].bone_weights[2] = mesh.vertex_bone_data[vertIndex].weights[2];
+      mesh.vertices[vertIndex].bone_weights[3] = mesh.vertex_bone_data[vertIndex].weights[3];
 
     } // for ( unsigned int vertIndex = 0;
 

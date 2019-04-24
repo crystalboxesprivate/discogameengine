@@ -15,13 +15,12 @@ struct aiNode;
 
 namespace runtime {
 static const i32 NUMBEROFBONES = 4;
-struct sAnimationInfo {
-  std::string friendlyName;
-  std::string fileName;
+struct AnimationInfo {
+  String friendly_name;
+  String filename;
   float duration;
-  bool bHasExitTime;
-  // const aiScene *pAIScene;
-  void *pAIScene;
+  bool has_exit_time;
+  void *ai_scene;
 };
 
 static const int MAX_BONES_PER_VERTEX = 4;
@@ -35,12 +34,12 @@ struct VertexBoneData {
 
 struct sBoneInfo {
   glm::mat4 BoneOffset;
-  glm::mat4 FinalTransformation;
+  glm::mat4 final_transformation;
   glm::mat4 ObjectBoneTransformation;
 };
 
-struct sVertex_xyz_rgba_n_uv2_bt_4Bones {
-  sVertex_xyz_rgba_n_uv2_bt_4Bones()
+struct SkinnedMeshVertex {
+  SkinnedMeshVertex()
       : x(0.0f)
       , y(0.0f)
       , z(0.0f)
@@ -67,8 +66,8 @@ struct sVertex_xyz_rgba_n_uv2_bt_4Bones {
       , bz(0.0f)
       , bw(1.0f) {
     //#ifdef _DEBUG
-    memset(this->boneID, 0, sizeof(u32) * NUMBEROFBONES);
-    memset(this->boneWeights, 0, sizeof(float) * NUMBEROFBONES);
+    memset(this->bone_id, 0, sizeof(u32) * NUMBEROFBONES);
+    memset(this->bone_weights, 0, sizeof(float) * NUMBEROFBONES);
     // So these are essentially this:
     //		unsigned int boneID[4];
     //		float boneWeights[4];
@@ -84,11 +83,11 @@ struct sVertex_xyz_rgba_n_uv2_bt_4Bones {
   float tx, ty, tz, tw; // tangent				//
   float bx, by, bz, bw; // bi-normal			//
   // For the 4 bone skinned mesh information
-  float boneID[NUMBEROFBONES];      // New		//
-  float boneWeights[NUMBEROFBONES]; // New		//
+  float bone_id[NUMBEROFBONES];      // New		//
+  float bone_weights[NUMBEROFBONES]; // New		//
 
-  inline friend Archive &operator<<(Archive &archive, sVertex_xyz_rgba_n_uv2_bt_4Bones &vert) {
-    archive.serialize(&vert, sizeof(sVertex_xyz_rgba_n_uv2_bt_4Bones));
+  inline friend Archive &operator<<(Archive &archive, SkinnedMeshVertex &vert) {
+    archive.serialize(&vert, sizeof(SkinnedMeshVertex));
     return archive;
   }
 };
@@ -107,7 +106,7 @@ struct SkinnedMesh : public asset::Asset {
   }
 
   Vector<i32> indices;
-  Vector<sVertex_xyz_rgba_n_uv2_bt_4Bones> vertices;
+  Vector<SkinnedMeshVertex> vertices;
 
   virtual void free() override {
     utils::free_vector(indices);
@@ -120,46 +119,41 @@ struct SkinnedMesh : public asset::Asset {
   math::Box bounds;
 
   struct AnimationState {
-
     struct StateDetails {
       StateDetails()
           : current_time(0.0f)
           , total_time(0.0f)
           , frame_step_time(0.0f){};
-      std::string name;
+      String name;
       float current_time;    // Time (frame) in current animation
       float total_time;      // Total time animation goes
       float frame_step_time; // Number of seconds to 'move' the animation
       // Returns true if time had to be reset
-      // (for checking to see if the animation has finished or not)
-      // TODO: Deal with running the animation backwards, perhaps??
-      bool increment_time(bool bResetToZero = true) {
-        bool bDidWeReset = false;
+      bool increment_time(bool reset_to_zero = true) {
+        bool did_we_reset = false;
 
         this->current_time += this->frame_step_time;
         if (this->current_time >= this->total_time) {
           this->current_time = 0.0f;
-          bDidWeReset = true;
+          did_we_reset = true;
         }
 
-        return bDidWeReset;
+        return did_we_reset;
       }
     };
 
     struct TempStuff {
-      std::string current_animation;
-      std::string previous_animation;
+      String current_animation;
+      String previous_animation;
     };
     TempStuff temp;
 
     // Extent Values for skinned mesh
-    // These can be updated per frame, from the "update skinned mesh" call
     glm::vec3 minXYZ_from_SM_Bones;
     glm::vec3 maxXYZ_from_SM_Bones;
     // Store all the bones for this model, buing updated per frame
-    std::vector<glm::mat4x4> object_bone_transforms;
-
-    std::vector<StateDetails> animation_queue;
+    Vector<glm::mat4x4> object_bone_transforms;
+    Vector<StateDetails> animation_queue;
     StateDetails active_animation;
     StateDetails default_animation;
   };
@@ -167,32 +161,30 @@ struct SkinnedMesh : public asset::Asset {
   AnimationState state;
   void *pScene = nullptr;
 
-  float get_duration_seconds(std::string animationName);
-  float find_animation_total_time(std::string animationName);
-  void bone_transform(float TimeInSeconds,
-                      std::string animationName, // Now we can pick the animation
-                      std::vector<glm::mat4> &FinalTransformation, std::vector<glm::mat4> &Globals,
-                      std::vector<glm::mat4> &Offsets);
+  float get_duration_seconds(String animation_name);
+  float find_animation_total_time(String animation_name);
+  void bone_transform(float time_in_seconds, String animation_name, Vector<glm::mat4> &final_transformation,
+                      Vector<glm::mat4> &globals, Vector<glm::mat4> &offsets);
 
-  void read_node_hierarchy(float AnimationTime, std::string animationName, const aiNode *pNode,
-                         const glm::mat4 &ParentTransformMatrix);
-  const aiNodeAnim *SkinnedMesh::find_node_animation_channel(const aiAnimation *pAnimation, const String& boneName);
+  void read_node_hierarchy(float animation_time, String animation_name, const aiNode *pNode,
+                           const glm::mat4 &ParentTransformMatrix);
+  const aiNodeAnim *SkinnedMesh::find_node_animation_channel(const aiAnimation *pAnimation, const String &boneName);
 
-  void calculate_glm_interpolated_scaling(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::vec3 &out);
-  std::map<std::string /*animation FRIENDLY name*/,
-           sAnimationInfo> mapAnimationFriendlyNameTo_pScene; // Animations
-  void calculate_glm_interpolated_rotation(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::quat &out);
-  void calculate_glm_interpolated_position(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::vec3 &out);
-  unsigned int find_rotation(float AnimationTime, const aiNodeAnim *pNodeAnim);
-  unsigned int find_position(float AnimationTime, const aiNodeAnim *pNodeAnim);
-  unsigned int find_scaling(float AnimationTime, const aiNodeAnim *pNodeAnim);
+  void calculate_glm_interpolated_scaling(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out);
+  Map<String, AnimationInfo> animation_name_to_pscene; 
+  void calculate_glm_interpolated_rotation(float animation_time, const aiNodeAnim *node_anim, glm::quat &out);
+  void calculate_glm_interpolated_position(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out);
+  unsigned int find_rotation(float animation_time, const aiNodeAnim *node_anim);
+  unsigned int find_position(float animation_time, const aiNodeAnim *node_anim);
+  unsigned int find_scaling(float animation_time, const aiNodeAnim *node_anim);
 
-  glm::mat4 mGlobalInverseTransformation;
-  i32 m_numberOfVertices = 0;
-  Vector<VertexBoneData> vecVertexBoneData;
-  Map<String /*BoneName*/, unsigned int /* BoneIndex */> m_mapBoneNameToBoneIndex; // mMapping;
+  glm::mat4 global_inverse_transformation;
+  i32 number_of_vertices = 0;
+  Vector<VertexBoneData> vertex_bone_data;
+  Map<String, unsigned int> bone_name_to_bone_index;
   Vector<sBoneInfo> bone_info;
-  unsigned int number_of_bones = 0; // mNums;
+  unsigned int number_of_bones = 0;
+
 private:
   SharedPtr<SkinnedMeshResource> render_data;
 };

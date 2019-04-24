@@ -50,7 +50,7 @@ SkinnedMeshResource *SkinnedMesh::get_render_resource() {
     usize index_byte_size = indices.size() * sizeof(i32);
     gi::set_index_buffer_data(indices.data(), index_byte_size, render_data->index_buffer);
 
-    usize stride = sizeof(sVertex_xyz_rgba_n_uv2_bt_4Bones);
+    usize stride = sizeof(SkinnedMeshVertex);
     render_data->vertex_buffer = gi::create_vertex_buffer(vertices.size(), stride, PixelFormat::FloatRGBA);
     usize vertex_byte_size = vertices.size() * stride;
     gi::set_vertex_buffer_data(vertices.data(), vertex_byte_size, render_data->vertex_buffer);
@@ -62,23 +62,23 @@ SkinnedMeshResource *SkinnedMesh::get_render_resource() {
   return render_data.get();
 }
 
-float SkinnedMesh::get_duration_seconds(std::string animationName) {
-  std::map<std::string /*animation FRIENDLY name*/, sAnimationInfo>::iterator itAnimation =
-      this->mapAnimationFriendlyNameTo_pScene.find(animationName);
+float SkinnedMesh::get_duration_seconds(String animationName) {
+  std::map<String /*animation FRIENDLY name*/, AnimationInfo>::iterator itAnimation =
+      this->animation_name_to_pscene.find(animationName);
 
   // Found it?
-  if (itAnimation == this->mapAnimationFriendlyNameTo_pScene.end()) { // Nope.
+  if (itAnimation == this->animation_name_to_pscene.end()) { // Nope.
     return 0.0f;
   }
 
   // This is scaling the animation from 0 to 1
 
-  auto scene = (const aiScene *)itAnimation->second.pAIScene;
+  auto scene = (const aiScene *)itAnimation->second.ai_scene;
   return (float)scene->mAnimations[0]->mDuration / (float)scene->mAnimations[0]->mTicksPerSecond;
 }
 
 void SkinnedMesh::bone_transform(float time_in_seconds,
-                                 std::string animationName, // Now we can pick the animation
+                                 String animationName, // Now we can pick the animation
                                  std::vector<glm::mat4> &final_transformation, std::vector<glm::mat4> &globals,
                                  std::vector<glm::mat4> &offsets) {
   glm::mat4 ident(1.0f);
@@ -98,21 +98,21 @@ void SkinnedMesh::bone_transform(float time_in_seconds,
   globals.resize(this->number_of_bones);
   offsets.resize(this->number_of_bones);
 
-  for (u32 BoneIndex = 0; BoneIndex < this->number_of_bones; BoneIndex++) {
-    final_transformation[BoneIndex] = glm::transpose(this->bone_info[BoneIndex].FinalTransformation);
-    globals[BoneIndex] = this->bone_info[BoneIndex].ObjectBoneTransformation;
-    offsets[BoneIndex] = this->bone_info[BoneIndex].BoneOffset;
+  for (u32 bone_index = 0; bone_index < this->number_of_bones; bone_index++) {
+    final_transformation[bone_index] = glm::transpose(this->bone_info[bone_index].final_transformation);
+    globals[bone_index] = this->bone_info[bone_index].ObjectBoneTransformation;
+    offsets[bone_index] = this->bone_info[bone_index].BoneOffset;
   }
 }
 // Looks in the animation map and returns the total time
-float SkinnedMesh::find_animation_total_time(std::string animationName) {
-  Map<String, sAnimationInfo>::iterator itAnimation = this->mapAnimationFriendlyNameTo_pScene.find(animationName);
+float SkinnedMesh::find_animation_total_time(String animation_name) {
+  Map<String, AnimationInfo>::iterator itAnimation = this->animation_name_to_pscene.find(animation_name);
 
   // Found it?
-  if (itAnimation == this->mapAnimationFriendlyNameTo_pScene.end()) { // Nope.
+  if (itAnimation == this->animation_name_to_pscene.end()) { // Nope.
     return 0.0f;
   }
-  auto scene = (const aiScene *)itAnimation->second.pAIScene;
+  auto scene = (const aiScene *)itAnimation->second.ai_scene;
 
   // This is scaling the animation from 0 to 1
   return (float)scene->mAnimations[0]->mDuration;
@@ -165,19 +165,19 @@ void SkinnedMesh::calculate_glm_interpolated_scaling(float animation_time, const
   return;
 }
 
-void SkinnedMesh::read_node_hierarchy(float animation_time, std::string animation_name, const aiNode *pNode,
+void SkinnedMesh::read_node_hierarchy(float animation_time, String animation_name, const aiNode *pNode,
                                     const glm::mat4 &ParentTransformMatrix) {
   aiString node_name(pNode->mName.data);
 
   auto scene = (const aiScene *)this->pScene;
   // Original version picked the "main scene" animation...
   const aiAnimation *pAnimation = scene->mAnimations[0];
-  Map<String, sAnimationInfo>::iterator itAnimation =
-      this->mapAnimationFriendlyNameTo_pScene.find(animation_name); // Animations
+  Map<String, AnimationInfo>::iterator itAnimation =
+      this->animation_name_to_pscene.find(animation_name); // Animations
 
   // Did we find it?
-  if (itAnimation != this->mapAnimationFriendlyNameTo_pScene.end()) {
-    auto ascene = (const aiScene *)itAnimation->second.pAIScene;
+  if (itAnimation != this->animation_name_to_pscene.end()) {
+    auto ascene = (const aiScene *)itAnimation->second.ai_scene;
     pAnimation = reinterpret_cast<const aiAnimation *>(ascene->mAnimations[0]);
   }
 
@@ -206,12 +206,12 @@ void SkinnedMesh::read_node_hierarchy(float animation_time, std::string animatio
 
   glm::mat4 object_bone_transform = ParentTransformMatrix * node_transform;
 
-  std::map<std::string, u32>::iterator it = this->m_mapBoneNameToBoneIndex.find(std::string(node_name.data));
-  if (it != this->m_mapBoneNameToBoneIndex.end()) {
+  std::map<String, u32>::iterator it = this->bone_name_to_bone_index.find(String(node_name.data));
+  if (it != this->bone_name_to_bone_index.end()) {
     u32 BoneIndex = it->second;
     this->bone_info[BoneIndex].ObjectBoneTransformation = object_bone_transform;
-    this->bone_info[BoneIndex].FinalTransformation =
-        this->mGlobalInverseTransformation * object_bone_transform * this->bone_info[BoneIndex].BoneOffset;
+    this->bone_info[BoneIndex].final_transformation =
+        this->global_inverse_transformation * object_bone_transform * this->bone_info[BoneIndex].BoneOffset;
 
   } else {
     int breakpoint = 0;
@@ -284,9 +284,9 @@ void SkinnedMesh::calculate_glm_interpolated_position(float animation_time, cons
 }
 
 u32 SkinnedMesh::find_rotation(float animation_time, const aiNodeAnim *node_anim) {
-  for (u32 RotationKeyIndex = 0; RotationKeyIndex != node_anim->mNumRotationKeys - 1; RotationKeyIndex++) {
-    if (animation_time < (float)node_anim->mRotationKeys[RotationKeyIndex + 1].mTime) {
-      return RotationKeyIndex;
+  for (u32 rotation_key_index = 0; rotation_key_index != node_anim->mNumRotationKeys - 1; rotation_key_index++) {
+    if (animation_time < (float)node_anim->mRotationKeys[rotation_key_index + 1].mTime) {
+      return rotation_key_index;
     }
   }
 
@@ -299,7 +299,6 @@ u32 SkinnedMesh::find_position(float animation_time, const aiNodeAnim *node_anim
       return PositionKeyIndex;
     }
   }
-
   return 0;
 }
 

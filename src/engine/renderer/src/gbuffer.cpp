@@ -61,7 +61,7 @@ static const i32 MAXNUMBEROFBONES = 100;
 struct MatrixBuffer {
   mat4x4 bones[MAXNUMBEROFBONES];
   mat4x4 bones_previous[MAXNUMBEROFBONES];
-  //vec4 numBonesUsed;
+  // vec4 numBonesUsed;
 };
 
 gi::UniformBufferRef matrices;
@@ -223,14 +223,7 @@ void update_skinned_meshes() {
 
     auto &sm = *skinned_mesh_asset;
     {
-      std::string CurAnim = sm.state.active_animation.name;
-      std::string current_animation = CurAnim;
-      sm.state.active_animation.name = CurAnim;
-
-   /*   if (CurAnim != sm.state.temp.previous_animation)
-        sm.state.active_animation.current_time = 0.0f;*/
-
-      sm.state.active_animation.total_time = sm.get_duration_seconds(CurAnim);
+      sm.state.active_animation.total_time = sm.get_duration_seconds(sm.state.active_animation.name);
       sm.state.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 2.0;
 
       sm.state.active_animation.increment_time();
@@ -239,24 +232,20 @@ void update_skinned_meshes() {
       Vector<glm::mat4x4> vecFinalTransformation;
       Vector<glm::mat4x4> vecOffsets;
 
-      sm.bone_transform(sm.state.active_animation.current_time, current_animation, skinned_mesh_component.bone_transforms,
-                        skinned_mesh_component.object_to_bone_transforms, vecOffsets);
+      sm.bone_transform(sm.state.active_animation.current_time, sm.state.active_animation.name,
+                        skinned_mesh_component.bone_transforms, skinned_mesh_component.object_to_bone_transforms,
+                        vecOffsets);
 
       skinned_mesh_component.number_of_bones_used = static_cast<uint32>(skinned_mesh_component.bone_transforms.size());
 
-      //matrix_buffer.bones_previous = matrix_buffer.bones;
-
       memcpy(&matrix_buffer.bones_previous[0], &matrix_buffer.bones[0], sizeof(mat4x4) * MAXNUMBEROFBONES);
-      memcpy(&matrix_buffer.bones[0], &skinned_mesh_component.bone_transforms[0], sizeof(mat4x4) * skinned_mesh_component.bone_transforms.size());
-      //matrix_buffer.numBonesUsed.x = (float) skinned_mesh_component.number_of_bones_used;
-
+      memcpy(&matrix_buffer.bones[0], &skinned_mesh_component.bone_transforms[0],
+             sizeof(mat4x4) * skinned_mesh_component.bone_transforms.size());
 
       gi::set_uniform_buffer_data(&matrix_buffer.bones[0], sizeof(MatrixBuffer), matrices);
-    
     }
   }
 }
-
 
 void GBuffer::draw_skinned_meshes() {
   update_skinned_meshes();
@@ -281,10 +270,9 @@ void GBuffer::draw_skinned_meshes() {
     get_transform(entity_id, skinned_mesh_component.cached_transform_component, model_uniform_buf);
     set_material_parameters(component::find_and_get_mut<game::MaterialComponent>(entity_id), state);
 
+    // set matrices
     {
-      // set matrices
       gi::bind_uniform_buffer(2, gi::ShaderStage::Vertex, matrices);
-    
     }
 
     runtime::SkinnedMeshResource &resource = *resource_ptr;
