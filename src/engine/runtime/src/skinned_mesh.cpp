@@ -63,8 +63,6 @@ SkinnedMeshResource *SkinnedMesh::get_render_resource() {
 }
 
 float SkinnedMesh::get_duration_seconds(std::string animationName) {
-  // std::map< std::string /*animationfile*/,
-  //	const aiScene* >::iterator itAnimation = this->mapAnimationNameTo_pScene.find(animationName);
   std::map<std::string /*animation FRIENDLY name*/, sAnimationInfo>::iterator itAnimation =
       this->mapAnimationFriendlyNameTo_pScene.find(animationName);
 
@@ -79,39 +77,36 @@ float SkinnedMesh::get_duration_seconds(std::string animationName) {
   return (float)scene->mAnimations[0]->mDuration / (float)scene->mAnimations[0]->mTicksPerSecond;
 }
 
-void SkinnedMesh::bone_transform(float TimeInSeconds,
+void SkinnedMesh::bone_transform(float time_in_seconds,
                                  std::string animationName, // Now we can pick the animation
-                                 std::vector<glm::mat4> &FinalTransformation, std::vector<glm::mat4> &Globals,
-                                 std::vector<glm::mat4> &Offsets) {
-  glm::mat4 Identity(1.0f);
+                                 std::vector<glm::mat4> &final_transformation, std::vector<glm::mat4> &globals,
+                                 std::vector<glm::mat4> &offsets) {
+  glm::mat4 ident(1.0f);
   const aiScene *p_scene = (const aiScene *)pScene;
 
-  float TicksPerSecond = static_cast<float>(
+  float ticks_per_second = static_cast<float>(
       p_scene->mAnimations[0]->mTicksPerSecond != 0 ? p_scene->mAnimations[0]->mTicksPerSecond : 25.0);
 
-  float TimeInTicks = TimeInSeconds * TicksPerSecond;
-  float AnimationTime = fmod(TimeInTicks, FindAnimationTotalTime(animationName));
+  float time_in_ticks = time_in_seconds * ticks_per_second;
+  float animation_time = fmod(time_in_ticks, find_animation_total_time(animationName));
 
   // use the "animation" file to look up these nodes
   // (need the matOffset information from the animation file)
-  this->ReadNodeHeirarchy(AnimationTime, animationName, p_scene->mRootNode, Identity);
+  this->read_node_hierarchy(animation_time, animationName, p_scene->mRootNode, ident);
 
-  FinalTransformation.resize(this->mNumBones);
-  Globals.resize(this->mNumBones);
-  Offsets.resize(this->mNumBones);
+  final_transformation.resize(this->number_of_bones);
+  globals.resize(this->number_of_bones);
+  offsets.resize(this->number_of_bones);
 
-  for (unsigned int BoneIndex = 0; BoneIndex < this->mNumBones; BoneIndex++) {
-    FinalTransformation[BoneIndex] = glm::transpose( this->mBoneInfo[BoneIndex].FinalTransformation);
-    Globals[BoneIndex] = this->mBoneInfo[BoneIndex].ObjectBoneTransformation;
-    Offsets[BoneIndex] = this->mBoneInfo[BoneIndex].BoneOffset;
+  for (u32 BoneIndex = 0; BoneIndex < this->number_of_bones; BoneIndex++) {
+    final_transformation[BoneIndex] = glm::transpose(this->bone_info[BoneIndex].FinalTransformation);
+    globals[BoneIndex] = this->bone_info[BoneIndex].ObjectBoneTransformation;
+    offsets[BoneIndex] = this->bone_info[BoneIndex].BoneOffset;
   }
 }
 // Looks in the animation map and returns the total time
-float SkinnedMesh::FindAnimationTotalTime(std::string animationName) {
-  // std::map< std::string /*animationfile*/,
-  //	const aiScene* >::iterator itAnimation = this->mapAnimationNameTo_pScene.find(animationName);
-  std::map<std::string /*animation FRIENDLY name*/, sAnimationInfo>::iterator itAnimation =
-      this->mapAnimationFriendlyNameTo_pScene.find(animationName);
+float SkinnedMesh::find_animation_total_time(std::string animationName) {
+  Map<String, sAnimationInfo>::iterator itAnimation = this->mapAnimationFriendlyNameTo_pScene.find(animationName);
 
   // Found it?
   if (itAnimation == this->mapAnimationFriendlyNameTo_pScene.end()) { // Nope.
@@ -123,180 +118,174 @@ float SkinnedMesh::FindAnimationTotalTime(std::string animationName) {
   return (float)scene->mAnimations[0]->mDuration;
 }
 
-glm::mat4 AIMatrixToGLMMatrix(const aiMatrix4x4 &mat) {
-  return glm::mat4(mat.a1, mat.b1, mat.c1, mat.d1, mat.a2, mat.b2, mat.c2, mat.d2, mat.a3, mat.b3, mat.c3, mat.d3,
-                   mat.a4, mat.b4, mat.c4, mat.d4);
+glm::mat4 ai_matrix_to_glm_matrix(const aiMatrix4x4 &mat) {
+  return glm::mat4(                   //
+      mat.a1, mat.b1, mat.c1, mat.d1, //
+      mat.a2, mat.b2, mat.c2, mat.d2, //
+      mat.a3, mat.b3, mat.c3, mat.d3, //
+      mat.a4, mat.b4, mat.c4, mat.d4  //
+  );
 }
 
-const aiNodeAnim *SkinnedMesh::FindNodeAnimationChannel(const aiAnimation *pAnimation, const String& boneName) {
-  for (unsigned int ChannelIndex = 0; ChannelIndex != pAnimation->mNumChannels; ChannelIndex++) {
-    if (pAnimation->mChannels[ChannelIndex]->mNodeName == aiString( boneName)) {
+const aiNodeAnim *SkinnedMesh::find_node_animation_channel(const aiAnimation *pAnimation, const String &boneName) {
+  for (u32 ChannelIndex = 0; ChannelIndex != pAnimation->mNumChannels; ChannelIndex++) {
+    if (pAnimation->mChannels[ChannelIndex]->mNodeName == aiString(boneName)) {
       return pAnimation->mChannels[ChannelIndex];
     }
   }
   return 0;
 }
 
-void SkinnedMesh::CalcGLMInterpolatedScaling(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::vec3 &out) {
-  if (pNodeAnim->mNumScalingKeys == 1) {
-    out.x = pNodeAnim->mScalingKeys[0].mValue.x;
-    out.y = pNodeAnim->mScalingKeys[0].mValue.y;
-    out.z = pNodeAnim->mScalingKeys[0].mValue.z;
+void SkinnedMesh::calculate_glm_interpolated_scaling(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out) {
+  if (node_anim->mNumScalingKeys == 1) {
+    out.x = node_anim->mScalingKeys[0].mValue.x;
+    out.y = node_anim->mScalingKeys[0].mValue.y;
+    out.z = node_anim->mScalingKeys[0].mValue.z;
     return;
   }
 
-  unsigned int ScalingIndex = this->FindScaling(AnimationTime, pNodeAnim);
-  unsigned int NextScalingIndex = (ScalingIndex + 1);
-  assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
-  float DeltaTime =
-      (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-  float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-  if (Factor < 0.0f)
-    Factor = 0.0f;
-  if (Factor > 1.0f)
-    Factor = 1.0f;
-  const aiVector3D &StartScale = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
-  const aiVector3D &EndScale = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
-  glm::vec3 start = glm::vec3(StartScale.x, StartScale.y, StartScale.z);
-  glm::vec3 end = glm::vec3(EndScale.x, EndScale.y, EndScale.z);
-  out = (end - start) * Factor + start;
+  u32 scaling_index = this->find_scaling(animation_time, node_anim);
+  u32 next_scaling_index = (scaling_index + 1);
+  assert(next_scaling_index < node_anim->mNumScalingKeys);
+  float delta_time =
+      (float)(node_anim->mScalingKeys[next_scaling_index].mTime - node_anim->mScalingKeys[scaling_index].mTime);
+  float factor = (animation_time - (float)node_anim->mScalingKeys[scaling_index].mTime) / delta_time;
 
+  if (factor < 0.0f)
+    factor = 0.0f;
+  if (factor > 1.0f)
+    factor = 1.0f;
+  
+  const aiVector3D &start_scale = node_anim->mScalingKeys[scaling_index].mValue;
+  const aiVector3D &end_scale = node_anim->mScalingKeys[next_scaling_index].mValue;
+  glm::vec3 start = glm::vec3(start_scale.x, start_scale.y, start_scale.z);
+  glm::vec3 end = glm::vec3(end_scale.x, end_scale.y, end_scale.z);
+
+  out = (end - start) * factor + start;
   return;
 }
 
-void SkinnedMesh::ReadNodeHeirarchy(float AnimationTime, std::string animationName, const aiNode *pNode,
+void SkinnedMesh::read_node_hierarchy(float animation_time, std::string animation_name, const aiNode *pNode,
                                     const glm::mat4 &ParentTransformMatrix) {
-  aiString NodeName(pNode->mName.data);
+  aiString node_name(pNode->mName.data);
 
   auto scene = (const aiScene *)this->pScene;
-
   // Original version picked the "main scene" animation...
   const aiAnimation *pAnimation = scene->mAnimations[0];
-
-  // Search for the animation we want...
-  //	std::map< std::string, const aiScene* >::iterator itAnimation
-  //					= mapAnimationNameTo_pScene.find(animationName);
-  std::map<std::string /*animation FRIENDLY name*/,
-           sAnimationInfo>::iterator itAnimation =
-      this->mapAnimationFriendlyNameTo_pScene.find(animationName); // Animations
+  Map<String, sAnimationInfo>::iterator itAnimation =
+      this->mapAnimationFriendlyNameTo_pScene.find(animation_name); // Animations
 
   // Did we find it?
   if (itAnimation != this->mapAnimationFriendlyNameTo_pScene.end()) {
-    // Yes, there is an animation called that...
-    // ...replace the animation with the one we found
     auto ascene = (const aiScene *)itAnimation->second.pAIScene;
-
     pAnimation = reinterpret_cast<const aiAnimation *>(ascene->mAnimations[0]);
   }
 
-  // aiMatrix4x4 NodeTransformation;
-
   // Transformation of the node in bind pose
-  glm::mat4 NodeTransformation = AIMatrixToGLMMatrix(pNode->mTransformation);
-
-  const aiNodeAnim *pNodeAnim = this->FindNodeAnimationChannel(pAnimation, NodeName.C_Str());
-
-  if (pNodeAnim) {
+  glm::mat4 node_transform = ai_matrix_to_glm_matrix(pNode->mTransformation);
+  const aiNodeAnim *node_anim = this->find_node_animation_channel(pAnimation, node_name.C_Str());
+  if (node_anim) {
     // Get interpolated scaling
     glm::vec3 scale;
-    this->CalcGLMInterpolatedScaling(AnimationTime, pNodeAnim, scale);
+    this->calculate_glm_interpolated_scaling(animation_time, node_anim, scale);
     glm::mat4 ScalingM = glm::scale(glm::mat4(1.0f), scale);
 
     // Get interpolated rotation (quaternion)
     glm::quat ori;
-    this->CalcGLMInterpolatedRotation(AnimationTime, pNodeAnim, ori);
+    this->calculate_glm_interpolated_rotation(animation_time, node_anim, ori);
     glm::mat4 RotationM = glm::mat4_cast(ori);
 
     // Get interpolated position
     glm::vec3 pos;
-    this->CalcGLMInterpolatedPosition(AnimationTime, pNodeAnim, pos);
-    glm::mat4 TranslationM = glm::translate(glm::mat4(1.0f), pos);
+    this->calculate_glm_interpolated_position(animation_time, node_anim, pos);
+    glm::mat4 translation_m = glm::translate(glm::mat4(1.0f), pos);
 
     // Combine the above transformations
-    NodeTransformation = TranslationM * RotationM * ScalingM;
+    node_transform = translation_m * RotationM * ScalingM;
   }
 
-  glm::mat4 ObjectBoneTransformation = ParentTransformMatrix * NodeTransformation;
+  glm::mat4 object_bone_transform = ParentTransformMatrix * node_transform;
 
-  std::map<std::string, unsigned int>::iterator it = this->m_mapBoneNameToBoneIndex.find(std::string(NodeName.data));
+  std::map<std::string, u32>::iterator it = this->m_mapBoneNameToBoneIndex.find(std::string(node_name.data));
   if (it != this->m_mapBoneNameToBoneIndex.end()) {
-    unsigned int BoneIndex = it->second;
-    this->mBoneInfo[BoneIndex].ObjectBoneTransformation = ObjectBoneTransformation;
-    this->mBoneInfo[BoneIndex].FinalTransformation =
-        this->mGlobalInverseTransformation * ObjectBoneTransformation * this->mBoneInfo[BoneIndex].BoneOffset;
+    u32 BoneIndex = it->second;
+    this->bone_info[BoneIndex].ObjectBoneTransformation = object_bone_transform;
+    this->bone_info[BoneIndex].FinalTransformation =
+        this->mGlobalInverseTransformation * object_bone_transform * this->bone_info[BoneIndex].BoneOffset;
 
   } else {
     int breakpoint = 0;
   }
 
-  for (unsigned int ChildIndex = 0; ChildIndex != pNode->mNumChildren; ChildIndex++) {
-    this->ReadNodeHeirarchy(AnimationTime, animationName, pNode->mChildren[ChildIndex], ObjectBoneTransformation);
+  for (u32 child_index = 0; child_index != pNode->mNumChildren; child_index++) {
+    this->read_node_hierarchy(animation_time, animation_name, pNode->mChildren[child_index], object_bone_transform);
   }
 }
 
-void SkinnedMesh::CalcGLMInterpolatedRotation(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::quat &out) {
-  if (pNodeAnim->mNumRotationKeys == 1) {
-    out.w = pNodeAnim->mRotationKeys[0].mValue.w;
-    out.x = pNodeAnim->mRotationKeys[0].mValue.x;
-    out.y = pNodeAnim->mRotationKeys[0].mValue.y;
-    out.z = pNodeAnim->mRotationKeys[0].mValue.z;
+void SkinnedMesh::calculate_glm_interpolated_rotation(float animation_time, const aiNodeAnim *node_anim, glm::quat &out) {
+  if (node_anim->mNumRotationKeys == 1) {
+    out.w = node_anim->mRotationKeys[0].mValue.w;
+    out.x = node_anim->mRotationKeys[0].mValue.x;
+    out.y = node_anim->mRotationKeys[0].mValue.y;
+    out.z = node_anim->mRotationKeys[0].mValue.z;
     return;
   }
 
-  unsigned int RotationIndex = this->FindRotation(AnimationTime, pNodeAnim);
-  unsigned int NextRotationIndex = (RotationIndex + 1);
-  assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
-  float DeltaTime =
-      (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
-  float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-  if (Factor < 0.0f)
-    Factor = 0.0f;
-  if (Factor > 1.0f)
-    Factor = 1.0f;
-  const aiQuaternion &StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
-  const aiQuaternion &EndRotationQ = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
+  u32 rotation_index = this->find_rotation(animation_time, node_anim);
+  u32 next_rotation_index = (rotation_index + 1);
+  assert(next_rotation_index < node_anim->mNumRotationKeys);
+  float delta_time =
+      (float)(node_anim->mRotationKeys[next_rotation_index].mTime - node_anim->mRotationKeys[rotation_index].mTime);
+  float factor = (animation_time - (float)node_anim->mRotationKeys[rotation_index].mTime) / delta_time;
+  
+  if (factor < 0.0f)
+    factor = 0.0f;
+  if (factor > 1.0f)
+    factor = 1.0f;
 
-  glm::quat StartGLM = glm::quat(StartRotationQ.w, StartRotationQ.x, StartRotationQ.y, StartRotationQ.z);
-  glm::quat EndGLM = glm::quat(EndRotationQ.w, EndRotationQ.x, EndRotationQ.y, EndRotationQ.z);
+  const aiQuaternion &start_rotation_q = node_anim->mRotationKeys[rotation_index].mValue;
+  const aiQuaternion &end_rotation_q = node_anim->mRotationKeys[next_rotation_index].mValue;
 
-  out = glm::slerp(StartGLM, EndGLM, Factor);
+  glm::quat start_glm = glm::quat(start_rotation_q.w, start_rotation_q.x, start_rotation_q.y, start_rotation_q.z);
+  glm::quat end_glm = glm::quat(end_rotation_q.w, end_rotation_q.x, end_rotation_q.y, end_rotation_q.z);
 
+  out = glm::slerp(start_glm, end_glm, factor);
   out = glm::normalize(out);
 
   return;
 }
 
-void SkinnedMesh::CalcGLMInterpolatedPosition(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::vec3 &out) {
-  if (pNodeAnim->mNumPositionKeys == 1) {
-    out.x = pNodeAnim->mPositionKeys[0].mValue.x;
-    out.y = pNodeAnim->mPositionKeys[0].mValue.y;
-    out.z = pNodeAnim->mPositionKeys[0].mValue.z;
+void SkinnedMesh::calculate_glm_interpolated_position(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out) {
+  if (node_anim->mNumPositionKeys == 1) {
+    out.x = node_anim->mPositionKeys[0].mValue.x;
+    out.y = node_anim->mPositionKeys[0].mValue.y;
+    out.z = node_anim->mPositionKeys[0].mValue.z;
     return;
   }
 
-  unsigned int PositionIndex = this->FindPosition(AnimationTime, pNodeAnim);
-  unsigned int NextPositionIndex = (PositionIndex + 1);
-  assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-  float DeltaTime =
-      (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-  float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-  if (Factor < 0.0f)
-    Factor = 0.0f;
-  if (Factor > 1.0f)
-    Factor = 1.0f;
-  const aiVector3D &StartPosition = pNodeAnim->mPositionKeys[PositionIndex].mValue;
-  const aiVector3D &EndPosition = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
-  glm::vec3 start = glm::vec3(StartPosition.x, StartPosition.y, StartPosition.z);
-  glm::vec3 end = glm::vec3(EndPosition.x, EndPosition.y, EndPosition.z);
+  u32 position_index = this->find_position(animation_time, node_anim);
+  u32 next_position_index = (position_index + 1);
+  assert(next_position_index < node_anim->mNumPositionKeys);
+  float delta_time =
+      (float)(node_anim->mPositionKeys[next_position_index].mTime - node_anim->mPositionKeys[position_index].mTime);
+  float factor = (animation_time - (float)node_anim->mPositionKeys[position_index].mTime) / delta_time;
+  if (factor < 0.0f)
+    factor = 0.0f;
+  if (factor > 1.0f)
+    factor = 1.0f;
+  const aiVector3D &start_position = node_anim->mPositionKeys[position_index].mValue;
+  const aiVector3D &end_position = node_anim->mPositionKeys[next_position_index].mValue;
+  glm::vec3 start = glm::vec3(start_position.x, start_position.y, start_position.z);
+  glm::vec3 end = glm::vec3(end_position.x, end_position.y, end_position.z);
 
-  out = (end - start) * Factor + start;
+  out = (end - start) * factor + start;
 
   return;
 }
 
-unsigned int SkinnedMesh::FindRotation(float AnimationTime, const aiNodeAnim *pNodeAnim) {
-  for (unsigned int RotationKeyIndex = 0; RotationKeyIndex != pNodeAnim->mNumRotationKeys - 1; RotationKeyIndex++) {
-    if (AnimationTime < (float)pNodeAnim->mRotationKeys[RotationKeyIndex + 1].mTime) {
+u32 SkinnedMesh::find_rotation(float animation_time, const aiNodeAnim *node_anim) {
+  for (u32 RotationKeyIndex = 0; RotationKeyIndex != node_anim->mNumRotationKeys - 1; RotationKeyIndex++) {
+    if (animation_time < (float)node_anim->mRotationKeys[RotationKeyIndex + 1].mTime) {
       return RotationKeyIndex;
     }
   }
@@ -304,9 +293,9 @@ unsigned int SkinnedMesh::FindRotation(float AnimationTime, const aiNodeAnim *pN
   return 0;
 }
 
-unsigned int SkinnedMesh::FindPosition(float AnimationTime, const aiNodeAnim *pNodeAnim) {
-  for (unsigned int PositionKeyIndex = 0; PositionKeyIndex != pNodeAnim->mNumPositionKeys - 1; PositionKeyIndex++) {
-    if (AnimationTime < (float)pNodeAnim->mPositionKeys[PositionKeyIndex + 1].mTime) {
+u32 SkinnedMesh::find_position(float animation_time, const aiNodeAnim *node_anim) {
+  for (u32 PositionKeyIndex = 0; PositionKeyIndex != node_anim->mNumPositionKeys - 1; PositionKeyIndex++) {
+    if (animation_time < (float)node_anim->mPositionKeys[PositionKeyIndex + 1].mTime) {
       return PositionKeyIndex;
     }
   }
@@ -314,10 +303,10 @@ unsigned int SkinnedMesh::FindPosition(float AnimationTime, const aiNodeAnim *pN
   return 0;
 }
 
-unsigned int SkinnedMesh::FindScaling(float AnimationTime, const aiNodeAnim *pNodeAnim) {
-  for (unsigned int ScalingKeyIndex = 0; ScalingKeyIndex != pNodeAnim->mNumScalingKeys - 1; ScalingKeyIndex++) {
-    if (AnimationTime < (float)pNodeAnim->mScalingKeys[ScalingKeyIndex + 1].mTime) {
-      return ScalingKeyIndex;
+u32 SkinnedMesh::find_scaling(float animation_time, const aiNodeAnim *node_anim) {
+  for (u32 scaling_key_index = 0; scaling_key_index != node_anim->mNumScalingKeys - 1; scaling_key_index++) {
+    if (animation_time < (float)node_anim->mScalingKeys[scaling_key_index + 1].mTime) {
+      return scaling_key_index;
     }
   }
 

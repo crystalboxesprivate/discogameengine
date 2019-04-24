@@ -41,12 +41,12 @@ void SkinnedMeshFactory::LoadBones(aiMesh *Mesh, Vector<runtime::VertexBoneData>
 
     std::map<std::string, unsigned int>::iterator it = mesh_sm.m_mapBoneNameToBoneIndex.find(BoneName);
     if (it == mesh_sm.m_mapBoneNameToBoneIndex.end()) {
-      BoneIndex = mesh_sm.mNumBones;
-      mesh_sm.mNumBones++;
+      BoneIndex = mesh_sm.number_of_bones;
+      mesh_sm.number_of_bones++;
       runtime::sBoneInfo bi;
-      mesh_sm.mBoneInfo.push_back(bi);
+      mesh_sm.bone_info.push_back(bi);
 
-      mesh_sm.mBoneInfo[BoneIndex].BoneOffset = AIMatrixToGLMMatrix2(Mesh->mBones[boneIndex]->mOffsetMatrix);
+      mesh_sm.bone_info[BoneIndex].BoneOffset = AIMatrixToGLMMatrix2(Mesh->mBones[boneIndex]->mOffsetMatrix);
       mesh_sm.m_mapBoneNameToBoneIndex[BoneName] = BoneIndex;
     } else {
       BoneIndex = it->second;

@@ -231,17 +231,15 @@ void update_skinned_meshes() {
         sm.state.active_animation.current_time = 0.0f;*/
 
       sm.state.active_animation.total_time = sm.get_duration_seconds(CurAnim);
-      sm.state.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 3.0;
+      sm.state.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 2.0;
 
       sm.state.active_animation.increment_time();
-      float current_animation_time = 0.0;
-      current_animation_time = sm.state.active_animation.current_time;
 
       // It ++IS++ skinned mesh
       Vector<glm::mat4x4> vecFinalTransformation;
       Vector<glm::mat4x4> vecOffsets;
 
-      sm.bone_transform(current_animation_time, current_animation, skinned_mesh_component.bone_transforms,
+      sm.bone_transform(sm.state.active_animation.current_time, current_animation, skinned_mesh_component.bone_transforms,
                         skinned_mesh_component.object_to_bone_transforms, vecOffsets);
 
       skinned_mesh_component.number_of_bones_used = static_cast<uint32>(skinned_mesh_component.bone_transforms.size());

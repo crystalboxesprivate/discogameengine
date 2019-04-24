@@ -168,31 +168,31 @@ struct SkinnedMesh : public asset::Asset {
   void *pScene = nullptr;
 
   float get_duration_seconds(std::string animationName);
-  float FindAnimationTotalTime(std::string animationName);
+  float find_animation_total_time(std::string animationName);
   void bone_transform(float TimeInSeconds,
                       std::string animationName, // Now we can pick the animation
                       std::vector<glm::mat4> &FinalTransformation, std::vector<glm::mat4> &Globals,
                       std::vector<glm::mat4> &Offsets);
 
-  void ReadNodeHeirarchy(float AnimationTime, std::string animationName, const aiNode *pNode,
+  void read_node_hierarchy(float AnimationTime, std::string animationName, const aiNode *pNode,
                          const glm::mat4 &ParentTransformMatrix);
-  const aiNodeAnim *SkinnedMesh::FindNodeAnimationChannel(const aiAnimation *pAnimation, const String& boneName);
+  const aiNodeAnim *SkinnedMesh::find_node_animation_channel(const aiAnimation *pAnimation, const String& boneName);
 
-  void CalcGLMInterpolatedScaling(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::vec3 &out);
+  void calculate_glm_interpolated_scaling(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::vec3 &out);
   std::map<std::string /*animation FRIENDLY name*/,
            sAnimationInfo> mapAnimationFriendlyNameTo_pScene; // Animations
-  void CalcGLMInterpolatedRotation(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::quat &out);
-  void CalcGLMInterpolatedPosition(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::vec3 &out);
-  unsigned int FindRotation(float AnimationTime, const aiNodeAnim *pNodeAnim);
-  unsigned int FindPosition(float AnimationTime, const aiNodeAnim *pNodeAnim);
-  unsigned int FindScaling(float AnimationTime, const aiNodeAnim *pNodeAnim);
+  void calculate_glm_interpolated_rotation(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::quat &out);
+  void calculate_glm_interpolated_position(float AnimationTime, const aiNodeAnim *pNodeAnim, glm::vec3 &out);
+  unsigned int find_rotation(float AnimationTime, const aiNodeAnim *pNodeAnim);
+  unsigned int find_position(float AnimationTime, const aiNodeAnim *pNodeAnim);
+  unsigned int find_scaling(float AnimationTime, const aiNodeAnim *pNodeAnim);
 
   glm::mat4 mGlobalInverseTransformation;
   i32 m_numberOfVertices = 0;
   Vector<VertexBoneData> vecVertexBoneData;
   Map<String /*BoneName*/, unsigned int /* BoneIndex */> m_mapBoneNameToBoneIndex; // mMapping;
-  Vector<sBoneInfo> mBoneInfo;
-  unsigned int mNumBones = 0; // mNums;
+  Vector<sBoneInfo> bone_info;
+  unsigned int number_of_bones = 0; // mNums;
 private:
   SharedPtr<SkinnedMeshResource> render_data;
 };
