@@ -145,13 +145,12 @@ void GBuffer::pass_start(graphicsinterface::PipelineState &state, u32 vertex_typ
 #else
   gi::set_render_targets(4, rts, gi::get_main_depth_stencil_view());
 #endif
-
   // Get components of type.
   get_shaders(vertex_type, state.bound_shaders);
   state.primitive_type = gi::PrimitiveTopology::TriangleList;
   gi::set_pipeline_state(state);
-  gi::bind_uniform_buffer(0, gi::ShaderStage::Vertex, camera_uniform_buf->get_resource());
 
+  gi::bind_uniform_buffer(0, gi::ShaderStage::Vertex, camera_uniform_buf->get_resource());
   gi::bind_uniform_buffer(1, gi::ShaderStage::Vertex, model_uniform_buf->get_resource());
 }
 
@@ -228,13 +227,12 @@ void update_skinned_meshes() {
 
       sm.state.active_animation.increment_time();
 
-      // It ++IS++ skinned mesh
-      Vector<glm::mat4x4> vecFinalTransformation;
-      Vector<glm::mat4x4> vecOffsets;
+      Vector<glm::mat4x4> vec_final_transformation;
+      Vector<glm::mat4x4> vec_offsets;
 
       sm.bone_transform(sm.state.active_animation.current_time, sm.state.active_animation.name,
                         skinned_mesh_component.bone_transforms, skinned_mesh_component.object_to_bone_transforms,
-                        vecOffsets);
+                        vec_offsets);
 
       skinned_mesh_component.number_of_bones_used = static_cast<uint32>(skinned_mesh_component.bone_transforms.size());
 
@@ -249,6 +247,7 @@ void update_skinned_meshes() {
 
 void GBuffer::draw_skinned_meshes() {
   update_skinned_meshes();
+
   gi::DebugState gbuffer_debug_state("Skinned meshes");
   gi::PipelineState state;
   pass_start(state, SkinnedMeshVertexType::guid());

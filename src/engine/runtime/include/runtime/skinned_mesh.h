@@ -25,11 +25,11 @@ struct AnimationInfo {
 
 static const int MAX_BONES_PER_VERTEX = 4;
 struct VertexBoneData {
-  // std::array<unsigned int, MAX_BONES_PER_VERTEX> ids;
+  // std::array<u32, MAX_BONES_PER_VERTEX> ids;
   std::array<float, MAX_BONES_PER_VERTEX> ids;
   std::array<float, MAX_BONES_PER_VERTEX> weights;
 
-  void AddBoneData(unsigned int BoneID, float Weight);
+  void AddBoneData(u32 BoneID, float Weight);
 };
 
 struct sBoneInfo {
@@ -44,12 +44,7 @@ struct SkinnedMeshVertex {
       , y(0.0f)
       , z(0.0f)
       , w(1.0f)
-      //, r(0.0f)
-      //, g(0.0f)
-      //, b(0.0f)
-      //, a(1.0f)
-      , // Note alpha is 1.0
-      nx(0.0f)
+      , nx(0.0f)
       , ny(0.0f)
       , nz(0.0f)
       , nw(1.0f)
@@ -65,16 +60,9 @@ struct SkinnedMeshVertex {
       , by(0.0f)
       , bz(0.0f)
       , bw(1.0f) {
-    //#ifdef _DEBUG
     memset(this->bone_id, 0, sizeof(u32) * NUMBEROFBONES);
     memset(this->bone_weights, 0, sizeof(float) * NUMBEROFBONES);
-    // So these are essentially this:
-    //		unsigned int boneID[4];
-    //		float boneWeights[4];
-    //#endif // DEBUG
   };
-  // Destructor isn't really needed here
-  //~sVertex_xyz_rgba_n_uv2_bt_skinnedMesh();
 
   float x, y, z, w; // 16
   // float r, g, b, a;     // 32
@@ -94,7 +82,6 @@ struct SkinnedMeshVertex {
 
 struct SkinnedMeshResource {
   SkinnedMeshResource();
-
   graphicsinterface::VertexStream vertex_stream;
   graphicsinterface::IndexBufferRef index_buffer;
   graphicsinterface::VertexBufferRef vertex_buffer;
@@ -128,7 +115,7 @@ struct SkinnedMesh : public asset::Asset {
       float current_time;    // Time (frame) in current animation
       float total_time;      // Total time animation goes
       float frame_step_time; // Number of seconds to 'move' the animation
-      // Returns true if time had to be reset
+
       bool increment_time(bool reset_to_zero = true) {
         bool did_we_reset = false;
 
@@ -174,16 +161,16 @@ struct SkinnedMesh : public asset::Asset {
   Map<String, AnimationInfo> animation_name_to_pscene; 
   void calculate_glm_interpolated_rotation(float animation_time, const aiNodeAnim *node_anim, glm::quat &out);
   void calculate_glm_interpolated_position(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out);
-  unsigned int find_rotation(float animation_time, const aiNodeAnim *node_anim);
-  unsigned int find_position(float animation_time, const aiNodeAnim *node_anim);
-  unsigned int find_scaling(float animation_time, const aiNodeAnim *node_anim);
+  u32 find_rotation(float animation_time, const aiNodeAnim *node_anim);
+  u32 find_position(float animation_time, const aiNodeAnim *node_anim);
+  u32 find_scaling(float animation_time, const aiNodeAnim *node_anim);
 
   glm::mat4 global_inverse_transformation;
   i32 number_of_vertices = 0;
   Vector<VertexBoneData> vertex_bone_data;
-  Map<String, unsigned int> bone_name_to_bone_index;
+  Map<String, u32> bone_name_to_bone_index;
   Vector<sBoneInfo> bone_info;
-  unsigned int number_of_bones = 0;
+  u32 number_of_bones = 0;
 
 private:
   SharedPtr<SkinnedMeshResource> render_data;
