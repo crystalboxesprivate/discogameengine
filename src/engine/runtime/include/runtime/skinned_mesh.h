@@ -20,7 +20,8 @@ struct AnimationInfo {
   String filename;
   float duration;
   bool has_exit_time;
-  void *ai_scene;
+  aiAnimation* ai_animation;
+  //void *ai_scene;
 };
 
 static const int MAX_BONES_PER_VERTEX = 4;

@@ -35,11 +35,11 @@ void VertexBoneData::AddBoneData(unsigned int BoneID, float Weight) {
 void SkinnedMeshFactory::LoadBones(aiMesh *Mesh, Vector<runtime::VertexBoneData> &vertexBoneData, runtime::SkinnedMesh& mesh_sm) {
   for (unsigned int boneIndex = 0; boneIndex != Mesh->mNumBones; boneIndex++) {
     unsigned int BoneIndex = 0;
-    std::string BoneName(Mesh->mBones[boneIndex]->mName.data);
-    //	std::map<std::string /*BoneName*/, unsigned int /*BoneIndex*/> mMapping;
+    String BoneName(Mesh->mBones[boneIndex]->mName.data);
+    //	Map<String /*BoneName*/, unsigned int /*BoneIndex*/> mMapping;
     // 	std::vector<sBoneInfo> mInfo;
 
-    std::map<std::string, unsigned int>::iterator it = mesh_sm.bone_name_to_bone_index.find(BoneName);
+    Map<String, unsigned int>::iterator it = mesh_sm.bone_name_to_bone_index.find(BoneName);
     if (it == mesh_sm.bone_name_to_bone_index.end()) {
       BoneIndex = mesh_sm.number_of_bones;
       mesh_sm.number_of_bones++;
@@ -65,36 +65,33 @@ inline String import_path(const String &raw_path) {
   return utils::path::join(config::CONTENT_DIR, raw_path);
 }
 
-bool SkinnedMeshFactory::LoadMeshAnimation(const std::string &friendlyName, const std::string &filename,
-                                           runtime::SkinnedMesh &mesh, bool hasExitTime) // Only want animations
+bool SkinnedMeshFactory::LoadMeshAnimation(const String &friendly_name, const String &filename,
+                                           runtime::SkinnedMesh &mesh, bool has_exit_time) // Only want animations
 {
-  std::map<std::string /*animation FRIENDLY name*/, AnimationInfo>::iterator itAnimation =
-      mesh.animation_name_to_pscene.find(friendlyName);
+  Map<String, AnimationInfo>::iterator it_animation =
+      mesh.animation_name_to_pscene.find(friendly_name);
 
-  if (itAnimation != mesh.animation_name_to_pscene.end()) {
+  if (it_animation != mesh.animation_name_to_pscene.end()) {
     return false;
   }
 
-  unsigned int Flags =
+  unsigned int flags =
       aiProcess_Triangulate | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_JoinIdenticalVertices;
 
-  Assimp::Importer *pImporter = new Assimp::Importer();
-  AnimationInfo animInfo;
-  animInfo.friendly_name = friendlyName;
-  animInfo.filename = filename;
-  const aiScene *pAIScene = pImporter->ReadFile(animInfo.filename.c_str(), Flags);
-  animInfo.has_exit_time = hasExitTime;
+  Assimp::Importer *importer = new Assimp::Importer();
+  AnimationInfo anim_info;
+  anim_info.friendly_name = friendly_name;
+  anim_info.filename = filename;
+  const aiScene *ai_scene = importer->ReadFile(anim_info.filename.c_str(), flags);
+  anim_info.has_exit_time = has_exit_time;
 
-  animInfo.ai_scene = (void *)pAIScene;
-  // Get duration is seconds
-  animInfo.duration = (float)(pAIScene->mAnimations[0]->mDuration / pAIScene->mAnimations[0]->mTicksPerSecond);
-
-  if (!animInfo.ai_scene) {
+  if (!ai_scene)
     return false;
-  }
 
-  mesh.animation_name_to_pscene[animInfo.friendly_name] = animInfo;
-
+  anim_info.ai_animation = ai_scene->mAnimations[0];
+  // Get duration is seconds
+  anim_info.duration = (float)(anim_info.ai_animation->mDuration / anim_info.ai_animation->mTicksPerSecond);
+  mesh.animation_name_to_pscene[anim_info.friendly_name] = anim_info;
   return true;
 }
 

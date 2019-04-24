@@ -72,9 +72,7 @@ float SkinnedMesh::get_duration_seconds(String animationName) {
   }
 
   // This is scaling the animation from 0 to 1
-
-  auto scene = (const aiScene *)itAnimation->second.ai_scene;
-  return (float)scene->mAnimations[0]->mDuration / (float)scene->mAnimations[0]->mTicksPerSecond;
+  return (float)itAnimation->second.ai_animation->mDuration / (float)itAnimation->second.ai_animation->mTicksPerSecond;
 }
 
 void SkinnedMesh::bone_transform(float time_in_seconds,
@@ -112,10 +110,8 @@ float SkinnedMesh::find_animation_total_time(String animation_name) {
   if (itAnimation == this->animation_name_to_pscene.end()) { // Nope.
     return 0.0f;
   }
-  auto scene = (const aiScene *)itAnimation->second.ai_scene;
-
   // This is scaling the animation from 0 to 1
-  return (float)scene->mAnimations[0]->mDuration;
+  return (float)itAnimation->second.ai_animation->mDuration;
 }
 
 glm::mat4 ai_matrix_to_glm_matrix(const aiMatrix4x4 &mat) {
@@ -136,7 +132,8 @@ const aiNodeAnim *SkinnedMesh::find_node_animation_channel(const aiAnimation *pA
   return 0;
 }
 
-void SkinnedMesh::calculate_glm_interpolated_scaling(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out) {
+void SkinnedMesh::calculate_glm_interpolated_scaling(float animation_time, const aiNodeAnim *node_anim,
+                                                     glm::vec3 &out) {
   if (node_anim->mNumScalingKeys == 1) {
     out.x = node_anim->mScalingKeys[0].mValue.x;
     out.y = node_anim->mScalingKeys[0].mValue.y;
@@ -155,7 +152,7 @@ void SkinnedMesh::calculate_glm_interpolated_scaling(float animation_time, const
     factor = 0.0f;
   if (factor > 1.0f)
     factor = 1.0f;
-  
+
   const aiVector3D &start_scale = node_anim->mScalingKeys[scaling_index].mValue;
   const aiVector3D &end_scale = node_anim->mScalingKeys[next_scaling_index].mValue;
   glm::vec3 start = glm::vec3(start_scale.x, start_scale.y, start_scale.z);
@@ -166,19 +163,19 @@ void SkinnedMesh::calculate_glm_interpolated_scaling(float animation_time, const
 }
 
 void SkinnedMesh::read_node_hierarchy(float animation_time, String animation_name, const aiNode *pNode,
-                                    const glm::mat4 &ParentTransformMatrix) {
+                                      const glm::mat4 &ParentTransformMatrix) {
   aiString node_name(pNode->mName.data);
 
   auto scene = (const aiScene *)this->pScene;
   // Original version picked the "main scene" animation...
   const aiAnimation *pAnimation = scene->mAnimations[0];
-  Map<String, AnimationInfo>::iterator itAnimation =
-      this->animation_name_to_pscene.find(animation_name); // Animations
+  Map<String, AnimationInfo>::iterator itAnimation = this->animation_name_to_pscene.find(animation_name); // Animations
 
   // Did we find it?
   if (itAnimation != this->animation_name_to_pscene.end()) {
-    auto ascene = (const aiScene *)itAnimation->second.ai_scene;
-    pAnimation = reinterpret_cast<const aiAnimation *>(ascene->mAnimations[0]);
+    // const aiAnimation* ascene = (const aiAnimation *)itAnimation->second.ai_animation;
+    // pAnimation = reinterpret_cast<const aiAnimation *>(ascene);
+    pAnimation = itAnimation->second.ai_animation;
   }
 
   // Transformation of the node in bind pose
@@ -222,7 +219,8 @@ void SkinnedMesh::read_node_hierarchy(float animation_time, String animation_nam
   }
 }
 
-void SkinnedMesh::calculate_glm_interpolated_rotation(float animation_time, const aiNodeAnim *node_anim, glm::quat &out) {
+void SkinnedMesh::calculate_glm_interpolated_rotation(float animation_time, const aiNodeAnim *node_anim,
+                                                      glm::quat &out) {
   if (node_anim->mNumRotationKeys == 1) {
     out.w = node_anim->mRotationKeys[0].mValue.w;
     out.x = node_anim->mRotationKeys[0].mValue.x;
@@ -237,7 +235,7 @@ void SkinnedMesh::calculate_glm_interpolated_rotation(float animation_time, cons
   float delta_time =
       (float)(node_anim->mRotationKeys[next_rotation_index].mTime - node_anim->mRotationKeys[rotation_index].mTime);
   float factor = (animation_time - (float)node_anim->mRotationKeys[rotation_index].mTime) / delta_time;
-  
+
   if (factor < 0.0f)
     factor = 0.0f;
   if (factor > 1.0f)
@@ -255,7 +253,8 @@ void SkinnedMesh::calculate_glm_interpolated_rotation(float animation_time, cons
   return;
 }
 
-void SkinnedMesh::calculate_glm_interpolated_position(float animation_time, const aiNodeAnim *node_anim, glm::vec3 &out) {
+void SkinnedMesh::calculate_glm_interpolated_position(float animation_time, const aiNodeAnim *node_anim,
+                                                      glm::vec3 &out) {
   if (node_anim->mNumPositionKeys == 1) {
     out.x = node_anim->mPositionKeys[0].mValue.x;
     out.y = node_anim->mPositionKeys[0].mValue.y;
