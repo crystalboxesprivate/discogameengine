@@ -236,14 +236,20 @@ void update_skinned_meshes() {
 
     auto &sm = *skinned_mesh_asset;
     {
+      if (!sm.animations.size())
+        continue;
+
       if (animation.active_animation.name == 0) {
         animation.active_animation.name = sm.default_animation;
         animation.default_animation.name = sm.default_animation;
       }
 
       u64 hash = animation.active_animation.name;
+      auto anim = sm.get_animation(hash);
+      if (!anim)
+        continue;
 
-      animation.active_animation.total_time = sm.get_duration_seconds(hash);
+      animation.active_animation.total_time = anim->duration_seconds;
       animation.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 2.0f;
 
       animation.active_animation.increment_time();
@@ -251,7 +257,7 @@ void update_skinned_meshes() {
       Vector<mat4x4> vec_final_transformation;
       Vector<mat4x4> vec_offsets;
 
-      sm.bone_transform(animation.active_animation.current_time, hash,
+      runtime::SkinnedMesh::bone_transform(sm, animation.active_animation.current_time, hash,
                         skinned_mesh_component.bone_transforms, skinned_mesh_component.object_to_bone_transforms,
                         vec_offsets);
 

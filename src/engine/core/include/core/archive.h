@@ -97,6 +97,11 @@ struct Archive {
     return archive;
   }
 
+  inline friend Archive &operator<<(Archive &archive, glm::mat4 &value) {
+    archive.serialize(&value[0], sizeof(glm::mat4));
+    return archive;
+  }
+
   template <typename T>
   inline friend Archive &operator<<(Archive &archive, Vector<T> &value) {
     usize vector_size = value.size();

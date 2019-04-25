@@ -25,7 +25,7 @@ struct SkinnedMeshFactory : public asset::Factory {
 
 protected:
   virtual void load_asset_data(asset::Asset &asset);
-  void load_bones(aiMesh *Mesh, Vector<VertexBoneData> &vertexBoneData, runtime::SkinnedMesh& mesh_sm) ;
+  void load_bones(aiMesh *Mesh, Vector<VertexBoneData> &vertexBoneData, HashMap<u64, u32> &bone_id_to_index, runtime::SkinnedMesh& mesh_sm) ;
   bool load_mesh_animation(const std::string &friendlyName, const std::string &filename, runtime::SkinnedMesh&mesh,
                          bool hasExitTime = false); // lodaing only Animation
 

@@ -81,7 +81,7 @@ struct AssetHandle {
     return archive;
   }
 
-  AssetRef get_ref() {
+  const AssetRef get_ref() {
     if (!hash)
       return nullptr;
 
@@ -104,8 +104,8 @@ Archive &operator<<(Archive &archive, Type &asset_type);
 
 void get_asset_cache_path(String &out_path, usize hash);
 
-AssetRef add(const String &filename, const String &alias = "");
-AssetRef find(usize hash);
+const AssetRef add(const String &filename, const String &alias = "");
+const AssetRef find(usize hash);
 
 template <typename T>
 AssetHandle<T> add(const String &filename, const String &alias = "") {
@@ -114,20 +114,20 @@ AssetHandle<T> add(const String &filename, const String &alias = "") {
 }
 
 // Type get_type_from_filename(const String &filename);
-Asset *get_default_asset(Type asset_type);
+const Asset *get_default_asset(Type asset_type);
 
 template <typename T>
-T *get_default(Type asset_type) {
-  T *asset_of_type = static_cast<T *>(get_default_asset(asset_type));
+const T *get_default(Type asset_type) {
+  const T *asset_of_type = static_cast<const T *>(get_default_asset(asset_type));
   //asset_of_type->is_valid();
   return asset_of_type;
 }
 
-void load_to_ram(Asset &asset, bool force_rebuild = false, bool load_immediately = false);
-void load_to_ram(AssetRef asset, bool force_rebuild = false, bool load_immediately = false);
+void load_to_ram(const Asset &asset, bool force_rebuild = false, bool load_immediately = false);
+void load_to_ram(const AssetRef asset, bool force_rebuild = false, bool load_immediately = false);
 
-void resave_to_disk(Asset &asset);
-void resave_to_disk(AssetRef asset);
+void resave_to_disk(const Asset &asset);
+void resave_to_disk(const AssetRef asset);
 
 void free(usize asset_hash);
 

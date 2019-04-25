@@ -20,37 +20,19 @@ namespace runtime {
 static const int NUMBER_OF_BONES = 4;
 
 struct BoneInfo {
-  glm::mat4 bone_offset;
+  // glm::mat4 bone_offset;
   glm::mat4 final_transformation;
   glm::mat4 object_bone_transformation;
+
+  inline friend Archive &operator<<(Archive &archive, BoneInfo &info) {
+    // archive << info.bone_offset;
+    archive << info.final_transformation;
+    archive << info.object_bone_transformation;
+    return archive;
+  }
 };
 
 struct SkinnedMeshVertex {
-  SkinnedMeshVertex()
-      : x(0.0f)
-      , y(0.0f)
-      , z(0.0f)
-      , w(1.0f)
-      , nx(0.0f)
-      , ny(0.0f)
-      , nz(0.0f)
-      , nw(1.0f)
-      , u0(0.0f)
-      , v0(0.0f)
-      , u1(0.0f)
-      , v1(0.0f)
-      , tx(0.0f)
-      , ty(0.0f)
-      , tz(0.0f)
-      , tw(1.0f)
-      , bx(0.0f)
-      , by(0.0f)
-      , bz(0.0f)
-      , bw(1.0f) {
-    memset(this->bone_id, 0, sizeof(u32) * NUMBER_OF_BONES);
-    memset(this->bone_weights, 0, sizeof(float) * NUMBER_OF_BONES);
-  };
-
   float x, y, z, w;
   float nx, ny, nz, nw;
   float u0, v0, u1, v1;
@@ -90,29 +72,27 @@ struct SkinnedMesh : public asset::Asset {
 
   math::Box bounds;
 
-  float get_duration_seconds(u64 animation_name);
-  float find_animation_total_time(u64 animation_name);
-  void bone_transform(float time_in_seconds, u64 animation_name, Vector<glm::mat4> &final_transformation,
+  inline const runtime::animation::Animation *get_animation(u64 index) const {
+    return index >= animations.size() ? nullptr : &animations[index];
+  }
+
+  static void bone_transform(const SkinnedMesh& skinned_mesh, float time_in_seconds, u64 animation_name, Vector<glm::mat4> &final_transformation,
                       Vector<glm::mat4> &globals, Vector<glm::mat4> &offsets);
 
-  void read_node_hierarchy(float animation_time, u64 animation_name, const runtime::animation::Node &pNode,
-                           const glm::mat4 &parent_transform_matrix);
-
-  const runtime::animation::Channel *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation &animation,
-                                                                              const String &boneName);
+  // void read_node_hierarchy(Vector<glm::mat4> &transforms, Vector<glm::mat4> &object_bone_transforms, const Vector<glm::mat4> &offsets,
+  //                          float animation_time, const runtime::animation::Animation &pAnimation,
+  //                          const runtime::animation::Node &pNode, const glm::mat4 &parent_transform_matrix);
 
   u64 default_animation = 0;
+  u32 number_of_bones = 0;
+  Vector<glm::mat4> bone_offsets;
+
   double ticks_per_second;
 
-  
-  Vector <animation::Animation> animation_name_to_pscene;
-
+  Vector<animation::Animation> animations;
   glm::mat4 global_inverse_transformation;
 
   runtime::animation::Node hierarchy;
-  Map<u64, u32> bone_name_to_bone_index;
-  Vector<BoneInfo> bone_info;
-  u32 number_of_bones = 0;
 
 private:
   SharedPtr<SkinnedMeshResource> render_data;

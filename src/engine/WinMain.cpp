@@ -38,7 +38,7 @@ void setup_static_mesh() {
   auto sm_asset = asset::add(utils::path::join(config::CONTENT_DIR, "skinned_mesh/chan.skinnedmeshjson"));
 
   // Add transform component first
-  asset::load_to_ram(sm_asset, false, true);
+  //asset::load_to_ram(sm_asset, false, true);
   auto entity = component::allocate_entity();
   auto &transform = component::add_and_get<game::TransformComponent>(entity);
   component::add<game::AnimationComponent>(entity);

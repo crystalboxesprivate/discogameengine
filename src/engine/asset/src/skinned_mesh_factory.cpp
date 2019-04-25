@@ -9,6 +9,7 @@
 
 #include <rapidjson/document.h>
 #include <utils/fs.h>
+#include <mutex>
 
 #include <utils/string.h>
 using utils::string::hash_code;
@@ -23,7 +24,7 @@ mat4 ai_matrix_to_gl_matrix(const aiMatrix4x4 &mat) {
               mat.b4, mat.c4, mat.d4);
 }
 
-void add_bone_data(VertexBoneData& bone_data, u32 bone_id, float weight) {
+void add_bone_data(VertexBoneData &bone_data, u32 bone_id, float weight) {
   for (i32 Index = 0; Index < sizeof(bone_data.ids) / sizeof(bone_data.ids[0]); Index++) {
     if (bone_data.weights[Index] == 0.0f) {
       bone_data.ids[Index] = (float)bone_id;
@@ -34,28 +35,26 @@ void add_bone_data(VertexBoneData& bone_data, u32 bone_id, float weight) {
 }
 
 void SkinnedMeshFactory::load_bones(aiMesh *Mesh, Vector<VertexBoneData> &vertexBoneData,
-                                    runtime::SkinnedMesh &mesh_sm) {
+                                    HashMap<u64, u32> &bone_id_to_index, runtime::SkinnedMesh &mesh_sm) {
   for (i32 boneIndex = 0; boneIndex != Mesh->mNumBones; boneIndex++) {
     i32 bone_idx = 0;
     String bone_name(Mesh->mBones[boneIndex]->mName.data);
     u64 hash = hash_code(bone_name);
 
-    auto it = mesh_sm.bone_name_to_bone_index.find(hash);
-    if (it == mesh_sm.bone_name_to_bone_index.end()) {
+    auto it = bone_id_to_index.find(hash);
+    if (it == bone_id_to_index.end()) {
       bone_idx = mesh_sm.number_of_bones;
       mesh_sm.number_of_bones++;
-      runtime::BoneInfo bi;
-      mesh_sm.bone_info.push_back(bi);
 
-      mesh_sm.bone_info[bone_idx].bone_offset = ai_matrix_to_gl_matrix(Mesh->mBones[boneIndex]->mOffsetMatrix);
-      mesh_sm.bone_name_to_bone_index[hash] = bone_idx;
+      mesh_sm.bone_offsets.push_back(ai_matrix_to_gl_matrix(Mesh->mBones[boneIndex]->mOffsetMatrix));
+      bone_id_to_index[hash] = bone_idx;
+
     } else {
       bone_idx = it->second;
     }
 
     for (i32 WeightIndex = 0; WeightIndex != Mesh->mBones[boneIndex]->mNumWeights; WeightIndex++) {
-      i32 VertexID =
-          /*mMeshEntries[MeshIndex].BaseVertex +*/ Mesh->mBones[boneIndex]->mWeights[WeightIndex].mVertexId;
+      i32 VertexID = Mesh->mBones[boneIndex]->mWeights[WeightIndex].mVertexId;
       float Weight = Mesh->mBones[boneIndex]->mWeights[WeightIndex].mWeight;
       add_bone_data(vertexBoneData[VertexID], bone_idx, Weight);
     }
@@ -66,13 +65,15 @@ inline String import_path(const String &raw_path) {
   return utils::path::join(config::CONTENT_DIR, raw_path);
 }
 
-void make_hierarchy(runtime::animation::Node &node, aiNode *ai_node) {
+void make_hierarchy(runtime::animation::Node &node, aiNode *ai_node, HashMap<u64, u32>& bone_id_to_index) {
   node.name = ai_node->mName.C_Str();
+  node.bone_index = bone_id_to_index[hash_code(ai_node->mName.C_Str())];
+
   node.transform = ai_matrix_to_gl_matrix(ai_node->mTransformation);
   node.children.resize(ai_node->mNumChildren);
   for (int x = 0; x < node.children.size(); x++) {
     auto &child = node.children[x];
-    make_hierarchy(child, ai_node->mChildren[x]);
+    make_hierarchy(child, ai_node->mChildren[x], bone_id_to_index);
   }
 }
 
@@ -80,8 +81,11 @@ void load_animation(runtime::animation::Animation &animation, aiAnimation *ai_an
   assert(ai_animation);
   auto &ai = *ai_animation;
   animation.name = ai.mName.C_Str();
+
   animation.duration = ai.mDuration;
   animation.ticks_per_second = ai.mTicksPerSecond;
+
+  animation.duration_seconds = animation.duration / animation.ticks_per_second;
   animation.channels.resize(ai.mNumChannels);
   animation.mesh_channels.resize(ai.mNumMeshChannels);
 
@@ -135,28 +139,27 @@ void load_animation(runtime::animation::Animation &animation, aiAnimation *ai_an
 }
 
 bool SkinnedMeshFactory::load_mesh_animation(const String &friendly_name, const String &filename,
-                                             runtime::SkinnedMesh &mesh, bool has_exit_time) // Only want animations
-{
+                                             runtime::SkinnedMesh &mesh, bool has_exit_time) {
   u64 hash = hash_code(friendly_name);
 
   i32 flags =
       aiProcess_Triangulate | aiProcess_OptimizeMeshes | aiProcess_OptimizeGraph | aiProcess_JoinIdenticalVertices;
 
-  Assimp::Importer *importer = new Assimp::Importer();
-  const aiScene *ai_scene = importer->ReadFile(filename.c_str(), flags);
+  const aiScene *ai_scene = aiImportFile(filename.c_str(), flags);
 
   if (!ai_scene)
     return false;
 
-  mesh.animation_name_to_pscene.push_back(runtime::animation::Animation());
+  mesh.animations.push_back(runtime::animation::Animation());
 
-  load_animation(mesh.animation_name_to_pscene.back(), ai_scene->mAnimations[0]);
-  mesh.ticks_per_second = mesh.animation_name_to_pscene.back().ticks_per_second;
-  mesh.animation_name_to_pscene.back().name = friendly_name;
+  load_animation(mesh.animations.back(), ai_scene->mAnimations[0]);
+  mesh.ticks_per_second = mesh.animations.back().ticks_per_second;
+  mesh.animations.back().name = friendly_name;
 
+  aiReleaseImport(ai_scene);
   return true;
 }
-
+std::mutex m;
 void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
 
   SkinnedMesh &mesh = *reinterpret_cast<SkinnedMesh *>(&asset);
@@ -200,15 +203,17 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
   mesh.global_inverse_transformation = ai_matrix_to_gl_matrix(p_scene->mRootNode->mTransformation);
   mesh.global_inverse_transformation = inverse(mesh.global_inverse_transformation);
 
-  // mesh.number_of_vertices = p_scene->mMeshes[0]->mNumVertices;
   vertex_bone_data.resize(p_scene->mMeshes[0]->mNumVertices);
 
-  this->load_bones(this->p_scene->mMeshes[0], vertex_bone_data, mesh);
+  HashMap<u64, u32> bone_id_to_index;
+  this->load_bones(this->p_scene->mMeshes[0], vertex_bone_data, bone_id_to_index, mesh);
   mesh.default_animation = 3;
 
+  m.lock();
   for (auto &animation : animation_filenames) {
     load_mesh_animation(animation.name, animation.filename, mesh);
   }
+  m.unlock();
 
   {
     // Copy the data from assimp format into the sModelDrawInfo format...
@@ -330,5 +335,7 @@ void SkinnedMeshFactory::load_asset_data(asset::Asset &asset) {
     mesh.bounds.max = max_xyz;
     mesh.bounds.min = min_xyz;
   }
-  make_hierarchy(mesh.hierarchy, p_scene->mRootNode);
+  make_hierarchy(mesh.hierarchy, p_scene->mRootNode, bone_id_to_index);
+
+  aiReleaseImport(p_scene);
 }

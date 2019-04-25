@@ -16,7 +16,7 @@
 #include <thread>
 
 namespace asset {
-Asset *get_default_asset(Type asset_type) {
+const Asset *get_default_asset(Type asset_type) {
   // DEBUG_LOG(Assets, Error, "not implemented initialization of default assets");
   return nullptr;
   Asset *asset = app::get().get_asset_registry().default_assets[asset_type].get();
@@ -28,7 +28,7 @@ inline usize make_hash(const String &filename) {
   return utils::string::hash_code(filename);
 }
 
-AssetRef find(usize hash) {
+const AssetRef find(usize hash) {
   auto &assets_map = app::get().get_asset_registry().assets;
   AssetRef *asset = helpers::find<usize, AssetRef>(assets_map, hash);
   if (asset) {
@@ -42,7 +42,7 @@ void get_asset_cache_path(String &out_path, usize hash) {
   out_path = utils::path::join(config::CACHE_DIR, filename);
 }
 
-AssetRef add(const String &filename, const String &alias) {
+const AssetRef add(const String &filename, const String &alias) {
   if (!utils::path::exists(filename)) {
     DEBUG_LOG(Assets, Error, "Invalid asset path %s", filename.c_str());
     return false;
@@ -92,7 +92,7 @@ Archive &operator<<(Archive &archive, Type &asset_type) {
   return archive;
 }
 
-void resave_to_disk(Asset &asset) {
+void resave_to_disk(const Asset &asset) {
 #if CACHE_TO_DISK
   Archive archive;
   asset.serialize(archive);
@@ -112,7 +112,7 @@ void resave_to_disk(Asset &asset) {
 #endif
 }
 
-void resave_to_disk(AssetRef asset) {
+void resave_to_disk(const AssetRef asset) {
   assert(asset);
   resave_to_disk(*asset.get());
 }
@@ -160,22 +160,32 @@ struct AssetThread {
   bool is_running = false;
 };
 
-AssetThread asset_thread;
+static const i32 NUM_ASSET_THREADS = 4;
+AssetThread asset_thread[NUM_ASSET_THREADS];
+i32 current_asset_thread = 0;
 
-void load_to_ram(AssetRef asset, bool force_rebuild, bool load_immediately) {
+AssetThread& get_asset_thread() {
+  return asset_thread[(++current_asset_thread) % NUM_ASSET_THREADS];
+}
+
+void load_to_ram(const AssetRef asset, bool force_rebuild, bool load_immediately) {
   load_to_ram(*asset.get(), force_rebuild, load_immediately);
 }
 
-void load_to_ram(Asset &asset, bool force_rebuild, bool load_immediately) {
+void load_to_ram(const Asset &asset, bool force_rebuild, bool load_immediately) {
   if (asset.is_loaded_to_ram || asset.is_loading)
     return;
   #if ENGINE_FORCE_SYNC_ASSET_LOADING
   load_immediately = true;
   #endif
+  
+  auto &assets_map = app::get().get_asset_registry().assets;
+  auto result = assets_map.find(asset.hash)->second.get();
+
   if (load_immediately) {
-    AssetThread::load(asset, force_rebuild);
+    AssetThread::load(*result, force_rebuild);
   } else {
-    asset_thread.add({&asset, force_rebuild});
+    get_asset_thread().add({result, force_rebuild});
   }
 }
 

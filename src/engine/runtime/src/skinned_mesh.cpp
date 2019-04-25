@@ -9,24 +9,40 @@ using namespace runtime;
 namespace gi = graphicsinterface;
 using gi::PixelFormat;
 
+using runtime::animation::calculate_glm_interpolated_position;
+using runtime::animation::calculate_glm_interpolated_rotation;
+using runtime::animation::calculate_glm_interpolated_scaling;
+using runtime::animation::find_position;
+using runtime::animation::find_rotation;
+using runtime::animation::find_scaling;
+
 SkinnedMeshResource::SkinnedMeshResource() {
   namespace gi = graphicsinterface;
   vertex_stream.count = 0;
-  vertex_stream.add({0, gi::SemanticName::Position, gi::PixelFormat::FloatRGBA, 0u, 0u});
-  vertex_stream.add({0, gi::SemanticName::Normal, gi::PixelFormat::FloatRGBA, 16, 0u});
-  vertex_stream.add({0, gi::SemanticName::TexCoord, gi::PixelFormat::FloatRGBA, 32, 0u});
+  vertex_stream.add({0, gi::SemanticName::Position, PixelFormat::FloatRGBA, 0u, 0u});
+  vertex_stream.add({0, gi::SemanticName::Normal, PixelFormat::FloatRGBA, 16, 0u});
+  vertex_stream.add({0, gi::SemanticName::TexCoord, PixelFormat::FloatRGBA, 32, 0u});
 
-  vertex_stream.add({0, gi::SemanticName::Tangent, gi::PixelFormat::FloatRGBA, 48, 0u});
-  vertex_stream.add({0, gi::SemanticName::Binormal, gi::PixelFormat::FloatRGBA, 64, 0u});
+  vertex_stream.add({0, gi::SemanticName::Tangent, PixelFormat::FloatRGBA, 48, 0u});
+  vertex_stream.add({0, gi::SemanticName::Binormal, PixelFormat::FloatRGBA, 64, 0u});
 
-  vertex_stream.add({0, gi::SemanticName::TexCoord, gi::PixelFormat::FloatRGBA, 80, 1});
-  vertex_stream.add({0, gi::SemanticName::TexCoord, gi::PixelFormat::FloatRGBA, 96, 2});
+  vertex_stream.add({0, gi::SemanticName::TexCoord, PixelFormat::FloatRGBA, 80, 1});
+  vertex_stream.add({0, gi::SemanticName::TexCoord, PixelFormat::FloatRGBA, 96, 2});
 }
 
 void SkinnedMesh::serialize(Archive &archive) {
   Asset::serialize(archive);
   archive << indices;
   archive << vertices;
+  archive << bounds;
+
+  archive << number_of_bones;
+  archive << ticks_per_second;
+
+  archive << animations;
+  archive << global_inverse_transformation;
+
+  archive << hierarchy;
 }
 
 SkinnedMeshResource *SkinnedMesh::get_render_resource() {
@@ -63,161 +79,8 @@ SkinnedMeshResource *SkinnedMesh::get_render_resource() {
   return render_data.get();
 }
 
-u32 find_rotation(float animation_time, const runtime::animation::Channel &node_anim) {
-  for (u32 rotation_key_index = 0; rotation_key_index != node_anim.rotation_keys.size() - 1; rotation_key_index++) {
-    if (animation_time < (float)node_anim.rotation_keys[rotation_key_index + 1].time) {
-      return rotation_key_index;
-    }
-  }
-
-  return 0;
-}
-
-u32 /* SkinnedMesh:: */ find_position(float animation_time, const runtime::animation::Channel &node_anim) {
-  for (u32 PositionKeyIndex = 0; PositionKeyIndex != node_anim.position_keys.size() - 1; PositionKeyIndex++) {
-    if (animation_time < (float)node_anim.position_keys[PositionKeyIndex + 1].time) {
-      return PositionKeyIndex;
-    }
-  }
-  return 0;
-}
-
-u32 /* SkinnedMesh:: */ find_scaling(float animation_time, const runtime::animation::Channel &node_anim) {
-  for (u32 scaling_key_index = 0; scaling_key_index != node_anim.scaling_keys.size() - 1; scaling_key_index++) {
-    if (animation_time < (float)node_anim.scaling_keys[scaling_key_index + 1].time) {
-      return scaling_key_index;
-    }
-  }
-
-  return 0;
-}
-
-void calculate_glm_interpolated_rotation(float animation_time, const runtime::animation::Channel &node_anim,
-                                         quat &out) {
-  if (node_anim.rotation_keys.size() == 1) {
-    out.w = node_anim.rotation_keys[0].value.w;
-    out.x = node_anim.rotation_keys[0].value.x;
-    out.y = node_anim.rotation_keys[0].value.y;
-    out.z = node_anim.rotation_keys[0].value.z;
-    return;
-  }
-
-  u32 rotation_index = find_rotation(animation_time, node_anim);
-  u32 next_rotation_index = (rotation_index + 1);
-  assert(next_rotation_index < node_anim.rotation_keys.size());
-  float delta_time =
-      (float)(node_anim.rotation_keys[next_rotation_index].time - node_anim.rotation_keys[rotation_index].time);
-  float factor = (animation_time - (float)node_anim.rotation_keys[rotation_index].time) / delta_time;
-
-  if (factor < 0.0f)
-    factor = 0.0f;
-  if (factor > 1.0f)
-    factor = 1.0f;
-
-  const quat &start_glm = node_anim.rotation_keys[rotation_index].value;
-  const quat &end_glm = node_anim.rotation_keys[next_rotation_index].value;
-
-  out = slerp(start_glm, end_glm, factor);
-  out = normalize(out);
-
-  return;
-}
-
-void calculate_glm_interpolated_position(float animation_time, const runtime::animation::Channel &node_anim,
-                                         vec3 &out) {
-  if (node_anim.position_keys.size() == 1) {
-    out.x = node_anim.position_keys[0].value.x;
-    out.y = node_anim.position_keys[0].value.y;
-    out.z = node_anim.position_keys[0].value.z;
-    return;
-  }
-
-  u32 position_index = find_position(animation_time, node_anim);
-  u32 next_position_index = (position_index + 1);
-  assert(next_position_index < node_anim.position_keys.size());
-  float delta_time =
-      (float)(node_anim.position_keys[next_position_index].time - node_anim.position_keys[position_index].time);
-  float factor = (animation_time - (float)node_anim.position_keys[position_index].time) / delta_time;
-  if (factor < 0.0f)
-    factor = 0.0f;
-  if (factor > 1.0f)
-    factor = 1.0f;
-  const vec3 &start = node_anim.position_keys[position_index].value;
-  const vec3 &end = node_anim.position_keys[next_position_index].value;
-  out = (end - start) * factor + start;
-  return;
-}
-void calculate_glm_interpolated_scaling(float animation_time, const runtime::animation::Channel &node_anim, vec3 &out) {
-  if (node_anim.scaling_keys.size() == 1) {
-    out.x = node_anim.scaling_keys[0].value.x;
-    out.y = node_anim.scaling_keys[0].value.y;
-    out.z = node_anim.scaling_keys[0].value.z;
-    return;
-  }
-
-  u32 scaling_index = find_scaling(animation_time, node_anim);
-  u32 next_scaling_index = (scaling_index + 1);
-  assert(next_scaling_index < node_anim.scaling_keys.size());
-  float delta_time =
-      (float)(node_anim.scaling_keys[next_scaling_index].time - node_anim.scaling_keys[scaling_index].time);
-  float factor = (animation_time - (float)node_anim.scaling_keys[scaling_index].time) / delta_time;
-
-  if (factor < 0.0f)
-    factor = 0.0f;
-  if (factor > 1.0f)
-    factor = 1.0f;
-
-  const vec3 &start = node_anim.scaling_keys[scaling_index].value;
-  const vec3 &end = node_anim.scaling_keys[next_scaling_index].value;
-
-  out = (end - start) * factor + start;
-  return;
-}
-
-float SkinnedMesh::get_duration_seconds(u64 animationName) {
-  return animation_name_to_pscene[animationName].duration / animation_name_to_pscene[animationName].ticks_per_second;
-  // auto itAnimation = this->animation_name_to_pscene.find(animationName);
-
-  // // Found it?
-  // if (itAnimation == this->animation_name_to_pscene.end()) { // Nope.
-  //   return 0.0f;
-  // }
-
-  // // This is scaling the animation from 0 to 1
-  // return (float)itAnimation->second.duration / (float)itAnimation->second.ticks_per_second;
-}
-
-void SkinnedMesh::bone_transform(float time_in_seconds, u64 animation_name, std::vector<mat4> &final_transformation,
-                                 std::vector<mat4> &globals, std::vector<mat4> &offsets) {
-  float time_in_ticks = time_in_seconds * (float)ticks_per_second;
-  float animation_time = fmod(time_in_ticks, find_animation_total_time(animation_name));
-  mat4 ident(1.0f);
-  this->read_node_hierarchy(animation_time, animation_name, hierarchy, ident);
-
-  final_transformation.resize(this->number_of_bones);
-  globals.resize(this->number_of_bones);
-  offsets.resize(this->number_of_bones);
-
-  for (u32 bone_index = 0; bone_index < this->number_of_bones; bone_index++) {
-    final_transformation[bone_index] = transpose(this->bone_info[bone_index].final_transformation);
-    globals[bone_index] = this->bone_info[bone_index].object_bone_transformation;
-    offsets[bone_index] = this->bone_info[bone_index].bone_offset;
-  }
-}
-// Looks in the animation map and returns the total time
-float SkinnedMesh::find_animation_total_time(u64 animation_name) {
-  return animation_name_to_pscene[animation_name].duration;
-  // auto it_anim = this->animation_name_to_pscene.find(animation_name);
-
-  // // Found it?
-  // if (it_anim == this->animation_name_to_pscene.end()) { // Nope.
-  //   return 0.0f;
-  // }
-  // return (float)it_anim->second.duration;
-}
-
-const runtime::animation::Channel *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation &in_animation,
-                                                                            const String &boneName) {
+const runtime::animation::Channel *
+find_node_animation_channel(const runtime::animation::Animation &in_animation, const String &boneName) {
   for (u32 channel_index = 0; channel_index != in_animation.channels.size(); channel_index++) {
     if (in_animation.channels[channel_index].node_name == boneName) {
       return &in_animation.channels[channel_index];
@@ -226,23 +89,14 @@ const runtime::animation::Channel *SkinnedMesh::find_node_animation_channel(runt
   return nullptr;
 }
 
-void SkinnedMesh::read_node_hierarchy(float animation_time, u64 animation_id, const runtime::animation::Node &pNode,
-                                      const mat4 &parent_transform_matrix) {
-
-  const auto &node_name = pNode.name;
-
-  // auto scene = (const aiScene *)this->pScene;
-  runtime::animation::Animation *pAnimation = &animation_name_to_pscene[animation_id];
-  // auto itAnimation = this->animation_name_to_pscene.find(animation_id); // Animations
-
-  // // Did we find it?
-  // if (itAnimation != this->animation_name_to_pscene.end()) {
-  //   pAnimation = &itAnimation->second;
-  // }
-
+void /*SkinnedMesh::*/read_node_hierarchy(Vector<glm::mat4> &transforms, Vector<glm::mat4> &object_bone_transforms, const Vector<glm::mat4> &offsets,
+                                      float animation_time, const runtime::animation::Animation &animation,
+                                      const runtime::animation::Node &node, const mat4 &parent_transform_matrix, const mat4&global_inverse_transform) {
   // Transformation of the node in bind pose
-  mat4 node_transform = pNode.transform;
-  const runtime::animation::Channel *node_anim = this->find_node_animation_channel(*pAnimation, node_name);
+  i32 bone_idx = node.bone_index;
+  const auto &node_name = node.name;
+  mat4 node_transform = node.transform;
+  const runtime::animation::Channel *node_anim = find_node_animation_channel(animation, node_name);
   if (node_anim) {
     // Get interpolated scaling
     vec3 scale;
@@ -265,18 +119,39 @@ void SkinnedMesh::read_node_hierarchy(float animation_time, u64 animation_id, co
 
   mat4 object_bone_transform = parent_transform_matrix * node_transform;
 
-  auto it = this->bone_name_to_bone_index.find(hash_code(node_name));
-  if (it != this->bone_name_to_bone_index.end()) {
-    u32 BoneIndex = it->second;
-    this->bone_info[BoneIndex].object_bone_transformation = object_bone_transform;
-    this->bone_info[BoneIndex].final_transformation =
-        this->global_inverse_transformation * object_bone_transform * this->bone_info[BoneIndex].bone_offset;
+  if (bone_idx != -1) {
+    object_bone_transforms[bone_idx] = object_bone_transform;
+    transforms[bone_idx] = global_inverse_transform * object_bone_transform * offsets[bone_idx];
+   }
 
-  } else {
-    int breakpoint = 0;
+  for (u32 child_index = 0; child_index != node.children.size(); child_index++) {
+    read_node_hierarchy(transforms, object_bone_transforms, offsets, animation_time, animation, node.children[child_index],
+                              object_bone_transform, global_inverse_transform);
   }
+}
 
-  for (u32 child_index = 0; child_index != pNode.children.size(); child_index++) {
-    this->read_node_hierarchy(animation_time, animation_id, pNode.children[child_index], object_bone_transform);
+
+void SkinnedMesh::bone_transform(const SkinnedMesh& skinned_mesh, float time_in_seconds, u64 animation_name, std::vector<mat4> &final_transformation,
+                                 std::vector<mat4> &globals, std::vector<mat4> &offsets) {
+  const runtime::animation::Animation *animation = skinned_mesh.get_animation(animation_name);
+  
+  if (!animation)
+    return;
+
+  float time_in_ticks = time_in_seconds * (float)skinned_mesh.ticks_per_second;
+  float animation_time = fmod(time_in_ticks, animation->duration);
+  mat4 ident(1.0f);
+
+  final_transformation.resize(skinned_mesh.number_of_bones);
+  globals.resize(skinned_mesh.number_of_bones);
+  offsets = skinned_mesh.bone_offsets;
+
+
+  read_node_hierarchy(final_transformation, globals, skinned_mesh.bone_offsets, animation_time, *animation, skinned_mesh.hierarchy, ident, skinned_mesh.global_inverse_transformation);
+
+  for (u32 bone_index = 0; bone_index < skinned_mesh.number_of_bones; bone_index++) {
+    final_transformation[bone_index] = transpose(final_transformation[bone_index]);
+    globals[bone_index] = transpose(globals[bone_index]);
+    offsets[bone_index] = transpose(offsets[bone_index]);
   }
 }

@@ -17,6 +17,7 @@ add_library(
   src/environment_map.cpp
   src/static_mesh.cpp
   src/skinned_mesh.cpp
+  src/animation.cpp
 )
 target_include_directories(runtime PUBLIC include)
 target_link_libraries(runtime PUBLIC core asset renderer)
