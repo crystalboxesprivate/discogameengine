@@ -17,16 +17,7 @@ struct aiNodeAnim;
 struct aiNode;
 
 namespace runtime {
-static const i32 NUMBEROFBONES = 4;
-
-static const int MAX_BONES_PER_VERTEX = 4;
-struct VertexBoneData {
-  // std::array<u32, MAX_BONES_PER_VERTEX> ids;
-  std::array<float, MAX_BONES_PER_VERTEX> ids;
-  std::array<float, MAX_BONES_PER_VERTEX> weights;
-
-  void add_bone_data(u32 BoneID, float Weight);
-};
+static const int NUMBER_OF_BONES = 4;
 
 struct BoneInfo {
   glm::mat4 bone_offset;
@@ -56,19 +47,17 @@ struct SkinnedMeshVertex {
       , by(0.0f)
       , bz(0.0f)
       , bw(1.0f) {
-    memset(this->bone_id, 0, sizeof(u32) * NUMBEROFBONES);
-    memset(this->bone_weights, 0, sizeof(float) * NUMBEROFBONES);
+    memset(this->bone_id, 0, sizeof(u32) * NUMBER_OF_BONES);
+    memset(this->bone_weights, 0, sizeof(float) * NUMBER_OF_BONES);
   };
 
-  float x, y, z, w; // 16
-  // float r, g, b, a;     // 32
-  float nx, ny, nz, nw; // 48
-  float u0, v0, u1, v1; // 60
-  float tx, ty, tz, tw; // tangent				//
-  float bx, by, bz, bw; // bi-normal			//
-  // For the 4 bone skinned mesh information
-  float bone_id[NUMBEROFBONES];      // New		//
-  float bone_weights[NUMBEROFBONES]; // New		//
+  float x, y, z, w;
+  float nx, ny, nz, nw;
+  float u0, v0, u1, v1;
+  float tx, ty, tz, tw;
+  float bx, by, bz, bw;
+  float bone_id[NUMBER_OF_BONES];
+  float bone_weights[NUMBER_OF_BONES];
 
   inline friend Archive &operator<<(Archive &archive, SkinnedMeshVertex &vert) {
     archive.serialize(&vert, sizeof(SkinnedMeshVertex));
@@ -101,71 +90,29 @@ struct SkinnedMesh : public asset::Asset {
 
   math::Box bounds;
 
-  struct AnimationState {
-    struct StateDetails {
-      StateDetails()
-          : current_time(0.0f)
-          , total_time(0.0f)
-          , frame_step_time(0.0f){};
-      String name;
-      float current_time;    // Time (frame) in current animation
-      float total_time;      // Total time animation goes
-      float frame_step_time; // Number of seconds to 'move' the animation
-
-      bool increment_time(bool reset_to_zero = true) {
-        bool did_we_reset = false;
-
-        this->current_time += this->frame_step_time;
-        if (this->current_time >= this->total_time) {
-          this->current_time = 0.0f;
-          did_we_reset = true;
-        }
-
-        return did_we_reset;
-      }
-    };
-
-    // Extent Values for skinned mesh
-    glm::vec3 minXYZ_from_SM_Bones;
-    glm::vec3 maxXYZ_from_SM_Bones;
-    // Store all the bones for this model, buing updated per frame
-    Vector<glm::mat4x4> object_bone_transforms;
-    Vector<StateDetails> animation_queue;
-    StateDetails active_animation;
-    StateDetails default_animation;
-  };
-
-
-  float get_duration_seconds(String animation_name);
-  float find_animation_total_time(String animation_name);
-  void bone_transform(float time_in_seconds, String animation_name, Vector<glm::mat4> &final_transformation,
+  float get_duration_seconds(u64 animation_name);
+  float find_animation_total_time(u64 animation_name);
+  void bone_transform(float time_in_seconds, u64 animation_name, Vector<glm::mat4> &final_transformation,
                       Vector<glm::mat4> &globals, Vector<glm::mat4> &offsets);
 
-  void read_node_hierarchy(float animation_time, String animation_name, const runtime::animation::Node &pNode,
-                           const glm::mat4 &ParentTransformMatrix);
-  const runtime::animation::Channel *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation *pAnimation, const String &boneName);
+  void read_node_hierarchy(float animation_time, u64 animation_name, const runtime::animation::Node &pNode,
+                           const glm::mat4 &parent_transform_matrix);
 
+  const runtime::animation::Channel *SkinnedMesh::find_node_animation_channel(runtime::animation::Animation &animation,
+                                                                              const String &boneName);
 
-  void calculate_glm_interpolated_position(float animation_time, const runtime::animation::Channel *node_anim, glm::vec3 &out);
-  void calculate_glm_interpolated_rotation(float animation_time, const runtime::animation::Channel *node_anim, glm::quat &out);
-  void calculate_glm_interpolated_scaling(float animation_time, const runtime::animation::Channel *node_anim, glm::vec3 &out);
-
-  u32 find_rotation(float animation_time, const runtime::animation::Channel *node_anim);
-  u32 find_position(float animation_time, const runtime::animation::Channel *node_anim);
-  u32 find_scaling(float animation_time, const runtime::animation::Channel *node_anim);
-
-  String default_animation;
-  AnimationState state;
-  runtime::animation::Node hierarchy;
+  u64 default_animation = 0;
   double ticks_per_second;
 
-  Map<String, animation::Animation> animation_name_to_pscene; 
+  
+  Vector <animation::Animation> animation_name_to_pscene;
 
   glm::mat4 global_inverse_transformation;
-  Map<String, u32> bone_name_to_bone_index;
+
+  runtime::animation::Node hierarchy;
+  Map<u64, u32> bone_name_to_bone_index;
   Vector<BoneInfo> bone_info;
   u32 number_of_bones = 0;
-
 
 private:
   SharedPtr<SkinnedMeshResource> render_data;

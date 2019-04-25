@@ -15,6 +15,7 @@
 #include <game/rigid_body_component.h>
 #include <game/transform_component.h>
 #include <game/skinned_mesh_component.h>
+#include <game/animation_component.h>
 
 #include <legacy/sceneloader2.h>
 
@@ -40,6 +41,7 @@ void setup_static_mesh() {
   asset::load_to_ram(sm_asset, false, true);
   auto entity = component::allocate_entity();
   auto &transform = component::add_and_get<game::TransformComponent>(entity);
+  component::add<game::AnimationComponent>(entity);
 
   transform.position = glm::vec3(0);
   transform.scale = glm::vec3(0.01f);

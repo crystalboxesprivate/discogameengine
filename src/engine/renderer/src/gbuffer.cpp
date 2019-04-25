@@ -12,16 +12,20 @@
 #include <game/transform_component.h>
 #include <runtime/static_mesh_resource.h>
 #include <game/material_component.h>
+#include <game/animation_component.h>
 
 #include <runtime/texture2d_resource.h>
 #include <runtime/texture2d.h>
+
+#include <utils/string.h>
+
 using namespace renderer;
+using namespace glm;
+namespace gi = graphicsinterface;
+
 using game::SkinnedMeshComponent;
 using game::StaticMeshComponent;
 using game::TransformComponent;
-namespace gi = graphicsinterface;
-using namespace glm;
-
 using runtime::StaticMeshRenderData;
 using runtime::StaticMeshResource;
 using runtime::Texture2D;
@@ -157,12 +161,12 @@ void GBuffer::pass_start(graphicsinterface::PipelineState &state, u32 vertex_typ
 }
 
 void GBuffer::clear() {
-  gi::clear_render_target_view(world_pos.render_target_view, glm::vec4(0));
-  gi::clear_render_target_view(material_attributes.render_target_view, glm::vec4(0));
-  gi::clear_render_target_view(color.render_target_view, glm::vec4(0));
-  gi::clear_render_target_view(world_normal.render_target_view, glm::vec4(0));
+  gi::clear_render_target_view(world_pos.render_target_view, vec4(0));
+  gi::clear_render_target_view(material_attributes.render_target_view, vec4(0));
+  gi::clear_render_target_view(color.render_target_view, vec4(0));
+  gi::clear_render_target_view(world_normal.render_target_view, vec4(0));
 #if MAKE_MOTION_VECTOR_PASS
-  gi::clear_render_target_view(motion_vectors.render_target_view, glm::vec4(0));
+  gi::clear_render_target_view(motion_vectors.render_target_view, vec4(0));
 #endif
 }
 
@@ -222,17 +226,32 @@ void update_skinned_meshes() {
     if (!skinned_mesh_asset)
       continue;
 
+    // get entity id
+    // get animation component
+    auto entity_id = component::get_entity_id<SkinnedMeshComponent>(x);
+    auto animation_ptr = component::find_and_get_mut<game::AnimationComponent>(entity_id);
+    if (!animation_ptr)
+      continue;
+    auto &animation = *animation_ptr;
+
     auto &sm = *skinned_mesh_asset;
     {
-      sm.state.active_animation.total_time = sm.get_duration_seconds(sm.state.active_animation.name);
-      sm.state.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 2.0f;
+      if (animation.active_animation.name == 0) {
+        animation.active_animation.name = sm.default_animation;
+        animation.default_animation.name = sm.default_animation;
+      }
 
-      sm.state.active_animation.increment_time();
+      u64 hash = animation.active_animation.name;
 
-      Vector<glm::mat4x4> vec_final_transformation;
-      Vector<glm::mat4x4> vec_offsets;
+      animation.active_animation.total_time = sm.get_duration_seconds(hash);
+      animation.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 2.0f;
 
-      sm.bone_transform(sm.state.active_animation.current_time, sm.state.active_animation.name,
+      animation.active_animation.increment_time();
+
+      Vector<mat4x4> vec_final_transformation;
+      Vector<mat4x4> vec_offsets;
+
+      sm.bone_transform(animation.active_animation.current_time, hash,
                         skinned_mesh_component.bone_transforms, skinned_mesh_component.object_to_bone_transforms,
                         vec_offsets);
 
