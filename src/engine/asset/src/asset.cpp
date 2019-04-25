@@ -14,6 +14,7 @@
 #include <config/config.h>
 #include <core/queue.h>
 #include <thread>
+#include <mutex>
 
 namespace asset {
 const Asset *get_default_asset(Type asset_type) {
@@ -94,15 +95,19 @@ Archive &operator<<(Archive &archive, Type &asset_type) {
 
 void resave_to_disk(const Asset &asset) {
 #if CACHE_TO_DISK
+
+  auto &assets_map = app::get().get_asset_registry().assets;
+  auto &result = *assets_map.find(asset.hash)->second.get();
+
   Archive archive;
-  asset.serialize(archive);
+  result.serialize(archive);
   volatile usize capacity = archive.get_current_offset();
 
   archive = Archive(capacity);
-  asset.serialize(archive);
+  result.serialize(archive);
 
   String filename;
-  get_asset_cache_path(filename, asset.hash);
+  get_asset_cache_path(filename, result.hash);
 
   FILE *write_ptr;
   write_ptr = fopen(filename.c_str(), "wb");
@@ -116,7 +121,7 @@ void resave_to_disk(const AssetRef asset) {
   assert(asset);
   resave_to_disk(*asset.get());
 }
-
+std::mutex m_;
 struct AssetThread {
   struct AssetTask {
     Asset *asset;
@@ -150,8 +155,9 @@ struct AssetThread {
 
       Factory *asset_factory = find_factory(asset.source_filename);
       assert(asset_factory);
+      m_.lock();
       (*asset_factory).load(asset, force_rebuild);
-
+      m_.unlock();
       asset.is_loading = false;
       asset.is_loaded_to_ram = true;
     }
@@ -160,12 +166,14 @@ struct AssetThread {
   bool is_running = false;
 };
 
-static const i32 NUM_ASSET_THREADS = 4;
+static const i32 NUM_ASSET_THREADS = 6;
 AssetThread asset_thread[NUM_ASSET_THREADS];
 i32 current_asset_thread = 0;
 
 AssetThread& get_asset_thread() {
-  return asset_thread[(++current_asset_thread) % NUM_ASSET_THREADS];
+  current_asset_thread = (current_asset_thread + 1) % NUM_ASSET_THREADS;
+  DEBUG_LOG(Assets, Log, "get asset thread: %d", current_asset_thread);
+  return asset_thread[current_asset_thread];
 }
 
 void load_to_ram(const AssetRef asset, bool force_rebuild, bool load_immediately) {
@@ -195,7 +203,7 @@ void free(usize asset_hash) {
 
   assert(result != assets_map.end());
 
-  result->second->free();
+  //result->second->free();
 }
 
 AssetTypeBase *AssetTypeBase::asset_types[256];

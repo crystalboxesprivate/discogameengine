@@ -78,7 +78,8 @@ void bone_transform(const SkinnedMesh &skinned_mesh, float time_in_seconds, u64 
 
   final_transformation.resize(skinned_mesh.number_of_bones);
   globals.resize(skinned_mesh.number_of_bones);
-  offsets = skinned_mesh.bone_offsets;
+  offsets.resize(skinned_mesh.number_of_bones);
+  //offsets = skinned_mesh.bone_offsets;
 
   read_node_hierarchy(final_transformation, globals, skinned_mesh.bone_offsets, animation_time, *animation,
                       skinned_mesh.hierarchy, ident, skinned_mesh.global_inverse_transformation);

@@ -7,6 +7,9 @@ using namespace runtime;
 void Texture2D::serialize(Archive &archive) {
   Asset::serialize(archive);
   archive << texture_data;
+  archive << size_x;
+  archive << size_y;
+  archive << pixel_format;
 }
 
 renderer::Resource *Texture2D::create_resource() {

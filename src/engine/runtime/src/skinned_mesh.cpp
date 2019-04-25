@@ -42,6 +42,9 @@ void SkinnedMesh::serialize(Archive &archive) {
   archive << animations;
   archive << global_inverse_transformation;
 
+  archive << bone_offsets;
+
+
   archive << hierarchy;
 }
 

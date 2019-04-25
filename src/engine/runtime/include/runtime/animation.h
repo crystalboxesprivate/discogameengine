@@ -101,6 +101,7 @@ struct Node {
 
   inline friend Archive &operator<<(Archive &archive, Node &node) {
     archive << node.name;
+    archive << node.bone_index;
     archive.serialize(&node.transform, sizeof(glm::mat4));
     archive << node.children;
     return archive;

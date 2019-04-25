@@ -5,15 +5,16 @@
 
 namespace gi = graphicsinterface;
 using gi::PixelFormat;
+using gi::SemanticName;
 
 namespace runtime {
 StaticMeshResource::StaticMeshResource() {
   vertex_stream.count = 0;
-  vertex_stream.add({0, gi::SemanticName::Position, gi::PixelFormat::R32G32B32F, 0u, 0u});
-  vertex_stream.add({1, gi::SemanticName::TexCoord, gi::PixelFormat::R32G32F, 0u, 0u});
-  vertex_stream.add({2, gi::SemanticName::Normal, gi::PixelFormat::R32G32B32F, 0u, 0u});
-  vertex_stream.add({3, gi::SemanticName::Tangent, gi::PixelFormat::R32G32B32F, 0u, 0u});
-  vertex_stream.add({4, gi::SemanticName::Color, gi::PixelFormat::R32G32B32F, 0u, 0u});
+  vertex_stream.add({0, SemanticName::Position, PixelFormat::R32G32B32F, 0u, 0u});
+  vertex_stream.add({1, SemanticName::TexCoord, PixelFormat::R32G32F, 0u, 0u});
+  vertex_stream.add({2, SemanticName::Normal, PixelFormat::R32G32B32F, 0u, 0u});
+  vertex_stream.add({3, SemanticName::Tangent, PixelFormat::R32G32B32F, 0u, 0u});
+  vertex_stream.add({4, SemanticName::Color, PixelFormat::R32G32B32F, 0u, 0u});
 }
 
 StaticMeshResource *StaticMesh::get_render_resource() {

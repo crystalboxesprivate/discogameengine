@@ -80,7 +80,6 @@ struct SkyBox {
   Shader *pixel_shader;
 
   void initialize() {
-    // String cubepath = utils::path::join(config::CONTENT_DIR, "iblarchive/Sidewalk_At_Night.iblarchive");
     String cubepath = CONTENT_DIR(TEX2D_IBL_PATH);
     asset = asset::add<EnvironmentMap>(cubepath);
 
@@ -130,13 +129,11 @@ void Renderer::initialize() {
 
   quad.initialize();
   screen_quad = &quad;
-  // init quad here
 
   blend_state = gi::addBlendState(gi::ONE, gi::ONE);
   blend_state_skybox = gi::addBlendState(gi::SRC_ALPHA, gi::ONE_MINUS_SRC_ALPHA);
-  // Cubemap
-  skybox.initialize();
 
+  skybox.initialize();
   {
     // do post effect initialization here.
     post_effects.push_back(PostEffectRef(new MotionBlurEffect));
@@ -188,12 +185,13 @@ void Renderer::load_shaders() {
 
 void Renderer::draw_skybox() {
   assert(skybox.defaultTextureCube);
-  gi::DebugState gbuffer_debug_state("Sky box pass");
 
   auto res = skybox.defaultTextureCube->get_resource();
   if (!res) {
     return;
   }
+  
+  gi::DebugState gbuffer_debug_state("Sky box pass");
   // clear them
   gi::PipelineState state;
   state.bound_shaders.vertex = skybox.vertex_shader->compiled;
@@ -220,6 +218,8 @@ void set_gbuffer(bool state, gi::ShaderRef pixel_shader) {
   gi::set_shader_resource_view({2}, state ? gbuffer.color.srv : nullptr, pixel_shader);
   gi::set_shader_resource_view({3}, state ? gbuffer.world_normal.srv : nullptr, pixel_shader);
 }
+
+bool light_pass_ready  = false;
 
 void Renderer::draw_light_pass() {
   gi::DebugState gbuffer_debug_state("Light pass start");
@@ -254,7 +254,6 @@ void Renderer::draw_light_pass() {
   ///////////////////////////////////////////////////////////////////////////////////////////
   // IBL
   ///////////////////////////////////////////////////////////////////////////////////////////
-
   auto res = skybox.defaultTextureCube->get_resource();
   auto brdf_res = pbs.brdf_lut->get_resource();
   if (res && brdf_res) {
@@ -281,7 +280,7 @@ void Renderer::draw_light_pass() {
   }
   ///////////////////////////////////////////////////////////////////////////////////////////
   gi::set_blend_state(nullptr);
-
+  light_pass_ready = true;
 
 #if 0
   // Draw lights
@@ -326,9 +325,11 @@ void Renderer::draw_quad() {
   state.primitive_type = gi::PrimitiveTopology::TriangleStrip;
 
   gi::ShaderParameter srv_parameter;
-  // gi::set_shader_resource_view(srv_parameter, gbuffer.world_normal.srv, quad.pixel->compiled);
+  if (light_pass_ready)
+    gi::set_shader_resource_view(srv_parameter, color_output->srv, quad.pixel->compiled);
+  else
+    gi::set_shader_resource_view(srv_parameter, gbuffer.world_pos.srv, quad.pixel->compiled);
   // gi::set_shader_resource_view(srv_parameter, gbuffer.motion_vectors.srv, quad.pixel->compiled);
-  gi::set_shader_resource_view(srv_parameter, color_output->srv, quad.pixel->compiled);
 
   gi::set_sampler_state(srv_parameter, gbuffer.sampler_state, quad.pixel->compiled);
   gi::set_pipeline_state(state);
