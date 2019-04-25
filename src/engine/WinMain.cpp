@@ -8,6 +8,7 @@
 #include <input/input.h>
 
 #include <task/transform_task.h>
+#include <task/bone_transform_task.h>
 #include <behavior/first_person_controller.h>
 #include <behavior/physics.h>
 #include <component/component.h>
@@ -26,6 +27,7 @@
 
 void setup() {
   app::get().add_task(new task::TransformTask);
+  app::get().add_task(new task::BoneTransformTask);
   app::get().add_behavior(new behavior::FirstPersonCamera);
   app::get().add_behavior(new behavior::PhysicsBehavior);
 

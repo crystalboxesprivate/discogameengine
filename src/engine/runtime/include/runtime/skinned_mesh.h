@@ -76,9 +76,6 @@ struct SkinnedMesh : public asset::Asset {
     return index >= animations.size() ? nullptr : &animations[index];
   }
 
-  static void bone_transform(const SkinnedMesh& skinned_mesh, float time_in_seconds, u64 animation_name, Vector<glm::mat4> &final_transformation,
-                      Vector<glm::mat4> &globals, Vector<glm::mat4> &offsets);
-
   // void read_node_hierarchy(Vector<glm::mat4> &transforms, Vector<glm::mat4> &object_bone_transforms, const Vector<glm::mat4> &offsets,
   //                          float animation_time, const runtime::animation::Animation &pAnimation,
   //                          const runtime::animation::Node &pNode, const glm::mat4 &parent_transform_matrix);

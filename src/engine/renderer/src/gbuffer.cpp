@@ -60,14 +60,6 @@ DefaultTexture default_texture;
 
 shader::UniformBufferDescription *model_uniform_buf = nullptr;
 
-static const i32 MAXNUMBEROFBONES = 100;
-
-struct MatrixBuffer {
-  mat4x4 bones[MAXNUMBEROFBONES];
-  mat4x4 bones_previous[MAXNUMBEROFBONES];
-  // vec4 numBonesUsed;
-};
-
 gi::UniformBufferRef matrices;
 void GBuffer::initialize() {
   i32 width, height;
@@ -90,7 +82,7 @@ void GBuffer::initialize() {
   rts[4] = motion_vectors.render_target_view;
 #endif
 
-  matrices = gi::create_uniform_buffer(sizeof(MatrixBuffer), nullptr);
+  matrices = gi::create_uniform_buffer(sizeof(SkinnedMeshComponent::MatrixBuffer), nullptr);
 
   model_uniform_buf = app::get().get_shader_cache().uniform_buffer_map[utils::string::hash_code("ModelParameters")];
   default_texture.initialize();
@@ -194,6 +186,7 @@ void GBuffer::draw_static_meshes() {
   for (int x = 0; x < static_meshes.size(); x++) {
     StaticMeshComponent &static_mesh_component = static_meshes[x];
     runtime::StaticMesh *static_mesh_asset = static_mesh_component.mesh.get();
+
     if (!static_mesh_asset)
       continue;
 
@@ -216,68 +209,12 @@ void GBuffer::draw_static_meshes() {
   }
 }
 
-MatrixBuffer matrix_buffer;
-
-void update_skinned_meshes() {
-  Vector<SkinnedMeshComponent> &skinned_meshes = component::get_array_of_components<SkinnedMeshComponent>();
-  for (int x = 0; x < skinned_meshes.size(); x++) {
-    SkinnedMeshComponent &skinned_mesh_component = skinned_meshes[x];
-    runtime::SkinnedMesh *skinned_mesh_asset = skinned_mesh_component.mesh.get();
-    if (!skinned_mesh_asset)
-      continue;
-
-    // get entity id
-    // get animation component
-    auto entity_id = component::get_entity_id<SkinnedMeshComponent>(x);
-    auto animation_ptr = component::find_and_get_mut<game::AnimationComponent>(entity_id);
-    if (!animation_ptr)
-      continue;
-    auto &animation = *animation_ptr;
-
-    auto &sm = *skinned_mesh_asset;
-    {
-      if (!sm.animations.size())
-        continue;
-
-      if (animation.active_animation.name == 0) {
-        animation.active_animation.name = sm.default_animation;
-        animation.default_animation.name = sm.default_animation;
-      }
-
-      u64 hash = animation.active_animation.name;
-      auto anim = sm.get_animation(hash);
-      if (!anim)
-        continue;
-
-      animation.active_animation.total_time = anim->duration_seconds;
-      animation.active_animation.frame_step_time = (float)app::get().time.delta_seconds * 2.0f;
-
-      animation.active_animation.increment_time();
-
-      Vector<mat4x4> vec_final_transformation;
-      Vector<mat4x4> vec_offsets;
-
-      runtime::SkinnedMesh::bone_transform(sm, animation.active_animation.current_time, hash,
-                        skinned_mesh_component.bone_transforms, skinned_mesh_component.object_to_bone_transforms,
-                        vec_offsets);
-
-      skinned_mesh_component.number_of_bones_used = static_cast<uint32>(skinned_mesh_component.bone_transforms.size());
-
-      memcpy(&matrix_buffer.bones_previous[0], &matrix_buffer.bones[0], sizeof(mat4x4) * MAXNUMBEROFBONES);
-      memcpy(&matrix_buffer.bones[0], &skinned_mesh_component.bone_transforms[0],
-             sizeof(mat4x4) * skinned_mesh_component.bone_transforms.size());
-
-      gi::set_uniform_buffer_data(&matrix_buffer.bones[0], sizeof(MatrixBuffer), matrices);
-    }
-  }
-}
-
 void GBuffer::draw_skinned_meshes() {
-  update_skinned_meshes();
-
   gi::DebugState gbuffer_debug_state("Skinned meshes");
   gi::PipelineState state;
   pass_start(state, SkinnedMeshVertexType::guid());
+
+  gi::bind_uniform_buffer(2, gi::ShaderStage::Vertex, matrices);
 
   Vector<SkinnedMeshComponent> &skinned_meshes = component::get_array_of_components<SkinnedMeshComponent>();
   for (int x = 0; x < skinned_meshes.size(); x++) {
@@ -296,10 +233,8 @@ void GBuffer::draw_skinned_meshes() {
     get_transform(entity_id, skinned_mesh_component.cached_transform_component, model_uniform_buf);
     set_material_parameters(component::find_and_get_mut<game::MaterialComponent>(entity_id), state);
 
-    // set matrices
-    {
-      gi::bind_uniform_buffer(2, gi::ShaderStage::Vertex, matrices);
-    }
+    gi::set_uniform_buffer_data(&skinned_mesh_component.matrix_buffer.bones[0],
+                                sizeof(SkinnedMeshComponent::MatrixBuffer), matrices);
 
     runtime::SkinnedMeshResource &resource = *resource_ptr;
     gi::set_vertex_stream(resource.vertex_stream, state.bound_shaders.vertex);
