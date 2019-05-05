@@ -1,0 +1,37 @@
+cbuffer VertexParameters {
+
+};
+
+cbuffer PixelParameters {
+  
+};
+
+VertexOutput UserVertex(VertexIntermediate input) {
+  VertexOutput o = (VertexOutput)0;
+  o.worldPosition = input.worldPosition.xyz;
+  o.worldNormal = input.worldNormal;
+  o.color = input.color;
+  return o;
+}
+
+
+SamplerState mainSamplerState;
+Texture2D albedoTexture : register(t0);
+Texture2D materialTexture : register(t1);
+Texture2D normalTexture : register(t2);
+
+
+PixelOut UserPixel(PixelInput main) {
+  PixelOut o = (PixelOut)0;
+  float3 mat = LinearToGammaSpace(materialTexture.Sample(mainSamplerState, main.texcoord).xyz);
+  o.color.rgb = (albedoTexture.Sample(mainSamplerState, main.texcoord).xyz);
+  o.color.a = 1.0;
+  o.color.rgb  *=   mat.r; 
+  o.roughness = mat.g;
+  o.metal = mat.b;
+  o.specular = 1.0;
+
+  float3 normal = normalTexture.Sample(mainSamplerState, main.texcoord).rgb * 2.0 - 1.0;
+  o.worldNormal = normalize(main.normal + mul(normal, main.tangentToWorld));
+  return o;
+}

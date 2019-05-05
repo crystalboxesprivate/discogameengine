@@ -11,6 +11,7 @@ cache/*
 # src/third_party/*
 content/*
 binary/*
+!content/shaders
 
 *.pyc
 
