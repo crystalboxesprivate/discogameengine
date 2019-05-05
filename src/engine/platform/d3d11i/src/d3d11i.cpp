@@ -199,7 +199,7 @@ bool create_context(void *window_ptr, void *data) {
   SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
   u32 device_flag = 0;
-#ifdef ENGINE_DEBUG_D3D11LAYER
+#if ENGINE_DEBUG_D3D11LAYER
   device_flag |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
   D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, device_flag, NULL, NULL, D3D11_SDK_VERSION,
