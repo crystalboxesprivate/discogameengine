@@ -21,6 +21,7 @@ using namespace asset;
 
 namespace legacy {
 String content_dir;
+
 vec3 get_vec3(const Value &js) {
   return vec3(js["x"].GetFloat(), js["y"].GetFloat(), js["z"].GetFloat());
 }
@@ -52,8 +53,13 @@ void load(const String &filename) {
     assert(false);
     return;
   }
+  bool is_local_path = document["isLocalPath"].GetBool();
   content_dir = document["contentDirectory"].GetString();
-  assert(content_dir.size());
+
+  if (is_local_path) {
+    content_dir = utils::path::join(utils::path::parent(filename), content_dir);
+	}
+
   auto &entities = document["entities"];
   for (SizeType x = 0; x < entities.Size(); x++) {
     auto &entity = entities[x]["components"];

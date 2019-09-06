@@ -9,7 +9,7 @@ build/*
 cache/*
 
 # src/third_party/*
-content/*
+content/logs/*
 binary/*
 !content/shaders
 

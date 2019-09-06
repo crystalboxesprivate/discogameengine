@@ -1,11 +1,11 @@
 #include <config/config.h>
-// #include <legacy/sceneloader.h>
-#include <utils/path.h>
 #include <window/window.h>
 #include <app/app.h>
 #include <core/log.h>
 #include <windows.h>
 #include <input/input.h>
+#include <utils/fs.h>
+#include <utils/path.h>
 
 #include <task/transform_task.h>
 #include <task/bone_transform_task.h>
@@ -32,7 +32,6 @@ void setup() {
   app::get().add_behavior(new behavior::PhysicsBehavior);
 
   app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/UserTest.hlslinc").get();
-  // app::get().get_shader_cache().default_shader = MaterialShader::add("/Shaders/Default.hlslinc").get();
   app::get().get_shader_cache().compiler.compile();
 }
 
@@ -40,7 +39,7 @@ void setup_static_mesh() {
   auto sm_asset = asset::add(utils::path::join(config::CONTENT_DIR, "skinned_mesh/chan.skinnedmeshjson"));
 
   // Add transform component first
-  //asset::load_to_ram(sm_asset, false, true);
+  // asset::load_to_ram(sm_asset, false, true);
   auto entity = component::allocate_entity();
   auto &transform = component::add_and_get<game::TransformComponent>(entity);
   auto &anim = component::add_and_get<game::AnimationComponent>(entity);
@@ -66,10 +65,15 @@ void post_scene_setup() {
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
   using namespace utils::path;
+  auto log_dir = join(config::CONTENT_DIR, "logs");
+  if (!exists(log_dir)) {
+    utils::fs::create_directory(log_dir);
+	}
+  logging::Logger logger(join(log_dir, "log.txt"));
 
-  logging::Logger logger(join(join(config::CONTENT_DIR, "logs"), "log.txt"));
   using namespace window;
   Window *main_ptr = Window::create("Test", 1920, 1080, 16, false);
+
   if (!main_ptr) {
     DEBUG_LOG(System, Error, "Window creation failed");
     return 1;
@@ -81,10 +85,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
   app.init(main_ptr);
   setup();
 
-  auto scenes_folder = join(join(config::CONTENT_DIR, "scenes"), "teapots.json");
+  auto scenes_folder = join(join(config::CONTENT_DIR, "scenes"), "scene.json");
   legacy::load(scenes_folder.c_str());
   post_scene_setup();
-
   app.game_state_init();
 
   while (!main.window_should_close()) {

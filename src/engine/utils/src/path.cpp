@@ -4,6 +4,9 @@
 #include <cassert>
 #include <fstream>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 namespace utils {
 namespace path {
 
@@ -11,7 +14,21 @@ String join(const String &a, const String &b) {
   return a + "/" + b;
 }
 bool exists(const String &path) {
+  if (is_directory(path)) {
+		return true;
+  }
   return std::ifstream(path).good();
+}
+
+bool is_directory(const String &in_path) {
+  struct stat s;
+  if (stat(in_path.c_str(), &s) == 0) {
+    if (s.st_mode & S_IFDIR) {
+      // It's a directory
+      return true;
+    }
+  }
+  return false;
 }
 
 String filename(const String &in_path, bool keep_extension) {

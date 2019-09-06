@@ -12,5 +12,7 @@ inline String load_file_to_string(const String &filename) {
 
 bool load_file_to_buffer(const String& filename, Vector<u8> &data);
 bool save_binary_file(const String&filename, usize size, void*data);
+
+bool create_directory(const String &name);
 } // namespace fs
 } // namespace utils

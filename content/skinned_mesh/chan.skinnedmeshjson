@@ -1,0 +1,17 @@
+{
+  "mesh": "models/FBX/chan.fbx",
+  "animations": {
+    "idle": "models/FBX/chan-idle.fbx",
+    "walkForward": "models/FBX/chan-walk-forward.fbx",
+    "walkBackward": "models/FBX/chan-walk-backward.fbx",
+    "runForward": "models/FBX/chan-run-forward.fbx",
+    "strafeLeft": "models/FBX/chan-strafe-left.fbx",
+    "strafeRight": "models/FBX/chan-strafe-right.fbx",
+    "runJump": "models/FBX/chan-run-jump.fbx",
+    "action1": "models/FBX/common/spell-walk-forward.fbx",
+    "action2": "models/FBX/common/spell-idle.fbx",
+    "action3": "models/FBX/chan-push-forward.fbx",
+    "action4": "models/FBX/chan-spell-strafe-left.fbx",
+    "action5": "models/FBX/chan-spell-strafe-right.fbx"
+  }
+}

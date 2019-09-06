@@ -9,6 +9,7 @@ bool exists(const String&path);
 
 String parent(const String&  in_path );
 String filename(const String& in_path, bool keep_extension = true);
+bool is_directory(const String& in_path);
 
 static void splitext(const String &in_filename, String &file, String &ext) {
   usize found = in_filename.find_last_of(".");

@@ -1,0 +1,2466 @@
+{
+  "contentDirectory": "scene_assets/",
+  "isLocalPath": true,
+  "entities": [
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050002
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050002
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 6.56000042,
+            "y": -2.32,
+            "z": -5.75999928
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Ball_Albedo.tga",
+          "normalFilename": "Ball_Nrm.tga",
+          "occlusionRoughnessMetallic": "Ball_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "teapot.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -0.9959283,
+              "y": -0.4578852,
+              "z": -0.6105578
+            },
+            "max": {
+              "x": 0.9680948,
+              "y": 0.4578852,
+              "z": 0.6105592
+            }
+          },
+          "mass": 27.1
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -2.43608284,
+            "y": 0.0,
+            "z": 2.46
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": -1.0,
+            "z": 0.0,
+            "w": 2.28732824E-05
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Ball_AlbedoGreen.tga",
+          "normalFilename": "Ball_Nrm.tga",
+          "occlusionRoughnessMetallic": "Ball_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "sphere.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -1.7527895,
+              "y": -1.75279045,
+              "z": -1.75278962
+            },
+            "max": {
+              "x": 1.7527895,
+              "y": 1.75279045,
+              "z": 1.75278962
+            }
+          },
+          "mass": 41.19
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 1.37206745,
+            "y": 17.35,
+            "z": 1.43
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 3.50557947,
+            "y": 3.50557947,
+            "z": 3.50557947
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Ball_Albedo.tga",
+          "normalFilename": "Ball_Nrm.tga",
+          "occlusionRoughnessMetallic": "Ball_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "teapot.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -0.610555,
+              "y": -0.4578853,
+              "z": -0.9680929
+            },
+            "max": {
+              "x": 0.6105563,
+              "y": 0.457885236,
+              "z": 0.9959264
+            }
+          },
+          "mass": 27.1
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 0.133916453,
+            "y": 0.0,
+            "z": 2.44608355
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": -0.7070917,
+            "z": 0.0,
+            "w": 0.7071219
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -2.97971535,
+              "y": -4.61233425,
+              "z": -5.050003
+            },
+            "max": {
+              "x": 2.97971535,
+              "y": 4.61233425,
+              "z": 5.050003
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -21.57,
+            "y": 2.18,
+            "z": 4.26
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": -0.497715026,
+            "w": 0.867340565
+          },
+          "scale": {
+            "x": 0.99999994,
+            "y": 0.99999994,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (6)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050002,
+              "y": -4.346802,
+              "z": -3.42030144
+            },
+            "max": {
+              "x": 5.050002,
+              "y": 4.346802,
+              "z": 3.42030144
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -13.69,
+            "y": 2.1,
+            "z": -24.6
+          },
+          "rotation": {
+            "x": 0.448371917,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.893847048
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 0.9999999,
+            "z": 0.9999999
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (2)"
+        }
+      }
+    },
+    {
+      "components": {
+        "DirectionalLightComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 0.956862748,
+            "blue": 0.8392157,
+            "alpha": 1.0
+          },
+          "intensity": 1.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 0.0,
+            "y": 3.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.408217877,
+            "y": -0.234569684,
+            "z": 0.109381631,
+            "w": 0.8754261
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 0.99999994
+          }
+        },
+        "MetadataComponent": {
+          "name": "Directional Light"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050002
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050002
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -13.69,
+            "y": -2.32,
+            "z": -5.75999928
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Ball_Albedo.tga",
+          "normalFilename": "Ball_Nrm.tga",
+          "occlusionRoughnessMetallic": "Ball_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "sphere.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -1.76709986,
+              "y": -1.76709938,
+              "z": -1.76709986
+            },
+            "max": {
+              "x": 1.76709986,
+              "y": 1.76709938,
+              "z": 1.76709986
+            }
+          },
+          "mass": 41.19
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 1.37206745,
+            "y": 12.7306156,
+            "z": 0.0749566555
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 3.5342,
+            "y": 3.5342,
+            "z": 3.5342
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.049999,
+              "y": -0.500000954,
+              "z": -5.050001
+            },
+            "max": {
+              "x": 5.049999,
+              "y": 0.500000954,
+              "z": 5.050001
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 16.61,
+            "y": -2.32,
+            "z": -15.99
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (1)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050002
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050002
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -3.63999939,
+            "y": -2.32,
+            "z": -5.75999928
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (1)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050002,
+              "y": -3.42741227,
+              "z": -4.34182167
+            },
+            "max": {
+              "x": 5.050002,
+              "y": 3.42741179,
+              "z": 4.34182167
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -13.69,
+            "y": 1.22000051,
+            "z": 23.5000019
+          },
+          "rotation": {
+            "x": -0.315899372,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.948792756
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (6)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050002
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050002
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -3.63999939,
+            "y": -2.32,
+            "z": 14.4900007
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (1)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -3.00429344,
+              "y": -4.5995636,
+              "z": -5.050003
+            },
+            "max": {
+              "x": 3.00429344,
+              "y": 4.5995636,
+              "z": 5.050003
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 23.2400017,
+            "y": 2.64,
+            "z": 14.4900017
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.495112538,
+            "w": 0.868828952
+          },
+          "scale": {
+            "x": 1.00000024,
+            "y": 1.00000024,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (3)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "BallGrunge_Albedo.tga",
+          "normalFilename": "BallGrunge_Nrm.tga",
+          "occlusionRoughnessMetallic": "BallGrunge_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "teapot.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -0.968066931,
+              "y": -0.4578852,
+              "z": -0.6105136
+            },
+            "max": {
+              "x": 0.9959004,
+              "y": 0.4578852,
+              "z": 0.6105136
+            }
+          },
+          "mass": 27.1
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 2.129,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Ball_AlbedoGreen.tga",
+          "normalFilename": "Ball_Nrm.tga",
+          "occlusionRoughnessMetallic": "Ball_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "teapot.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -0.9680667,
+              "y": -0.4578852,
+              "z": -0.6105136
+            },
+            "max": {
+              "x": 0.995900154,
+              "y": 0.4578852,
+              "z": 0.6105136
+            }
+          },
+          "mass": 11.99
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -2.343,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Ball_Albedo.tga",
+          "normalFilename": "Ball_Nrm.tga",
+          "occlusionRoughnessMetallic": "Ball_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "teapot.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -0.930701,
+              "y": -0.746796846,
+              "z": -1.158926
+            },
+            "max": {
+              "x": 0.945771,
+              "y": 0.7441459,
+              "z": 1.13567543
+            }
+          },
+          "mass": 27.1
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 2.15854764,
+            "y": 0.00132583757,
+            "z": 2.47162557
+          },
+          "rotation": {
+            "x": -0.5704124,
+            "y": -0.326398879,
+            "z": 0.3503539,
+            "w": -0.667342246
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.00000012
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050002,
+              "y": -4.346802,
+              "z": -3.42030144
+            },
+            "max": {
+              "x": 5.050002,
+              "y": 4.346802,
+              "z": 3.42030144
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 6.56000042,
+            "y": 2.1,
+            "z": -24.6
+          },
+          "rotation": {
+            "x": 0.448371917,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.893847048
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 0.9999999,
+            "z": 0.9999999
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (4)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -3.00429344,
+              "y": -4.5995636,
+              "z": -5.050003
+            },
+            "max": {
+              "x": 3.00429344,
+              "y": 4.5995636,
+              "z": 5.050003
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 23.2400017,
+            "y": 2.64,
+            "z": 4.26
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.495112538,
+            "w": 0.868828952
+          },
+          "scale": {
+            "x": 1.00000024,
+            "y": 1.00000024,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (2)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.04999971,
+              "y": -0.500000954,
+              "z": -5.050001
+            },
+            "max": {
+              "x": 5.05000067,
+              "y": 0.500000954,
+              "z": 5.050001
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 6.56,
+            "y": -2.32,
+            "z": 4.26
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "BallGrunge_Albedo.tga",
+          "normalFilename": "BallGrunge_Nrm.tga",
+          "occlusionRoughnessMetallic": "BallGrunge_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "teapot.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -0.9680668,
+              "y": -0.4578852,
+              "z": -0.6105136
+            },
+            "max": {
+              "x": 0.9959003,
+              "y": 0.4578852,
+              "z": 0.6105136
+            }
+          },
+          "mass": 5.6
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -3.00429344,
+              "y": -4.5995636,
+              "z": -5.050003
+            },
+            "max": {
+              "x": 3.00429344,
+              "y": 4.5995636,
+              "z": 5.050003
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 23.2400017,
+            "y": 2.64,
+            "z": -15.99
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.495112538,
+            "w": 0.868828952
+          },
+          "scale": {
+            "x": 1.00000024,
+            "y": 1.00000024,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (5)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050002
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050002
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 6.56000042,
+            "y": -2.32,
+            "z": 14.4900007
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050001
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050001
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -3.64000034,
+            "y": -2.32,
+            "z": 4.26
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (1)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050003,
+              "y": -4.346802,
+              "z": -3.42030144
+            },
+            "max": {
+              "x": 5.050003,
+              "y": 4.346802,
+              "z": 3.42030144
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 16.61,
+            "y": 2.1,
+            "z": -24.6
+          },
+          "rotation": {
+            "x": 0.448371917,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.893847048
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 0.9999999,
+            "z": 0.9999999
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (5)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -2.97971535,
+              "y": -4.61233425,
+              "z": -5.050003
+            },
+            "max": {
+              "x": 2.97971535,
+              "y": 4.61233425,
+              "z": 5.050003
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -21.57,
+            "y": 2.18,
+            "z": 14.4900017
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": -0.497715026,
+            "w": 0.867340565
+          },
+          "scale": {
+            "x": 0.99999994,
+            "y": 0.99999994,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (7)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -2.97971535,
+              "y": -4.61233425,
+              "z": -5.050003
+            },
+            "max": {
+              "x": 2.97971535,
+              "y": 4.61233425,
+              "z": 5.050003
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -21.57,
+            "y": 2.18,
+            "z": -5.75999832
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": -0.497715026,
+            "w": 0.867340565
+          },
+          "scale": {
+            "x": 0.99999994,
+            "y": 0.99999994,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (8)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050001
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050001
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -3.63999939,
+            "y": -2.32,
+            "z": -15.99
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (1)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050001,
+              "y": -3.42741227,
+              "z": -4.34182167
+            },
+            "max": {
+              "x": 5.050001,
+              "y": 3.42741179,
+              "z": 4.34182167
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 16.61,
+            "y": 1.22000051,
+            "z": 23.5000019
+          },
+          "rotation": {
+            "x": -0.315899372,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.948792756
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (9)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -3.00429344,
+              "y": -4.5995636,
+              "z": -5.050003
+            },
+            "max": {
+              "x": 3.00429344,
+              "y": 4.5995636,
+              "z": 5.050003
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 23.2400017,
+            "y": 2.64,
+            "z": -5.75999832
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.495112538,
+            "w": 0.868828952
+          },
+          "scale": {
+            "x": 1.00000024,
+            "y": 1.00000024,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (4)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.049999,
+              "y": -0.500000954,
+              "z": -5.050002
+            },
+            "max": {
+              "x": 5.049999,
+              "y": 0.500000954,
+              "z": 5.050002
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 16.61,
+            "y": -2.32,
+            "z": 14.4900007
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (1)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050001
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050001
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 6.56000042,
+            "y": -2.32,
+            "z": -15.99
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "BallGrunge_Albedo.tga",
+          "normalFilename": "BallGrunge_Nrm.tga",
+          "occlusionRoughnessMetallic": "BallGrunge_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "sphere.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -0.8388071,
+              "y": -0.83880806,
+              "z": -0.8388071
+            },
+            "max": {
+              "x": 0.8388071,
+              "y": 0.83880806,
+              "z": 0.8388071
+            }
+          },
+          "mass": 41.19
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 1.37206745,
+            "y": 17.35,
+            "z": 8.99
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.67761445,
+            "y": 1.67761445,
+            "z": 1.67761445
+          }
+        },
+        "MetadataComponent": {
+          "name": "default"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050002,
+              "y": -3.42741179,
+              "z": -4.34182358
+            },
+            "max": {
+              "x": 5.050002,
+              "y": 3.42741227,
+              "z": 4.34182358
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 6.56000042,
+            "y": 1.22,
+            "z": 23.5
+          },
+          "rotation": {
+            "x": -0.315899372,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.948792756
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (8)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.049999,
+              "y": -0.500000954,
+              "z": -5.050001
+            },
+            "max": {
+              "x": 5.049999,
+              "y": 0.500000954,
+              "z": 5.050001
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 16.61,
+            "y": -2.32,
+            "z": 4.26
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (1)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050001,
+              "y": -0.500000954,
+              "z": -5.050001
+            },
+            "max": {
+              "x": 5.050001,
+              "y": 0.500000954,
+              "z": 5.050001
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -13.6900005,
+            "y": -2.32,
+            "z": 4.26
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050003,
+              "y": -4.346802,
+              "z": -3.42030144
+            },
+            "max": {
+              "x": 5.050003,
+              "y": 4.346802,
+              "z": 3.42030144
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -3.63999939,
+            "y": 2.1,
+            "z": -24.6
+          },
+          "rotation": {
+            "x": 0.448371917,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.893847048
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 0.9999999,
+            "z": 0.9999999
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (3)"
+        }
+      }
+    },
+    {
+      "components": {
+        "CameraComponent": {
+          "fieldOfView": 60.0,
+          "clippingPlane": {
+            "near": 0.3,
+            "far": 1000.0
+          }
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 0.0,
+            "y": 1.0,
+            "z": -10.0
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "Main Camera"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.050001,
+              "y": -3.42741227,
+              "z": -4.34182167
+            },
+            "max": {
+              "x": 5.050001,
+              "y": 3.42741179,
+              "z": 4.34182167
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -3.63999939,
+            "y": 1.22000051,
+            "z": 23.5000019
+          },
+          "rotation": {
+            "x": -0.315899372,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 0.948792756
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (7)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.049999,
+              "y": -0.500000954,
+              "z": -5.050002
+            },
+            "max": {
+              "x": 5.049999,
+              "y": 0.500000954,
+              "z": 5.050002
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 16.61,
+            "y": -2.32,
+            "z": -5.75999928
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (1)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050001
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050001
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -13.69,
+            "y": -2.32,
+            "z": -15.99
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -5.05,
+              "y": -0.500000954,
+              "z": -5.050002
+            },
+            "max": {
+              "x": 5.05,
+              "y": 0.500000954,
+              "z": 5.050002
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -13.69,
+            "y": -2.32,
+            "z": 14.4900007
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 1.0,
+            "y": 1.0,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "Floor_Tiled_Albedo.tga",
+          "normalFilename": "Floor_Tiled_NRM.tga",
+          "occlusionRoughnessMetallic": "Floor_Tiled_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "floor_fixed.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -2.97971535,
+              "y": -4.61233425,
+              "z": -5.050003
+            },
+            "max": {
+              "x": 2.97971535,
+              "y": 4.61233425,
+              "z": 5.050003
+            }
+          },
+          "mass": 0.0
+        },
+        "TransformComponent": {
+          "position": {
+            "x": -21.57,
+            "y": 2.18,
+            "z": -15.99
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": -0.497715026,
+            "w": 0.867340565
+          },
+          "scale": {
+            "x": 0.99999994,
+            "y": 0.99999994,
+            "z": 1.0
+          }
+        },
+        "MetadataComponent": {
+          "name": "_11__floor (9)"
+        }
+      }
+    },
+    {
+      "components": {
+        "MaterialComponent": {
+          "color": {
+            "red": 1.0,
+            "green": 1.0,
+            "blue": 1.0,
+            "alpha": 1.0
+          },
+          "roughness": 1.0,
+          "metal": 1.0,
+          "diffuseFilename": "BallGrunge_Albedo.tga",
+          "normalFilename": "BallGrunge_Nrm.tga",
+          "occlusionRoughnessMetallic": "BallGrunge_OccRoughMetal.tga"
+        },
+        "StaticMeshComponent": {
+          "filename": "sphere.obj",
+          "importScaleFactor": 1.0
+        },
+        "RigidBodyComponent": {
+          "extents": {
+            "min": {
+              "x": -1.76709986,
+              "y": -1.76709938,
+              "z": -1.76709986
+            },
+            "max": {
+              "x": 1.76709986,
+              "y": 1.76709938,
+              "z": 1.76709986
+            }
+          },
+          "mass": 41.19
+        },
+        "TransformComponent": {
+          "position": {
+            "x": 1.37206745,
+            "y": 7.5,
+            "z": 4.56339073
+          },
+          "rotation": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0,
+            "w": 1.0
+          },
+          "scale": {
+            "x": 3.5342,
+            "y": 3.5342,
+            "z": 3.5342
+          }
+        },
+        "MetadataComponent": {
+          "name": "default (1)"
+        }
+      }
+    }
+  ]
+}

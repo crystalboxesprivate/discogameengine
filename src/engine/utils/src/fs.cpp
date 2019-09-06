@@ -3,9 +3,13 @@
 #include <engine>
 #include <fstream>
 #include <sys/stat.h>
+#include <direct.h>
 
 namespace utils {
 namespace fs {
+bool create_directory(const String &name) {
+  return _mkdir(name.c_str()) == 0;
+}
 bool load_file_to_string(const String &filename, String &contents) {
   using namespace std;
   ifstream input_stream(filename);

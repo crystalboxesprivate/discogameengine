@@ -4,11 +4,14 @@
 #include <cassert>
 #include <window/window.h>
 #include <utils/string.h>
+#include <utils/path.h>
+#include <utils/fs.h>
 
 #include <renderer/renderer.h>
 #include <shader/cache.h>
 #include <behavior/behavior.h>
 #include <task/task.h>
+#include <config/config.h>
 
 using namespace app;
 using namespace component;
@@ -54,7 +57,12 @@ void App::add_behavior(behavior::Behavior *new_behavior) {
 }
 
 void App::init(window::Window *window) {
+  // Validate resource integrity?
+  if (!utils::path::exists(config::CACHE_DIR)) {
+    assert(utils::fs::create_directory(config::CACHE_DIR));
+  }
   window_ptr = window;
+  // Global pointers should be NULL on initialization.
   assert(!ptr);
   ptr = this;
   assert(!ptr->component_registry);
