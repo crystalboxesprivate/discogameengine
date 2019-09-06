@@ -23,6 +23,7 @@ binary/*
 *.lo
 *.o
 *.obj
+!content/**/*.obj
 
 # Precompiled Headers
 *.gch
