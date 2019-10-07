@@ -41,7 +41,6 @@ set_target_properties(engine PROPERTIES OUTPUT_NAME disco-engine
 add_custom_command(
   TARGET engine
   POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/assimp/lib/assimp-vc140-mt.dll" "$<TARGET_FILE_DIR:engine>"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/fmod/lib/fmod.dll" "$<TARGET_FILE_DIR:engine>"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/freetype/lib/freetype271MT.dll" "$<TARGET_FILE_DIR:engine>"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/ShaderConductor/lib/dxcompiler.dll" "$<TARGET_FILE_DIR:engine>"

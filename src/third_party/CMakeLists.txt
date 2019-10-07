@@ -1,3 +1,21 @@
+# Configure assimp
+option(
+  BUILD_SHARED_LIBS 
+  "Build package with shared libraries." 
+  OFF
+)
+
+option(
+  ASSIMP_BUILD_TESTS 
+  "If the test suite for Assimp is built in addition to the library." 
+  OFF
+)
+
+option(
+  ASSIMP_BUILD_ASSIMP_TOOLS 
+  "If the supplementary tools for Assimp are built in addition to the library." 
+  OFF
+)
 add_subdirectory(assimp)
 
 # configure bullet 3

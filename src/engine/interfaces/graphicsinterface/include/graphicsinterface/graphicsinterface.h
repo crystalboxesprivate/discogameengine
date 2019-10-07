@@ -29,6 +29,7 @@ struct PipelineState {
   PrimitiveTopology primitive_type;
   BoundShaders bound_shaders;
 };
+
 enum class SemanticName : u8 { Position, TexCoord, Normal, Tangent, Binormal, Color };
 struct VertexAttribute {
   u8 buffer_slot;
@@ -112,13 +113,15 @@ extern const int TEXTURE_ADDRESS_CLAMP;
 extern const int TEXTURE_ADDRESS_BORDER;
 extern const int TEXTURE_ADDRESS_MIRROR_ONCE;
 
-SamplerStateRef create_sampler_state(i32 filter = FILTER_MIN_MAG_MIP_LINEAR, i32 texture_address_mode = TEXTURE_ADDRESS_WRAP);
+SamplerStateRef create_sampler_state(i32 filter = FILTER_MIN_MAG_MIP_LINEAR,
+                                     i32 texture_address_mode = TEXTURE_ADDRESS_WRAP);
 TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, void *data);
-TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, i32 num_mips, const char *debug_name = 0);
+TextureCubeRef create_texture_cube(usize width, usize height, PixelFormat pixelformat, i32 num_mips,
+                                   const char *debug_name = 0);
 
-void update_subresource(TextureCubeRef texcube, i32 slice, i32 miplevel, i32 width, void* data);
+void update_subresource(TextureCubeRef texcube, i32 slice, i32 miplevel, i32 width, void *data);
 
-RenderTargetViewRef create_cubemap_rendertarget(TextureCubeRef, i32 side, i32 mip_level, const char* debug_name = 0);
+RenderTargetViewRef create_cubemap_rendertarget(TextureCubeRef, i32 side, i32 mip_level, const char *debug_name = 0);
 Texture2DRef create_texture2d(usize width, usize height, PixelFormat pixelformat, void *data = nullptr,
                               bool generate_mips = false);
 ShaderResourceViewRef create_shader_resource_view(Texture2DRef texture2d);
@@ -145,7 +148,6 @@ void set_z_buffer(bool enabled);
 
 struct BlendState {};
 typedef SharedPtr<BlendState> BlendStateRef;
-
 
 //
 // Blending constants
