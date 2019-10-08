@@ -30,27 +30,27 @@
 
 #include <functional>
 
-#if defined(__clang__)
-#define SC_SYMBOL_EXPORT __attribute__((__visibility__("default")))
-#define SC_SYMBOL_IMPORT
-#elif defined(__GNUC__)
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#define SC_SYMBOL_EXPORT __attribute__((__dllexport__))
-#define SC_SYMBOL_IMPORT __attribute__((__dllimport__))
-#else
-#define SC_SYMBOL_EXPORT __attribute__((__visibility__("default")))
-#define SC_SYMBOL_IMPORT
-#endif
-#elif defined(_MSC_VER)
-#define SC_SYMBOL_EXPORT __declspec(dllexport)
-#define SC_SYMBOL_IMPORT __declspec(dllimport)
-#endif
+// #if defined(__clang__)
+// #define SC_SYMBOL_EXPORT __attribute__((__visibility__("default")))
+// #define SC_SYMBOL_IMPORT
+// #elif defined(__GNUC__)
+// #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+// #define SC_SYMBOL_EXPORT __attribute__((__dllexport__))
+// #define SC_SYMBOL_IMPORT __attribute__((__dllimport__))
+// #else
+// #define SC_SYMBOL_EXPORT __attribute__((__visibility__("default")))
+// #define SC_SYMBOL_IMPORT
+// #endif
+// #elif defined(_MSC_VER)
+// #define SC_SYMBOL_EXPORT __declspec(dllexport)
+// #define SC_SYMBOL_IMPORT __declspec(dllimport)
+// #endif
 
-#ifdef SHADER_CONDUCTOR_SOURCE
-#define SC_API SC_SYMBOL_EXPORT
-#else
-#define SC_API SC_SYMBOL_IMPORT
-#endif
+// #ifdef SHADER_CONDUCTOR_SOURCE
+// #define /* SC_API */ SC_SYMBOL_EXPORT
+// #else
+// #define /* SC_API */ SC_SYMBOL_IMPORT
+// #endif
 
 namespace ShaderConductor
 {
@@ -74,7 +74,8 @@ namespace ShaderConductor
         Hlsl,
         Glsl,
         Essl,
-        Msl,
+        Msl_macOS,
+        Msl_iOS,
 
         NumShadingLanguages,
     };
@@ -85,7 +86,7 @@ namespace ShaderConductor
         const char* value;
     };
 
-    class SC_API Blob
+    class /* SC_API */ Blob
     {
     public:
         virtual ~Blob();
@@ -94,10 +95,10 @@ namespace ShaderConductor
         virtual uint32_t Size() const = 0;
     };
 
-    SC_API Blob* CreateBlob(const void* data, uint32_t size);
-    SC_API void DestroyBlob(Blob* blob);
+    /* SC_API */ Blob* CreateBlob(const void* data, uint32_t size);
+    /* SC_API */ void DestroyBlob(Blob* blob);
 
-    class SC_API Compiler
+    class /* SC_API */ Compiler
     {
     public:
         struct ShaderModel
@@ -146,12 +147,17 @@ namespace ShaderConductor
         struct Options
         {
             bool packMatricesInRowMajor = true; // Experimental: Decide how a matrix get packed
-            bool enable16bitTypes = false; // Enable 16-bit types, such as half, uint16_t. Requires shader model 6.2+
-            bool enableDebugInfo = false; // Embed debug info into the binary
-            bool disableOptimizations = false; // Force to turn off optimizations. Ignore optimizationLevel below.
+            bool enable16bitTypes = false;      // Enable 16-bit types, such as half, uint16_t. Requires shader model 6.2+
+            bool enableDebugInfo = false;       // Embed debug info into the binary
+            bool disableOptimizations = false;  // Force to turn off optimizations. Ignore optimizationLevel below.
 
             int optimizationLevel = 3; // 0 to 3, no optimization to most optimization
             ShaderModel shaderModel = { 6, 0 };
+
+            int shiftAllTexturesBindings;
+            int shiftAllSamplersBindings;
+            int shiftAllCBuffersBindings;
+            int shiftAllUABuffersBindings;
         };
 
         struct TargetDesc

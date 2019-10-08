@@ -172,7 +172,7 @@ void configure_glsl_compiler(spirv_cross::CompilerGLSL &compiler,
 }
 
 void load_reflection_data(compiler::ReflectionData &data, spirv_cross::CompilerGLSL &compiler) {
-  typedef std::unordered_set<uint32_t> ActiveVariablesSet;
+  typedef std::unordered_set<spirv_cross::VariableID> ActiveVariablesSet;
   ActiveVariablesSet active = compiler.get_active_interface_variables();
   using namespace spirv_cross;
   ShaderResources resources = compiler.get_shader_resources(active);

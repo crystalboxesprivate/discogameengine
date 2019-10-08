@@ -1,3 +1,4 @@
+
 add_executable(
   engine WIN32
   WinMain.cpp
@@ -41,10 +42,5 @@ set_target_properties(engine PROPERTIES OUTPUT_NAME disco-engine
 add_custom_command(
   TARGET engine
   POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/fmod/lib/fmod.dll" "$<TARGET_FILE_DIR:engine>"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/freetype/lib/freetype271MT.dll" "$<TARGET_FILE_DIR:engine>"
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/ShaderConductor/lib/dxcompiler.dll" "$<TARGET_FILE_DIR:engine>"
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/ShaderConductor/lib/ShaderConductor.dll" "$<TARGET_FILE_DIR:engine>"
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/libtiff/bin/tiff.dll" "$<TARGET_FILE_DIR:engine>"
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different "${ENGINE_PROJECT_DIR}/src/third_party/libtiff/bin/tiffxx.dll" "$<TARGET_FILE_DIR:engine>"
 )
